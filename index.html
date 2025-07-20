@@ -251,20 +251,36 @@
             const range = activePeriodBtn?.dataset.range || activeYearBtn?.dataset.range;
             
             if (!isNaN(parseInt(range))) {
-                if (type === 'artists') {
-                    renderMessage("年別のアーティストランキングは現在サポートされていません。");
+                // Get long_term data from Spotify API with limit=50
+                const data = await apiRequest(`https://api.spotify.com/v1/me/top/${type}?time_range=long_term&limit=50`);
+                
+                if (!data || !data.items) {
+                    renderMessage("データの取得に失敗しました。");
                     return;
                 }
-                const playlist = await findYearlyPlaylist(range);
-                if (playlist && playlist.tracks && playlist.tracks.href) {
-                    const tracks = await apiRequest(playlist.tracks.href);
-                    if (tracks && tracks.items && Array.isArray(tracks.items)) {
-                        renderTracks(tracks.items.map(item => item.track).filter(track => track));
+                
+                if (type === 'tracks') {
+                    // Filter tracks by album release year
+                    const filteredTracks = data.items.filter(track => {
+                        if (!track || !track.album || !track.album.release_date) {
+                            return false;
+                        }
+                        const releaseYear = new Date(track.album.release_date).getFullYear();
+                        return releaseYear.toString() === range;
+                    });
+                    
+                    if (filteredTracks.length === 0) {
+                        renderMessage(`${range}年にリリースされた楽曲が見つかりませんでした。`);
                     } else {
-                        renderMessage(`${range}年のプレイリストは見つかりましたが、楽曲データの取得に失敗しました。`);
+                        renderTracks(filteredTracks);
                     }
-                } else {
-                    renderMessage(`${range}�N�̃g�b�v�\���O�v���C���X�g��������܂���ł����B`);
+                } else if (type === 'artists') {
+                    // For artists, show long_term data (since year filtering is difficult for artists)
+                    if (data.items.length === 0) {
+                        renderMessage("アーティストデータが見つかりませんでした。");
+                    } else {
+                        renderArtists(data.items);
+                    }
                 }
             } else {
                 const data = await apiRequest(`https://api.spotify.com/v1/me/top/${type}?time_range=${range}&limit=20`);
@@ -334,7 +350,7 @@
         function renderTracks(tracks) {
             rankingList.innerHTML = '';
             if (!tracks || tracks.length === 0) {
-                renderMessage("�f�[�^������܂���B");
+                renderMessage("データがありません。");
                 return;
             }
             tracks.forEach((track, index) => {
@@ -365,7 +381,7 @@
         function renderArtists(artists) {
             rankingList.innerHTML = '';
             if (!artists || artists.length === 0) {
-                renderMessage("�f�[�^������܂���B");
+                renderMessage("データがありません。");
                 return;
             }
             artists.forEach((artist, index) => {
@@ -420,7 +436,7 @@
                 return await response.json();
             } catch (error) {
                 console.error('API Request Error:', error);
-                renderMessage("�f�[�^�̎擾���ɃG���[���������܂����B");
+                renderMessage("データの取得中にエラーが発生しました。");
                 return null;
             }
         }
