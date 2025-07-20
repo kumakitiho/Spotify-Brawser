@@ -53,8 +53,9 @@
                     <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="short_term">最近4週間</button>
                     <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="long_term">全期間</button>
                     <span class="text-spotify-light-gray self-center mx-2">|</span>
-                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2023">2023�N</button>
-                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2022">2022�N</button>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2024">2024年</button>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2023">2023年</button>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2022">2022年</button>
                 </div>
                 <div id="ranking-list"></div>
             </main>
@@ -223,9 +224,13 @@
                     return;
                 }
                 const playlist = await findYearlyPlaylist(range);
-                if (playlist) {
+                if (playlist && playlist.tracks && playlist.tracks.href) {
                     const tracks = await apiRequest(playlist.tracks.href);
-                    renderTracks(tracks.items.map(item => item.track));
+                    if (tracks && tracks.items && Array.isArray(tracks.items)) {
+                        renderTracks(tracks.items.map(item => item.track).filter(track => track));
+                    } else {
+                        renderMessage(`${range}年のプレイリストは見つかりましたが、楽曲データの取得に失敗しました。`);
+                    }
                 } else {
                     renderMessage(`${range}�N�̃g�b�v�\���O�v���C���X�g��������܂���ł����B`);
                 }
@@ -250,17 +255,29 @@
             
             for (const queryText of searchQueries) {
                 const query = encodeURIComponent(queryText);
+                console.log(`🔍 検索中: "${queryText}"`);
                 const data = await apiRequest(`https://api.spotify.com/v1/search?q=${query}&type=playlist&limit=20`);
                 
                 if (data && data.playlists && data.playlists.items) {
-                    // より柔軟な検索条件
-                    const playlist = data.playlists.items.find(p => 
-                        (p.owner.id === 'spotify' || p.owner.display_name?.toLowerCase().includes('spotify')) &&
-                        (p.name.includes(year) || p.description?.includes(year))
-                    );
+                    // より柔軟な検索条件（安全性チェック付き）
+                    const playlist = data.playlists.items.find(p => {
+                        // 基本的なデータ構造チェック
+                        if (!p || !p.name || !p.owner) {
+                            return false;
+                        }
+                        
+                        // 年の一致チェック
+                        const yearMatch = p.name.includes(year) || p.description?.includes(year);
+                        
+                        // オーナーのチェック（安全性を考慮）
+                        const isSpotifyOwner = p.owner.id === 'spotify' || 
+                                             (p.owner.display_name && p.owner.display_name.toLowerCase().includes('spotify'));
+                        
+                        return yearMatch && (isSpotifyOwner || p.public === true);
+                    });
                     
                     if (playlist) {
-                        console.log(`✅ 見つかった${year}年プレイリスト:`, playlist.name);
+                        console.log(`✅ 見つかった${year}年プレイリスト:`, playlist.name, `(作成者: ${playlist.owner?.display_name || playlist.owner?.id || 'Unknown'})`);
                         return playlist;
                     }
                 }
