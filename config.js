@@ -5,14 +5,17 @@ const config = {
     // Spotify API設定 - 本番環境では環境変数から取得
     CLIENT_ID: window.SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID || 'YOUR_SPOTIFY_CLIENT_ID_HERE',
     REDIRECT_URI: window.location.origin + '/',
-    SCOPES: 'user-top-read user-read-private',
+    SCOPES: 'user-top-read user-read-private user-read-email',
     
     // Spotify API エンドポイント
     TOKEN_ENDPOINT: 'https://accounts.spotify.com/api/token',
     AUTH_URL: 'https://accounts.spotify.com/authorize'
 };
 
-// 設定検証
+// 設定検証とデバッグ
+console.log('🔍 CLIENT_ID確認:', config.CLIENT_ID ? `${config.CLIENT_ID.substring(0, 8)}...` : 'NOT SET');
+console.log('🔍 REDIRECT_URI確認:', config.REDIRECT_URI);
+
 if (config.CLIENT_ID === 'YOUR_SPOTIFY_CLIENT_ID_HERE') {
     console.warn('⚠️ CLIENT_IDが設定されていません。環境変数 SPOTIFY_CLIENT_ID を設定するか、config.js を編集してください。');
 }
