@@ -239,11 +239,34 @@
         }
         
         async function findYearlyPlaylist(year) {
-            const query = encodeURIComponent(`My Top Songs ${year}`);
-            const data = await apiRequest(`https://api.spotify.com/v1/search?q=${query}&type=playlist&limit=10`);
-            if (data && data.playlists && data.playlists.items) {
-                return data.playlists.items.find(p => p.owner.id === 'spotify' && p.name === `Your Top Songs ${year}`);
+            // 複数の検索パターンを試す
+            const searchQueries = [
+                `Your Top Songs ${year}`,
+                `Top Songs ${year}`,
+                `年間ランキング ${year}`,
+                `${year} 年間`,
+                `Wrapped ${year}`
+            ];
+            
+            for (const queryText of searchQueries) {
+                const query = encodeURIComponent(queryText);
+                const data = await apiRequest(`https://api.spotify.com/v1/search?q=${query}&type=playlist&limit=20`);
+                
+                if (data && data.playlists && data.playlists.items) {
+                    // より柔軟な検索条件
+                    const playlist = data.playlists.items.find(p => 
+                        (p.owner.id === 'spotify' || p.owner.display_name?.toLowerCase().includes('spotify')) &&
+                        (p.name.includes(year) || p.description?.includes(year))
+                    );
+                    
+                    if (playlist) {
+                        console.log(`✅ 見つかった${year}年プレイリスト:`, playlist.name);
+                        return playlist;
+                    }
+                }
             }
+            
+            console.warn(`⚠️ ${year}年のプレイリストが見つかりませんでした`);
             return null;
         }
 
