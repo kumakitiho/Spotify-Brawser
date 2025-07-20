@@ -276,44 +276,58 @@
         }
         
         async function findYearlyPlaylist(year) {
-            // Spotify公式の年別プレイリストのみを厳密に検索
-            const officialQueries = [
+            // 英語と日本語の両方でプレイリストを検索
+            const searchQueries = [
                 `Your Top Songs ${year}`,
                 `Wrapped ${year}`,
-                `Top Songs of ${year}`
+                `Top Songs of ${year}`,
+                `${year}年 トップソング`,
+                `${year}年 人気曲`,
+                `マイトップソング ${year}`,
+                `私の${year}年`
             ];
             
-            for (const queryText of officialQueries) {
+            for (const queryText of searchQueries) {
                 const query = encodeURIComponent(queryText);
-                console.log(`🔍 公式プレイリスト検索中: "${queryText}"`);
-                const data = await apiRequest(`https://api.spotify.com/v1/search?q=${query}&type=playlist&limit=10`);
+                console.log(`🔍 プレイリスト検索中: "${queryText}"`);
+                const data = await apiRequest(`https://api.spotify.com/v1/search?q=${query}&type=playlist&limit=20`);
                 
                 if (data && data.playlists && data.playlists.items) {
-                    // Spotify公式のプレイリストのみを厳密にチェック
+                    // より柔軟な条件でプレイリストをチェック
                     const playlist = data.playlists.items.find(p => {
                         if (!p || !p.name || !p.owner) {
                             return false;
                         }
                         
-                        // 厳密な条件チェック
-                        const isSpotifyOfficial = p.owner.id === 'spotify';
-                        const exactNameMatch = p.name.toLowerCase().includes(`${year}`) && 
-                                             (p.name.toLowerCase().includes('top') || 
-                                              p.name.toLowerCase().includes('wrapped') ||
-                                              p.name.toLowerCase().includes('your'));
+                        const nameToCheck = p.name.toLowerCase();
+                        const yearToCheck = year.toString();
                         
-                        return isSpotifyOfficial && exactNameMatch;
+                        // 年が含まれているかチェック
+                        const hasYear = nameToCheck.includes(yearToCheck);
+                        
+                        // 関連キーワードをチェック
+                        const hasRelevantKeywords = nameToCheck.includes('top') || 
+                                                   nameToCheck.includes('wrapped') ||
+                                                   nameToCheck.includes('your') ||
+                                                   nameToCheck.includes('トップ') ||
+                                                   nameToCheck.includes('人気') ||
+                                                   nameToCheck.includes('私の') ||
+                                                   nameToCheck.includes('マイ');
+                        
+                        // Spotify公式またはユーザー自身のプレイリストを優先
+                        const isOfficialOrUser = p.owner.id === 'spotify' || p.owner.type === 'user';
+                        
+                        return hasYear && hasRelevantKeywords && isOfficialOrUser;
                     });
                     
                     if (playlist) {
-                        console.log(`✅ 公式${year}年プレイリスト発見:`, playlist.name);
+                        console.log(`✅ ${year}年プレイリスト発見:`, playlist.name, `(作成者: ${playlist.owner.display_name || playlist.owner.id})`);
                         return playlist;
                     }
                 }
             }
             
-            // 公式が見つからない場合は、代わりに通常のAPI期間指定を使用
-            console.warn(`⚠️ ${year}年の公式プレイリストが見つかりませんでした`);
+            console.warn(`⚠️ ${year}年のプレイリストが見つかりませんでした`);
             return null;
         }
 
