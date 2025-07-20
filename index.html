@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Spotify Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+        }
+        .bg-spotify-green { background-color: #1DB954; }
+        .text-spotify-green { color: #1DB954; }
+        .bg-spotify-dark { background-color: #121212; }
+        .bg-spotify-light-dark { background-color: #181818; }
+        .bg-spotify-gray { background-color: #282828; }
+        .text-spotify-light-gray { color: #b3b3b3; }
+        .filter-btn { transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; }
+        .type-filter-btn.active { background-color: #1DB954; color: #121212; }
+        .range-filter-btn.active { background-color: #fff; color: #121212; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #1DB954; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-spotify-dark text-white">
+
+    <div id="app-container" class="p-4 md:p-8 max-w-4xl mx-auto">
+        <div id="login-view" class="text-center py-20">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">あなたのSpotify統計</h1>
+            <p class="text-spotify-light-gray mb-8">あなたの再生履歴とランキングを、一年との まとめて見てみよう。</p>
+            <button id="login-button" class="bg-spotify-green text-black font-bold py-3 px-8 rounded-full text-lg hover:scale-105 transition-transform">
+                Spotifyでログイン
+            </button>
+        </div>
+        <div id="main-view" class="hidden">
+            <header class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold">My Stats</h1>
+                <div id="user-profile" class="flex items-center gap-3">
+                    <span id="user-name" class="hidden sm:inline"></span>
+                    <img id="user-avatar" src="https://placehold.co/40x40/282828/FFFFFF?text=U" class="rounded-full" alt="ユーザーアイコン">
+                </div>
+            </header>
+            <main>
+                <div class="flex gap-4 mb-6">
+                    <button class="type-filter-btn filter-btn active bg-spotify-gray text-white font-bold py-2 px-4 rounded-full text-sm" data-type="tracks">トップ楽曲</button>
+                    <button class="type-filter-btn filter-btn bg-spotify-gray text-white font-bold py-2 px-4 rounded-full text-sm" data-type="artists">トップアーティスト</button>
+                </div>
+                <div class="flex flex-wrap gap-3 mb-8">
+                    <button class="range-filter-btn filter-btn active bg-white text-black font-semibold py-1 px-3 rounded-md text-xs" data-range="medium_term">過去6ヶ月</button>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="short_term">最近4週間</button>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="long_term">全期間</button>
+                    <span class="text-spotify-light-gray self-center mx-2">|</span>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2023">2023�N</button>
+                    <button class="range-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2022">2022�N</button>
+                </div>
+                <div id="ranking-list"></div>
+            </main>
+        </div>
+    </div>
+    <audio id="audio-player"></audio>
+
+    <script>
+        // --- �ݒ� ---
+        const { CLIENT_ID, REDIRECT_URI, SCOPES, TOKEN_ENDPOINT, AUTH_URL } = window.appConfig;
+
+        // --- DOM�v�f ---
+        const loginView = document.getElementById('login-view');
+        const mainView = document.getElementById('main-view');
+        const loginButton = document.getElementById('login-button');
+        const rankingList = document.getElementById('ranking-list');
+        const userProfile = { name: document.getElementById('user-name'), avatar: document.getElementById('user-avatar') };
+        const audioPlayer = document.getElementById('audio-player');
+
+        // --- �O���[�o���ϐ� ---
+        let accessToken = null;
+        let currentTrackUrl = null;
+
+        // --- PKCE Helper Functions ---
+        const generateRandomString = (length) => {
+            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const values = crypto.getRandomValues(new Uint8Array(length));
+            return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+        };
+
+        const sha256 = async (plain) => {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(plain);
+            return window.crypto.subtle.digest('SHA-256', data);
+        };
+
+        const base64encode = (input) => {
+            return btoa(String.fromCharCode(...new Uint8Array(input)))
+                .replace(/=/g, '')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_');
+        };
+
+        // --- �F�؃t���[ ---
+        loginButton.addEventListener('click', async () => {
+            const codeVerifier = generateRandomString(64);
+            window.localStorage.setItem('code_verifier', codeVerifier);
+
+            const hashed = await sha256(codeVerifier);
+            const codeChallenge = base64encode(hashed);
+
+            const params = new URLSearchParams({
+                client_id: CLIENT_ID,
+                response_type: 'code',
+                redirect_uri: REDIRECT_URI,
+                scope: SCOPES,
+                code_challenge_method: 'S256',
+                code_challenge: codeChallenge,
+            });
+            window.location.href = `${AUTH_URL}?${params.toString()}`;
+        });
+
+        // ������ �f�o�b�O������ ������
+        const getToken = async (code) => {
+            const codeVerifier = localStorage.getItem('code_verifier');
+            
+            try {
+                const response = await fetch(TOKEN_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        client_id: CLIENT_ID,
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: REDIRECT_URI,
+                        code_verifier: codeVerifier,
+                    }),
+                });
+
+                if (!response.ok) {
+                    // �G���[���X�|���X�̓��e���R���\�[���ɕ\��
+                    const errorData = await response.json();
+                    console.error('--- Spotify API Error ---');
+                    console.error('Status:', response.status);
+                    console.error('Error Body:', errorData);
+                    console.error('-------------------------');
+                    return null;
+                }
+
+                const data = await response.json();
+                return data.access_token;
+
+            } catch (error) {
+                console.error('--- Network Error ---');
+                console.error('Failed to fetch token:', error);
+                console.error('---------------------');
+                return null;
+            }
+        };
+
+        // --- ���������� ---
+        window.addEventListener('load', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+
+            if (code) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('code');
+                window.history.replaceState({}, document.title, url);
+                
+                accessToken = await getToken(code);
+                if (accessToken) {
+                    initializeApp();
+                } else {
+                    loginView.classList.remove('hidden');
+                    mainView.classList.add('hidden');
+                }
+            }
+        });
+
+        // --- �A�v���P�[�V�����̃��C������ ---
+        async function initializeApp() {
+            loginView.classList.add('hidden');
+            mainView.classList.remove('hidden');
+            await fetchUserProfile();
+            setupEventListeners();
+            fetchAndDisplayData();
+        }
+        
+        async function fetchUserProfile() {
+            const data = await apiRequest('https://api.spotify.com/v1/me');
+            if (data) {
+                userProfile.name.textContent = data.display_name;
+                if (data.images && data.images.length > 0) {
+                    userProfile.avatar.src = data.images[0].url;
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.type-filter-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('.type-filter-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    fetchAndDisplayData();
+                });
+            });
+            document.querySelectorAll('.range-filter-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('.range-filter-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    fetchAndDisplayData();
+                });
+            });
+        }
+
+        // --- �f�[�^�擾�ƕ\�� ---
+        async function fetchAndDisplayData() {
+            showLoader();
+            const type = document.querySelector('.type-filter-btn.active').dataset.type;
+            const range = document.querySelector('.range-filter-btn.active').dataset.range;
+            
+            if (!isNaN(parseInt(range))) {
+                if (type === 'artists') {
+                    renderMessage("年別のアーティストランキングは現在サポートされていません。");
+                    return;
+                }
+                const playlist = await findYearlyPlaylist(range);
+                if (playlist) {
+                    const tracks = await apiRequest(playlist.tracks.href);
+                    renderTracks(tracks.items.map(item => item.track));
+                } else {
+                    renderMessage(`${range}�N�̃g�b�v�\���O�v���C���X�g��������܂���ł����B`);
+                }
+            } else {
+                const data = await apiRequest(`https://api.spotify.com/v1/me/top/${type}?time_range=${range}&limit=20`);
+                if (data && data.items) {
+                    if (type === 'tracks') renderTracks(data.items);
+                    if (type === 'artists') renderArtists(data.items);
+                }
+            }
+        }
+        
+        async function findYearlyPlaylist(year) {
+            const query = encodeURIComponent(`My Top Songs ${year}`);
+            const data = await apiRequest(`https://api.spotify.com/v1/search?q=${query}&type=playlist&limit=10`);
+            if (data && data.playlists && data.playlists.items) {
+                return data.playlists.items.find(p => p.owner.id === 'spotify' && p.name === `Your Top Songs ${year}`);
+            }
+            return null;
+        }
+
+        function renderTracks(tracks) {
+            rankingList.innerHTML = '';
+            if (!tracks || tracks.length === 0) {
+                renderMessage("�f�[�^������܂���B");
+                return;
+            }
+            tracks.forEach((track, index) => {
+                if (!track) return;
+                const imageUrl = track.album.images[0]?.url || 'https://placehold.co/64';
+                const artistName = track.artists.map(artist => artist.name).join(', ');
+                const canPlay = track.preview_url ? '' : 'opacity-30 cursor-not-allowed';
+                const element = document.createElement('div');
+                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors';
+                element.innerHTML = `
+                    <div class="w-8 text-spotify-light-gray text-center font-bold">${index + 1}</div>
+                    <img src="${imageUrl}" class="w-12 h-12 mx-4 rounded-md" alt="アルバムアート">
+                    <div class="flex-grow overflow-hidden">
+                        <div class="font-semibold truncate">${track.name}</div>
+                        <div class="text-sm text-spotify-light-gray truncate">${artistName}</div>
+                    </div>
+                    <button class="p-2 rounded-full hover:bg-black/20 play-btn ${canPlay}" data-preview-url="${track.preview_url || ''}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none">
+                            <path d="M8 5v14l11-7z"></path>
+                        </svg>
+                    </button>
+                `;
+                rankingList.appendChild(element);
+            });
+            addPlayButtonListeners();
+        }
+
+        function renderArtists(artists) {
+            rankingList.innerHTML = '';
+            if (!artists || artists.length === 0) {
+                renderMessage("�f�[�^������܂���B");
+                return;
+            }
+            artists.forEach((artist, index) => {
+                const imageUrl = artist.images[0]?.url || 'https://placehold.co/64';
+                const element = document.createElement('div');
+                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors';
+                element.innerHTML = `
+                    <div class="w-8 text-spotify-light-gray text-center font-bold">${index + 1}</div>
+                    <img src="${imageUrl}" class="w-12 h-12 mx-4 rounded-full" alt="アーティスト写真">
+                    <div class="flex-grow">
+                        <div class="font-semibold">${artist.name}</div>
+                    </div>
+                `;
+                rankingList.appendChild(element);
+            });
+        }
+        
+        function showLoader() {
+            rankingList.innerHTML = '<div class="loader"></div>';
+        }
+        
+        function renderMessage(message) {
+            rankingList.innerHTML = `<div class="text-center text-spotify-light-gray p-8">${message}</div>`;
+        }
+
+        function addPlayButtonListeners() {
+            document.querySelectorAll('.play-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const previewUrl = e.target.dataset.previewUrl;
+                    if (!previewUrl) return;
+                    if (audioPlayer.paused || currentTrackUrl !== previewUrl) {
+                        audioPlayer.src = previewUrl;
+                        audioPlayer.play();
+                        currentTrackUrl = previewUrl;
+                    } else {
+                        audioPlayer.pause();
+                    }
+                });
+            });
+        }
+
+        async function apiRequest(url) {
+            try {
+                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                if (response.status === 401) {
+                    accessToken = null;
+                    mainView.classList.add('hidden');
+                    loginView.classList.remove('hidden');
+                    return null;
+                }
+                if (!response.ok) throw new Error(`API request failed: ${response.statusText}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Request Error:', error);
+                renderMessage("�f�[�^�̎擾���ɃG���[���������܂����B");
+                return null;
+            }
+        }
+    </script>
+
+</body>
+</html>

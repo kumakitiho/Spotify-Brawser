@@ -1,0 +1,20 @@
+{
+  "name": "spotify-stats-viewer",
+  "version": "1.0.0",
+  "description": "Spotify統計ビューアー - ユーザーのお気に入り楽曲とアーティストを表示",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s . -l 3000",
+    "build": "node build.js",
+    "dev": "serve -s . -l 3000"
+  },
+  "keywords": ["spotify", "music", "stats", "analytics"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

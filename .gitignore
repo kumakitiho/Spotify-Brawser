@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build output
+dist/
+build/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config files with sensitive data
+config.local.js
+
+# Note: config.js contains placeholder values in development
+# Real CLIENT_ID is injected during build process via environment variables

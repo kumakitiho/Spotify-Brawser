@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: spotify-stats-viewer
+    env: static
+    staticPublishPath: ./
+    buildCommand: npm run build
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.spotify.com https://accounts.spotify.com; img-src 'self' data: https:; media-src 'self' https:"
+    envVars:
+      - key: NODE_ENV
+        value: production
