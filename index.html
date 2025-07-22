@@ -91,8 +91,8 @@
                     
                     <div class="flex items-center space-x-2 flex-1 justify-end">
                         <span id="current-time" class="text-sm text-spotify-light-gray">0:00</span>
-                        <div class="w-32 bg-gray-600 rounded-full h-1">
-                            <div id="progress-bar" class="bg-white h-1 rounded-full transition-all" style="width: 0%"></div>
+                        <div id="seek-bar" class="w-32 bg-gray-600 rounded-full h-1 cursor-pointer hover:h-2 transition-all relative">
+                            <div id="progress-bar" class="bg-white h-full rounded-full transition-all pointer-events-none" style="width: 0%"></div>
                         </div>
                         <span id="total-time" class="text-sm text-spotify-light-gray">0:00</span>
                     </div>
@@ -126,6 +126,7 @@
         const currentTime = document.getElementById('current-time');
         const totalTime = document.getElementById('total-time');
         const progressBar = document.getElementById('progress-bar');
+        const seekBar = document.getElementById('seek-bar');
 
         // --- �O���[�o���ϐ� ---
         let accessToken = null;
@@ -677,6 +678,7 @@
         // --- 再生コントロール機能 ---
         function setupPlaybackControls() {
             playPauseBtn.addEventListener('click', togglePlayback);
+            seekBar.addEventListener('click', handleSeek);
         }
         
         async function togglePlayback() {
@@ -686,6 +688,39 @@
                 await player.pause();
             } else {
                 await player.resume();
+            }
+        }
+        
+        async function handleSeek(event) {
+            if (!player || !accessToken || !deviceId) return;
+            
+            try {
+                const state = await player.getCurrentState();
+                if (!state || !state.duration) return;
+                
+                // クリック位置から再生位置を計算
+                const rect = seekBar.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                const seekPosition = Math.floor(state.duration * percentage);
+                
+                console.log(`シーク: ${percentage * 100}% (${formatTime(seekPosition)})`);
+                
+                // Spotify APIでシーク
+                const response = await fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${seekPosition}&device_id=${deviceId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    console.log('✅ シーク成功');
+                } else {
+                    console.error('❌ シーク失敗:', response.status);
+                }
+            } catch (error) {
+                console.error('シークエラー:', error);
             }
         }
         
