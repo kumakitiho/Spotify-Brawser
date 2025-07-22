@@ -728,6 +728,12 @@
         function updatePlaybackControl({ track, position, duration, paused }) {
             if (!track) return;
             
+            // 現在再生中の楽曲URIを追跡（まだボタン更新はしない）
+            if (track.uri && currentPlayingTrackUri !== track.uri) {
+                currentPlayingTrackUri = track.uri;
+                console.log('再生中楽曲URI更新:', track.uri);
+            }
+            
             // 楽曲情報の更新
             currentTrackName.textContent = track.name;
             currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
@@ -765,6 +771,8 @@
         function hidePlaybackControl() {
             playbackControl.classList.add('hidden');
             stopProgressUpdate();
+            currentPlayingTrackUri = null;
+            console.log('再生中楽曲URI をクリア');
         }
         
         function formatTime(ms) {
