@@ -66,6 +66,38 @@
                 </div>
                 <div id="ranking-list"></div>
             </main>
+            
+            <!-- 再生コントロールバー -->
+            <div id="playback-control" class="fixed bottom-0 left-0 right-0 bg-spotify-dark-gray border-t border-spotify-gray p-4 hidden">
+                <div class="max-w-6xl mx-auto flex items-center justify-between">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <img id="current-track-image" src="" class="w-12 h-12 rounded-md mr-4" alt="現在の楽曲">
+                        <div class="min-w-0 flex-1">
+                            <div id="current-track-name" class="font-semibold truncate text-white">楽曲名</div>
+                            <div id="current-track-artist" class="text-sm text-spotify-light-gray truncate">アーティスト名</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button id="play-pause-btn" class="p-2 rounded-full bg-white text-black hover:scale-110 transition-transform">
+                            <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                            </svg>
+                            <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="hidden">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 flex-1 justify-end">
+                        <span id="current-time" class="text-sm text-spotify-light-gray">0:00</span>
+                        <div class="w-32 bg-gray-600 rounded-full h-1">
+                            <div id="progress-bar" class="bg-white h-1 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <span id="total-time" class="text-sm text-spotify-light-gray">0:00</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <audio id="audio-player"></audio>
@@ -82,12 +114,26 @@
         const rankingList = document.getElementById('ranking-list');
         const userProfile = { name: document.getElementById('user-name'), avatar: document.getElementById('user-avatar') };
         const audioPlayer = document.getElementById('audio-player');
+        
+        // 再生コントロール要素
+        const playbackControl = document.getElementById('playback-control');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const currentTrackImage = document.getElementById('current-track-image');
+        const currentTrackName = document.getElementById('current-track-name');
+        const currentTrackArtist = document.getElementById('current-track-artist');
+        const currentTime = document.getElementById('current-time');
+        const totalTime = document.getElementById('total-time');
+        const progressBar = document.getElementById('progress-bar');
 
         // --- �O���[�o���ϐ� ---
         let accessToken = null;
         let currentTrackUrl = null;
         let player = null;
         let deviceId = null;
+        let isPlaying = false;
+        let currentTrackInfo = null;
 
         // --- PKCE Helper Functions ---
         const generateRandomString = (length) => {
@@ -244,10 +290,36 @@
                 console.log('プレイヤーが利用できません Device ID:', device_id);
             });
 
+            // 再生状態の変更を監視
+            player.addListener('player_state_changed', state => {
+                if (!state) {
+                    hidePlaybackControl();
+                    return;
+                }
+
+                const {
+                    current_track,
+                    position,
+                    duration,
+                    paused
+                } = state;
+
+                updatePlaybackControl({
+                    track: current_track,
+                    position,
+                    duration,
+                    paused
+                });
+
+                isPlaying = !paused;
+                updatePlayPauseButton();
+            });
+
             // プレイヤーに接続
             player.connect().then(success => {
                 if (success) {
                     console.log('✅ Spotify Playerに正常に接続しました!');
+                    setupPlaybackControls();
                 } else {
                     console.error('❌ Spotify Playerへの接続に失敗しました');
                 }
@@ -551,6 +623,8 @@
 
                 if (response.ok) {
                     console.log('✅ Web Playback SDKで再生開始!');
+                    // 楽曲情報を設定（再生開始時の初期設定）
+                    setInitialTrackInfo(trackUri);
                 } else if (response.status === 404) {
                     console.warn('デバイスが見つかりません。外部リンクで開きます。');
                     const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
@@ -569,6 +643,89 @@
                 // フォールバックで外部リンク
                 const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
                 window.open(spotifyUrl, '_blank');
+            }
+        }
+        
+        // --- 再生コントロール機能 ---
+        function setupPlaybackControls() {
+            playPauseBtn.addEventListener('click', togglePlayback);
+        }
+        
+        async function togglePlayback() {
+            if (!player) return;
+            
+            if (isPlaying) {
+                await player.pause();
+            } else {
+                await player.resume();
+            }
+        }
+        
+        function updatePlaybackControl({ track, position, duration, paused }) {
+            if (!track) return;
+            
+            // 楽曲情報の更新
+            currentTrackName.textContent = track.name;
+            currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
+            
+            if (track.album.images.length > 0) {
+                currentTrackImage.src = track.album.images[0].url;
+            }
+            
+            // 再生時間の更新
+            currentTime.textContent = formatTime(position);
+            totalTime.textContent = formatTime(duration);
+            
+            // プログレスバーの更新
+            const progress = (position / duration) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // コントロールバーを表示
+            showPlaybackControl();
+        }
+        
+        function updatePlayPauseButton() {
+            if (isPlaying) {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        }
+        
+        function showPlaybackControl() {
+            playbackControl.classList.remove('hidden');
+        }
+        
+        function hidePlaybackControl() {
+            playbackControl.classList.add('hidden');
+        }
+        
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        function setInitialTrackInfo(trackUri) {
+            // 現在表示されている楽曲リストから情報を取得
+            const playButtons = document.querySelectorAll('.play-btn');
+            for (const button of playButtons) {
+                if (button.dataset.trackUri === trackUri) {
+                    const trackElement = button.closest('div');
+                    const trackName = trackElement.querySelector('.font-semibold').textContent;
+                    const artistName = trackElement.querySelector('.text-sm').textContent;
+                    const imageUrl = trackElement.querySelector('img').src;
+                    
+                    // コントロールバーに情報を設定
+                    currentTrackName.textContent = trackName;
+                    currentTrackArtist.textContent = artistName;
+                    currentTrackImage.src = imageUrl;
+                    showPlaybackControl();
+                    break;
+                }
             }
         }
 
