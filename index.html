@@ -357,8 +357,7 @@
                 if (!track) return;
                 const imageUrl = track.album.images[0]?.url || 'https://placehold.co/64';
                 const artistName = track.artists.map(artist => artist.name).join(', ');
-                const canPlay = track.preview_url ? 'cursor-pointer hover:bg-black/20' : 'opacity-30 cursor-not-allowed';
-                const buttonDisabled = track.preview_url ? '' : 'disabled';
+                const canPlay = track.preview_url ? 'cursor-pointer hover:bg-black/20 text-green-500' : 'opacity-50 cursor-not-allowed text-gray-400';
                 const element = document.createElement('div');
                 element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors';
                 element.innerHTML = `
@@ -368,7 +367,7 @@
                         <div class="font-semibold truncate">${track.name}</div>
                         <div class="text-sm text-spotify-light-gray truncate">${artistName}</div>
                     </div>
-                    <button class="p-3 rounded-full play-btn ${canPlay} text-green-500" data-preview-url="${track.preview_url || ''}" ${buttonDisabled} type="button">
+                    <button class="p-3 rounded-full play-btn ${canPlay}" data-preview-url="${track.preview_url || ''}" type="button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M8 5v14l11-7z"></path>
                         </svg>
@@ -420,7 +419,7 @@
                     
                     const previewUrl = buttonElement.dataset.previewUrl;
                     if (!previewUrl) {
-                        console.log('プレビュー音源がありません');
+                        alert('この楽曲にはプレビュー音源がありません。');
                         return;
                     }
                     
