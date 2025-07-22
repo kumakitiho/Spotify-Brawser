@@ -589,7 +589,16 @@
                         // Web Playback SDKでフル再生を試行
                         if (trackUri && deviceId) {
                             console.log('Web Playback SDKでフル再生:', trackUri);
-                            playTrackWithWebPlayback(trackUri);
+                            
+                            // 楽曲情報を取得
+                            const trackRow = buttonElement.parentElement.parentElement;
+                            const trackInfo = {
+                                name: trackRow.querySelector('.font-semibold.truncate')?.textContent || '不明な楽曲',
+                                artist: trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate')?.textContent || '不明なアーティスト',
+                                image: trackRow.querySelector('img')?.src || ''
+                            };
+                            
+                            playTrackWithWebPlayback(trackUri, trackInfo);
                         } else if (trackUri) {
                             // デバイスが準備できていない場合は外部リンク
                             const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
@@ -604,7 +613,7 @@
         }
         
         // --- Web Playback SDK再生機能 ---
-        async function playTrackWithWebPlayback(trackUri) {
+        async function playTrackWithWebPlayback(trackUri, trackInfo = null) {
             if (!deviceId || !accessToken) {
                 console.error('デバイスIDまたはアクセストークンが利用できません');
                 return;
@@ -623,8 +632,19 @@
 
                 if (response.ok) {
                     console.log('✅ Web Playback SDKで再生開始!');
-                    // 楽曲情報を設定（再生開始時の初期設定）
-                    setInitialTrackInfo(trackUri);
+                    
+                    // 楽曲情報を即座に設定
+                    if (trackInfo) {
+                        currentTrackName.textContent = trackInfo.name;
+                        currentTrackArtist.textContent = trackInfo.artist;
+                        currentTrackImage.src = trackInfo.image;
+                        showPlaybackControl();
+                        
+                        console.log('楽曲情報を即座に設定:', trackInfo);
+                    } else {
+                        // フォールバック: DOM から取得
+                        setInitialTrackInfo(trackUri);
+                    }
                 } else if (response.status === 404) {
                     console.warn('デバイスが見つかりません。外部リンクで開きます。');
                     const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
@@ -714,15 +734,29 @@
             const playButtons = document.querySelectorAll('.play-btn');
             for (const button of playButtons) {
                 if (button.dataset.trackUri === trackUri) {
-                    const trackElement = button.closest('div');
-                    const trackName = trackElement.querySelector('.font-semibold').textContent;
-                    const artistName = trackElement.querySelector('.text-sm').textContent;
-                    const imageUrl = trackElement.querySelector('img').src;
+                    // 親要素（楽曲の行全体）を取得
+                    const trackRow = button.parentElement.parentElement;
                     
-                    // コントロールバーに情報を設定
-                    currentTrackName.textContent = trackName;
-                    currentTrackArtist.textContent = artistName;
-                    currentTrackImage.src = imageUrl;
+                    // 楽曲情報を取得
+                    const trackNameElement = trackRow.querySelector('.font-semibold.truncate');
+                    const artistNameElement = trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate');
+                    const imageElement = trackRow.querySelector('img');
+                    
+                    if (trackNameElement && artistNameElement && imageElement) {
+                        // コントロールバーに情報を設定
+                        currentTrackName.textContent = trackNameElement.textContent;
+                        currentTrackArtist.textContent = artistNameElement.textContent;
+                        currentTrackImage.src = imageElement.src;
+                        
+                        console.log('楽曲情報を設定:', {
+                            name: trackNameElement.textContent,
+                            artist: artistNameElement.textContent,
+                            image: imageElement.src
+                        });
+                    } else {
+                        console.warn('楽曲情報の要素が見つかりませんでした');
+                    }
+                    
                     showPlaybackControl();
                     break;
                 }
