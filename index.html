@@ -775,6 +775,38 @@
             console.log('再生中楽曲URI をクリア');
         }
         
+        function updateTrackButtonStates() {
+            console.log('ボタン状態更新:', { currentPlayingTrackUri, isPlaying });
+            
+            // 全ての再生ボタンを更新
+            const playButtons = document.querySelectorAll('.play-btn');
+            console.log('見つかった再生ボタン数:', playButtons.length);
+            
+            playButtons.forEach((button, index) => {
+                const trackUri = button.dataset.trackUri;
+                const svgElement = button.querySelector('svg path');
+                
+                if (!svgElement) {
+                    console.warn(`ボタン${index}: SVGパスが見つかりません`);
+                    return;
+                }
+                
+                if (trackUri === currentPlayingTrackUri && isPlaying) {
+                    // 再生中: 停止アイコンに変更
+                    svgElement.setAttribute('d', 'M6 4h4v16H6V4zm8 0h4v16h-4V4z');
+                    button.title = '停止';
+                    button.classList.add('playing');
+                    console.log(`ボタン${index}: 停止アイコンに変更`);
+                } else {
+                    // 停止中または他の楽曲: 再生アイコン
+                    svgElement.setAttribute('d', 'M8 5v14l11-7z');
+                    button.title = trackUri === currentPlayingTrackUri ? '再生' : 'Spotifyで再生';
+                    button.classList.remove('playing');
+                    console.log(`ボタン${index}: 再生アイコンに変更`);
+                }
+            });
+        }
+        
         function formatTime(ms) {
             const seconds = Math.floor(ms / 1000);
             const minutes = Math.floor(seconds / 60);
