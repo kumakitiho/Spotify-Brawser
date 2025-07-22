@@ -5,7 +5,7 @@ const config = {
     // Spotify API設定 - 本番環境では環境変数から取得
     CLIENT_ID: window.SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID || 'YOUR_SPOTIFY_CLIENT_ID_HERE',
     REDIRECT_URI: window.location.origin + '/',
-    SCOPES: 'user-top-read user-read-private user-read-email',
+    SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state',
     
     // Spotify API エンドポイント
     TOKEN_ENDPOINT: 'https://accounts.spotify.com/api/token',

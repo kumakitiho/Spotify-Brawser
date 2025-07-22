@@ -200,50 +200,58 @@
         async function initializeSpotifyPlayer() {
             console.log('Spotify Web Playback SDKを初期化中...');
             
-            // SDKの読み込みを待つ
-            window.onSpotifyWebPlaybackSDKReady = () => {
-                player = new Spotify.Player({
-                    name: 'Music App Player',
-                    getOAuthToken: cb => { cb(accessToken); },
-                    volume: 0.5
-                });
+            // SDKが既に読み込まれている場合は即座に初期化
+            if (window.Spotify) {
+                initializePlayer();
+            } else {
+                // SDKの読み込みを待つ
+                window.onSpotifyWebPlaybackSDKReady = initializePlayer;
+            }
+        }
+        
+        function initializePlayer() {
+            console.log('プレイヤーを作成中...');
+            player = new Spotify.Player({
+                name: 'Music App Player',
+                getOAuthToken: cb => { cb(accessToken); },
+                volume: 0.5
+            });
 
-                // エラーハンドリング
-                player.addListener('initialization_error', ({ message }) => {
-                    console.error('初期化エラー:', message);
-                });
+            // エラーハンドリング
+            player.addListener('initialization_error', ({ message }) => {
+                console.error('初期化エラー:', message);
+            });
 
-                player.addListener('authentication_error', ({ message }) => {
-                    console.error('認証エラー:', message);
-                });
+            player.addListener('authentication_error', ({ message }) => {
+                console.error('認証エラー:', message);
+            });
 
-                player.addListener('account_error', ({ message }) => {
-                    console.error('アカウントエラー (プレミアム必須):', message);
-                });
+            player.addListener('account_error', ({ message }) => {
+                console.error('アカウントエラー (プレミアム必須):', message);
+            });
 
-                player.addListener('playback_error', ({ message }) => {
-                    console.error('再生エラー:', message);
-                });
+            player.addListener('playback_error', ({ message }) => {
+                console.error('再生エラー:', message);
+            });
 
-                // プレイヤー準備完了
-                player.addListener('ready', ({ device_id }) => {
-                    console.log('プレイヤー準備完了! Device ID:', device_id);
-                    deviceId = device_id;
-                });
+            // プレイヤー準備完了
+            player.addListener('ready', ({ device_id }) => {
+                console.log('🎵 プレイヤー準備完了! Device ID:', device_id);
+                deviceId = device_id;
+            });
 
-                player.addListener('not_ready', ({ device_id }) => {
-                    console.log('プレイヤーが利用できません Device ID:', device_id);
-                });
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('プレイヤーが利用できません Device ID:', device_id);
+            });
 
-                // プレイヤーに接続
-                player.connect().then(success => {
-                    if (success) {
-                        console.log('Spotify Playerに正常に接続しました!');
-                    } else {
-                        console.error('Spotify Playerへの接続に失敗しました');
-                    }
-                });
-            };
+            // プレイヤーに接続
+            player.connect().then(success => {
+                if (success) {
+                    console.log('✅ Spotify Playerに正常に接続しました!');
+                } else {
+                    console.error('❌ Spotify Playerへの接続に失敗しました');
+                }
+            });
         }
         
         async function fetchUserProfile() {
