@@ -357,7 +357,8 @@
                 if (!track) return;
                 const imageUrl = track.album.images[0]?.url || 'https://placehold.co/64';
                 const artistName = track.artists.map(artist => artist.name).join(', ');
-                const canPlay = track.preview_url ? '' : 'opacity-30 cursor-not-allowed';
+                const canPlay = track.preview_url ? 'cursor-pointer hover:bg-black/20' : 'opacity-30 cursor-not-allowed';
+                const buttonDisabled = track.preview_url ? '' : 'disabled';
                 const element = document.createElement('div');
                 element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors';
                 element.innerHTML = `
@@ -367,8 +368,8 @@
                         <div class="font-semibold truncate">${track.name}</div>
                         <div class="text-sm text-spotify-light-gray truncate">${artistName}</div>
                     </div>
-                    <button class="p-2 rounded-full hover:bg-black/20 play-btn ${canPlay}" data-preview-url="${track.preview_url || ''}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none">
+                    <button class="p-3 rounded-full play-btn ${canPlay} text-green-500" data-preview-url="${track.preview_url || ''}" ${buttonDisabled} type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M8 5v14l11-7z"></path>
                         </svg>
                     </button>
@@ -410,14 +411,32 @@
         function addPlayButtonListeners() {
             document.querySelectorAll('.play-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const previewUrl = e.target.dataset.previewUrl;
-                    if (!previewUrl) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // ボタン要素からデータを取得（クリックされた要素がSVGでも対応）
+                    const buttonElement = e.target.closest('.play-btn');
+                    if (!buttonElement) return;
+                    
+                    const previewUrl = buttonElement.dataset.previewUrl;
+                    if (!previewUrl) {
+                        console.log('プレビュー音源がありません');
+                        return;
+                    }
+                    
+                    console.log('再生中:', previewUrl);
+                    
                     if (audioPlayer.paused || currentTrackUrl !== previewUrl) {
                         audioPlayer.src = previewUrl;
-                        audioPlayer.play();
-                        currentTrackUrl = previewUrl;
+                        audioPlayer.play().then(() => {
+                            currentTrackUrl = previewUrl;
+                            console.log('再生開始');
+                        }).catch(error => {
+                            console.error('再生エラー:', error);
+                        });
                     } else {
                         audioPlayer.pause();
+                        console.log('再生停止');
                     }
                 });
             });
