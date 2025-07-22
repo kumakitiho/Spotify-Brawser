@@ -424,19 +424,48 @@
         }
 
         async function apiRequest(url) {
+            // トークンが無い場合はログイン画面に戻す
+            if (!accessToken) {
+                console.warn('No access token available');
+                mainView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                renderMessage("ログインが必要です。");
+                return null;
+            }
+            
             try {
                 const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                
                 if (response.status === 401) {
+                    console.warn('Token expired or invalid');
                     accessToken = null;
                     mainView.classList.add('hidden');
                     loginView.classList.remove('hidden');
+                    renderMessage("認証が切れました。再度ログインしてください。");
                     return null;
                 }
-                if (!response.ok) throw new Error(`API request failed: ${response.statusText}`);
+                
+                if (response.status === 403) {
+                    console.warn('Insufficient permissions');
+                    renderMessage("このデータにアクセスする権限がありません。");
+                    return null;
+                }
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`API request failed: ${response.status} ${response.statusText}`, errorText);
+                    renderMessage(`データの取得に失敗しました (${response.status})`);
+                    return null;
+                }
+                
                 return await response.json();
             } catch (error) {
                 console.error('API Request Error:', error);
-                renderMessage("データの取得中にエラーが発生しました。");
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    renderMessage("ネットワークエラーが発生しました。接続を確認してください。");
+                } else {
+                    renderMessage("データの取得中にエラーが発生しました。");
+                }
                 return null;
             }
         }
