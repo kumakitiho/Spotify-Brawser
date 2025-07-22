@@ -68,7 +68,7 @@
             </main>
             
             <!-- 再生コントロールバー -->
-            <div id="playback-control" class="fixed bottom-0 left-0 right-0 bg-spotify-dark-gray border-t border-spotify-gray p-4 hidden">
+            <div id="playback-control" class="fixed bottom-0 left-0 right-0 bg-black bg-opacity-95 backdrop-blur-sm border-t border-gray-700 p-4 hidden z-50">
                 <div class="max-w-6xl mx-auto flex items-center justify-between">
                     <div class="flex items-center flex-1 min-w-0">
                         <img id="current-track-image" src="" class="w-12 h-12 rounded-md mr-4" alt="現在の楽曲">
@@ -134,6 +134,7 @@
         let deviceId = null;
         let isPlaying = false;
         let currentTrackInfo = null;
+        let progressInterval = null;
 
         // --- PKCE Helper Functions ---
         const generateRandomString = (length) => {
@@ -313,6 +314,13 @@
 
                 isPlaying = !paused;
                 updatePlayPauseButton();
+                
+                // リアルタイム更新の管理
+                if (isPlaying) {
+                    startProgressUpdate();
+                } else {
+                    stopProgressUpdate();
+                }
             });
 
             // プレイヤーに接続
@@ -720,6 +728,7 @@
         
         function hidePlaybackControl() {
             playbackControl.classList.add('hidden');
+            stopProgressUpdate();
         }
         
         function formatTime(ms) {
@@ -727,6 +736,35 @@
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = seconds % 60;
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        function startProgressUpdate() {
+            stopProgressUpdate(); // 既存のインターバルをクリア
+            
+            progressInterval = setInterval(async () => {
+                if (!player) return;
+                
+                try {
+                    const state = await player.getCurrentState();
+                    if (state && state.position && state.duration) {
+                        // リアルタイムで時間とプログレスバーを更新
+                        currentTime.textContent = formatTime(state.position);
+                        totalTime.textContent = formatTime(state.duration);
+                        
+                        const progress = (state.position / state.duration) * 100;
+                        progressBar.style.width = `${Math.min(progress, 100)}%`;
+                    }
+                } catch (error) {
+                    console.error('プログレス更新エラー:', error);
+                }
+            }, 1000); // 1秒ごとに更新
+        }
+        
+        function stopProgressUpdate() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
         }
         
         function setInitialTrackInfo(trackUri) {
