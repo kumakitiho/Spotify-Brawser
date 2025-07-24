@@ -763,14 +763,14 @@
                 let size;
                 // サイズを3段階に簡素化してダイヤモンド配置を優先
                 if (index === 0) {
-                    // 1位だけ特別に大きく
-                    size = Math.round(100 * sizeMultiplier);
+                    // 1位は適度なサイズに調整
+                    size = Math.round(85 * sizeMultiplier);
                 } else if (index <= 5) {
                     // 2-6位は中サイズで統一
-                    size = Math.round(80 * sizeMultiplier);
+                    size = Math.round(70 * sizeMultiplier);
                 } else {
                     // 7位以降は小サイズで統一
-                    size = Math.round(65 * sizeMultiplier);
+                    size = Math.round(60 * sizeMultiplier);
                 }
                 return size;
             });
@@ -861,12 +861,12 @@
                     // 角度を計算（完全に均等、0度から開始で真上を起点）
                     const angle = (2 * Math.PI * positionInRing) / itemsInRing - Math.PI / 2;
                     
-                    // シンプルな半径計算（リング数と写真数に基づく）
-                    const baseRadius = isMobile ? 15 : 20;
-                    const ringSpacing = baseRadius + (ring - 1) * 3; // リング間の間隔を調整
+                    // 重なり防止のための適切な半径計算
+                    const baseRadius = isMobile ? 25 : 35;
+                    const ringSpacing = baseRadius + (ring - 1) * (isMobile ? 12 : 15);
                     
-                    // 写真数が多いリングは少し外に
-                    const densityAdjustment = Math.max(0, (itemsInRing - 6) * 0.5);
+                    // 写真数が多いリングはさらに外側に配置
+                    const densityAdjustment = Math.max(0, (itemsInRing - 6) * (isMobile ? 1 : 1.5));
                     const calculatedRadius = ringSpacing + densityAdjustment;
                     
                     x = centerX + Math.cos(angle) * calculatedRadius;
