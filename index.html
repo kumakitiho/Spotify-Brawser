@@ -42,14 +42,14 @@
                 padding: 0.5rem 1rem;
             }
             #artist-cloud {
-                min-height: 24rem;
+                min-height: 32rem; /* ハニカム縦長配置に対応 */
                 padding: 1rem;
             }
         }
         
         @media (max-width: 480px) {
             #artist-cloud {
-                min-height: 20rem;
+                min-height: 28rem; /* スマホでも十分な高さを確保 */
                 padding: 0.5rem;
             }
         }
@@ -817,27 +817,49 @@
         
         function generateCloudPositions(count, sizes = []) {
             const positions = [];
-            const centerX = 50, centerY = 50;
+            const centerX = 50, centerY = 45; // 少し上寄りに配置（スマホ対応）
             
-            // 黄金角（137.507764...度）- フィボナッチ螺旋の基本
-            const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+            // ハニカムグリッドの基本パラメータ
+            const hexRadius = 12; // 六角形の半径（%単位）
+            const verticalSpacing = hexRadius * Math.sqrt(3); // 六角形の縦間隔
+            const horizontalSpacing = hexRadius * 1.5; // 六角形の横間隔
             
-            // コンテナサイズに応じたスケーリング
-            const maxRadius = 35; // 最大半径（%）
-            const minRadius = 2;  // 最小半径（%）
+            // スマホ画面対応：縦長配置のための調整
+            const isMobile = window.innerWidth <= 768;
+            const verticalStretch = isMobile ? 1.3 : 1.1; // 縦方向に少し伸ばす
+            const horizontalCompress = isMobile ? 0.9 : 0.95; // 横方向を少し圧縮
             
-            // 重複チェック用の関数
+            // 人気順での配置パターン（中央から外側へ）
+            const hexPattern = [
+                // Ring 0: 中央（1位）
+                [0, 0],
+                // Ring 1: 中央周囲（2-7位）
+                [0, -1], [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0],
+                // Ring 2: 次の外側（8-19位）
+                [0, -2], [1, -2], [2, -2], [2, -1], [2, 0], [1, 1], 
+                [0, 2], [-1, 2], [-2, 2], [-2, 1], [-2, 0], [-1, -1],
+                // Ring 3: さらに外側（20-37位）
+                [0, -3], [1, -3], [2, -3], [3, -3], [3, -2], [3, -1], [3, 0],
+                [2, 1], [1, 2], [0, 3], [-1, 3], [-2, 3], [-3, 3], 
+                [-3, 2], [-3, 1], [-3, 0], [-2, -1], [-1, -2],
+                // Ring 4: 最外側（38位以降）
+                [0, -4], [1, -4], [2, -4], [3, -4], [4, -4], [4, -3], [4, -2], [4, -1], [4, 0],
+                [3, 1], [2, 2], [1, 3], [0, 4], [-1, 4], [-2, 4], [-3, 4], [-4, 4],
+                [-4, 3], [-4, 2], [-4, 1], [-4, 0], [-3, -1], [-2, -2], [-1, -3]
+            ];
+            
+            // 重複チェック用の関数（ハニカム用に調整）
             function isOverlapping(newX, newY, newSize, existingPositions, existingSizes) {
                 for (let j = 0; j < existingPositions.length; j++) {
                     const existing = existingPositions[j];
-                    const existingSize = existingSizes[j] || 60; // デフォルトサイズ
+                    const existingSize = existingSizes[j] || 60;
                     
                     const dx = newX - existing.x;
                     const dy = newY - existing.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // 必要な最小距離（写真サイズの合計 + マージン）
-                    const minDistance = (newSize + existingSize) * 0.15 + 3; // %単位での計算
+                    // ハニカム配置では隣接セルとの最小距離を保証
+                    const minDistance = Math.max(8, (newSize + existingSize) * 0.12);
                     
                     if (distance < minDistance) {
                         return true;
@@ -848,73 +870,57 @@
             
             for (let i = 0; i < count; i++) {
                 let x, y;
-                const currentSize = sizes[i] || 60; // デフォルトサイズ
-                let attempts = 0;
-                const maxAttempts = 100;
+                const currentSize = sizes[i] || 60;
                 
-                if (i === 0) {
-                    // 1位は必ず中央に配置
-                    x = centerX;
-                    y = centerY;
+                // ハニカムパターンから座標を取得
+                if (i < hexPattern.length) {
+                    const [hexX, hexY] = hexPattern[i];
+                    
+                    // 六角形グリッド座標を画面座標に変換
+                    x = centerX + hexX * horizontalSpacing * horizontalCompress;
+                    y = centerY + hexY * verticalSpacing * verticalStretch;
+                    
+                    // スマホ画面での縦長最適化
+                    if (isMobile) {
+                        // 縦方向により多くのスペースを使用
+                        const verticalAdjustment = Math.abs(hexY) * 0.5;
+                        y += hexY > 0 ? verticalAdjustment : -verticalAdjustment;
+                    }
+                    
                 } else {
-                    let validPosition = false;
+                    // パターンを超えた場合は外側にランダム配置
+                    const angle = (i - hexPattern.length) * (360 / Math.max(1, count - hexPattern.length)) * (Math.PI / 180);
+                    const radius = 40 + (i - hexPattern.length) * 2;
                     
-                    while (!validPosition && attempts < maxAttempts) {
-                        // フィボナッチ螺旋での配置計算
-                        const normalizedIndex = (i - 1) / Math.max(1, count - 2);
-                        
-                        // より美しい螺旋のための半径計算
-                        let radius;
-                        if (i <= 3) {
-                            // 2-4位は中央付近に密集（重複を避けるため少し広げる）
-                            radius = minRadius + (i - 1) * 4 + attempts * 0.5;
-                        } else {
-                            // 5位以降は螺旋状に拡散
-                            radius = minRadius + 10 + Math.sqrt(normalizedIndex) * (maxRadius - minRadius - 10) + attempts * 0.3;
-                        }
-                        
-                        // 黄金角で回転（自然界の最も美しい角度）
-                        const angle = i * goldenAngle + attempts * 0.1;
-                        
-                        // 極座標から直交座標への変換
-                        x = centerX + radius * Math.cos(angle);
-                        y = centerY + radius * Math.sin(angle);
-                        
-                        // 有機的な配置のための微調整
-                        const gravityStrength = 0.15 + (0.2 / (1 + i * 0.05));
-                        const gravityFactor = 1 - gravityStrength;
-                        
-                        x = centerX + (x - centerX) * gravityFactor;
-                        y = centerY + (y - centerY) * gravityFactor;
-                        
-                        // 自然な変動を追加
-                        const naturalVariation = Math.sin(i * 2.618 + attempts * 0.1) * 1.5;
-                        x += naturalVariation;
-                        y += naturalVariation * Math.cos(i * 1.618);
-                        
-                        // 境界チェック
-                        const photoSizePercent = Math.max(4, 10 - i * 0.1);
-                        x = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, x));
-                        y = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, y));
-                        
-                        // 重複チェック
-                        if (!isOverlapping(x, y, currentSize, positions, sizes.slice(0, i))) {
-                            validPosition = true;
-                        }
-                        
-                        attempts++;
-                    }
+                    x = centerX + radius * Math.cos(angle) * horizontalCompress;
+                    y = centerY + radius * Math.sin(angle) * verticalStretch;
+                }
+                
+                // 境界チェック（スマホ対応）
+                const margin = isMobile ? 8 : 10;
+                const rightMargin = isMobile ? 12 : margin; // スマホでは右側により余裕を
+                
+                x = Math.max(margin, Math.min(100 - rightMargin, x));
+                y = Math.max(margin, Math.min(100 - margin, y));
+                
+                // 簡単な重複チェック（ハニカム配置では基本的に重複しないが安全のため）
+                let attempts = 0;
+                while (attempts < 20 && isOverlapping(x, y, currentSize, positions, sizes.slice(0, i))) {
+                    // 軽微な調整で重複を回避
+                    x += (Math.random() - 0.5) * 4;
+                    y += (Math.random() - 0.5) * 4;
                     
-                    // 最大試行回数に達した場合は最後の位置を使用
-                    if (!validPosition) {
-                        console.warn(`アーティスト ${i + 1} の配置で最適位置が見つかりませんでした`);
-                    }
+                    // 境界チェック再実行
+                    x = Math.max(margin, Math.min(100 - rightMargin, x));
+                    y = Math.max(margin, Math.min(100 - margin, y));
+                    
+                    attempts++;
                 }
                 
                 positions.push({ x, y });
             }
             
-            console.log('🌸 フィボナッチ螺旋配置完了:', positions.slice(0, 5));
+            console.log('🍯 ハニカムグリッド配置完了:', positions.slice(0, 5));
             return positions;
         }
         
