@@ -53,6 +53,108 @@
                 padding: 0.5rem;
             }
         }
+        
+        /* アーティスト写真クラウド - 動的グラデーションとネオンエフェクト */
+        #artist-cloud {
+            background: linear-gradient(-45deg, #121212, #1a1a2e, #16213e, #0f3460, #1DB954);
+            background-size: 400% 400%;
+            animation: dynamicGradient 15s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #artist-cloud::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(29, 185, 84, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(30, 215, 96, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(29, 185, 84, 0.05) 0%, transparent 50%);
+            animation: pulseLight 8s ease-in-out infinite alternate;
+        }
+        
+        @keyframes dynamicGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes pulseLight {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+        
+        /* アーティスト写真のネオンエフェクト */
+        .artist-photo {
+            position: relative;
+            filter: drop-shadow(0 0 20px rgba(29, 185, 84, 0.3));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .artist-photo::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #1DB954, #1ed760, #1fdf64, #1DB954);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .artist-photo:hover {
+            filter: drop-shadow(0 0 30px rgba(29, 185, 84, 0.6)) 
+                    drop-shadow(0 0 60px rgba(29, 185, 84, 0.4));
+            transform: scale(1.1);
+        }
+        
+        .artist-photo:hover::before {
+            opacity: 0.8;
+            animation: rotateGlow 2s linear infinite;
+        }
+        
+        @keyframes rotateGlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 人気度別のエフェクト */
+        .artist-rank-1 { 
+            filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.4)) 
+                    drop-shadow(0 0 50px rgba(29, 185, 84, 0.3)); 
+        }
+        .artist-rank-2 { 
+            filter: drop-shadow(0 0 20px rgba(192, 192, 192, 0.4)) 
+                    drop-shadow(0 0 40px rgba(29, 185, 84, 0.3)); 
+        }
+        .artist-rank-3 { 
+            filter: drop-shadow(0 0 18px rgba(205, 127, 50, 0.4)) 
+                    drop-shadow(0 0 35px rgba(29, 185, 84, 0.3)); 
+        }
+        
+        /* 色滲み出しエフェクト */
+        .artist-photo:hover {
+            box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.7);
+            animation: colorBleed 1.5s infinite;
+        }
+        
+        @keyframes colorBleed {
+            0% {
+                box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 30px rgba(29, 185, 84, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(29, 185, 84, 0);
+            }
+        }
     </style>
 </head>
 <body class="bg-spotify-dark text-white">
@@ -105,7 +207,7 @@
                 </div>
                 
                 <div id="ranking-list"></div>
-                <div id="artist-cloud" class="relative w-full min-h-96 bg-gradient-to-br from-spotify-dark via-spotify-dark to-gray-900 rounded-lg p-8" style="display: none;"></div>
+                <div id="artist-cloud" class="relative w-full min-h-96 rounded-lg p-8" style="display: none;"></div>
             </main>
             
             <!-- 再生コントロールバー -->
@@ -670,7 +772,7 @@
                 
                 const position = positions[index];
                 const element = document.createElement('div');
-                element.className = 'absolute cursor-pointer transition-all duration-300 hover:scale-110 hover:z-10';
+                element.className = 'absolute cursor-pointer transition-all duration-300 hover:z-10';
                 element.style.left = position.x + '%';
                 element.style.top = position.y + '%';
                 element.style.transform = 'translate(-50%, -50%)';
@@ -678,14 +780,20 @@
                 // z-indexを人気順で設定（1位が最前面）
                 element.style.zIndex = artists.length - index;
                 
+                // 人気度別のランククラスを決定
+                let rankClass = '';
+                if (index === 0) rankClass = 'artist-rank-1';
+                else if (index === 1) rankClass = 'artist-rank-2';
+                else if (index === 2) rankClass = 'artist-rank-3';
+                
                 element.innerHTML = `
                     <div class="relative group">
                         <img src="${imageUrl}" 
-                             class="rounded-full shadow-lg border-2 border-spotify-green/30 transition-all duration-300 group-hover:border-spotify-green group-hover:shadow-xl" 
+                             class="artist-photo rounded-full ${rankClass}" 
                              style="width: ${size}px; height: ${size}px;"
                              alt="${artist.name}">
-                        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-90 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                            #${index + 1} ${artist.name}
+                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap backdrop-blur-sm border border-spotify-green/30">
+                            <span class="text-spotify-green font-bold">#${index + 1}</span> ${artist.name}
                         </div>
                     </div>
                 `;
