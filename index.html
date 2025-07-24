@@ -763,14 +763,14 @@
                 let size;
                 // サイズを3段階に簡素化してダイヤモンド配置を優先
                 if (index === 0) {
-                    // 1位は適度なサイズに調整
-                    size = Math.round(85 * sizeMultiplier);
+                    // 1位は少し大きめに
+                    size = Math.round(95 * sizeMultiplier);
                 } else if (index <= 5) {
-                    // 2-6位は中サイズで統一
-                    size = Math.round(70 * sizeMultiplier);
+                    // 2-6位は中サイズ
+                    size = Math.round(80 * sizeMultiplier);
                 } else {
-                    // 7位以降は小サイズで統一
-                    size = Math.round(60 * sizeMultiplier);
+                    // 7位以降も少し大きめに
+                    size = Math.round(70 * sizeMultiplier);
                 }
                 return size;
             });
