@@ -144,6 +144,11 @@
             animation: colorBleed 1.5s infinite;
         }
         
+        /* ホバー時にツールチップを最前面に */
+        .group:hover {
+            z-index: 100 !important;
+        }
+        
         @keyframes colorBleed {
             0% {
                 box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.7);
@@ -792,7 +797,7 @@
                              class="artist-photo rounded-full ${rankClass}" 
                              style="width: ${size}px; height: ${size}px;"
                              alt="${artist.name}">
-                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap backdrop-blur-sm border border-spotify-green/30">
+                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap backdrop-blur-sm border border-spotify-green/30 z-50">
                             <span class="text-spotify-green font-bold">#${index + 1}</span> ${artist.name}
                         </div>
                     </div>
@@ -811,51 +816,67 @@
         function generateCloudPositions(count) {
             const positions = [];
             const centerX = 50, centerY = 50;
-            const maxAttempts = 1000;
+            
+            // 黄金角（137.507764...度）- フィボナッチ螺旋の基本
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+            
+            // コンテナサイズに応じたスケーリング
+            const maxRadius = 35; // 最大半径（%）
+            const minRadius = 2;  // 最小半径（%）
             
             for (let i = 0; i < count; i++) {
-                let x, y, attempts = 0;
-                let validPosition = false;
+                let x, y;
                 
-                while (!validPosition && attempts < maxAttempts) {
-                    if (i === 0) {
-                        // 1位は中央に配置
-                        x = centerX;
-                        y = centerY;
-                    } else if (i <= 4) {
-                        // 2-5位は中央周辺に配置
-                        const angle = (i - 1) * (360 / 4) * (Math.PI / 180);
-                        const radius = 15 + Math.random() * 10;
-                        x = centerX + Math.cos(angle) * radius;
-                        y = centerY + Math.sin(angle) * radius;
+                if (i === 0) {
+                    // 1位は必ず中央に配置
+                    x = centerX;
+                    y = centerY;
+                } else {
+                    // フィボナッチ螺旋での配置計算
+                    // 半径は段階的に増加（密度調整付き）
+                    const normalizedIndex = (i - 1) / Math.max(1, count - 2);
+                    
+                    // より美しい螺旋のための半径計算
+                    // 初期は密集、後半は広がる自然な分布
+                    let radius;
+                    if (i <= 3) {
+                        // 2-4位は中央付近に密集
+                        radius = minRadius + (i - 1) * 3;
                     } else {
-                        // 6位以降はより外側にランダム配置
-                        const angle = Math.random() * 2 * Math.PI;
-                        const radius = 25 + Math.random() * 20;
-                        x = centerX + Math.cos(angle) * radius;
-                        y = centerY + Math.sin(angle) * radius;
+                        // 5位以降は螺旋状に拡散
+                        radius = minRadius + 8 + Math.sqrt(normalizedIndex) * (maxRadius - minRadius - 8);
                     }
                     
-                    // 境界チェック
-                    x = Math.max(10, Math.min(90, x));
-                    y = Math.max(10, Math.min(90, y));
+                    // 黄金角で回転（自然界の最も美しい角度）
+                    const angle = i * goldenAngle;
                     
-                    // 重複チェック
-                    validPosition = true;
-                    for (const pos of positions) {
-                        const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
-                        if (distance < 8) {
-                            validPosition = false;
-                            break;
-                        }
-                    }
+                    // 極座標から直交座標への変換
+                    x = centerX + radius * Math.cos(angle);
+                    y = centerY + radius * Math.sin(angle);
                     
-                    attempts++;
+                    // 有機的な配置のための微調整
+                    // 1. 人気度重力効果：上位アーティストほど中央に引き寄せられる
+                    const gravityStrength = 0.2 + (0.3 / (1 + i * 0.05));
+                    const gravityFactor = 1 - gravityStrength;
+                    
+                    x = centerX + (x - centerX) * gravityFactor;
+                    y = centerY + (y - centerY) * gravityFactor;
+                    
+                    // 2. 自然な変動を追加（規則的すぎる配置を避ける）
+                    const naturalVariation = Math.sin(i * 2.618) * 2; // φ（黄金比）を使用
+                    x += naturalVariation;
+                    y += naturalVariation * Math.cos(i * 1.618);
+                    
+                    // 境界チェック（写真サイズを考慮した安全マージン）
+                    const photoSizePercent = Math.max(3, 8 - i * 0.15); // 写真サイズに応じたマージン
+                    x = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, x));
+                    y = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, y));
                 }
                 
                 positions.push({ x, y });
             }
             
+            console.log('🌸 フィボナッチ螺旋配置完了:', positions.slice(0, 5));
             return positions;
         }
         
