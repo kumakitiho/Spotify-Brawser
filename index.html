@@ -820,102 +820,47 @@
         
         function generateCloudPositions(count, sizes = []) {
             const positions = [];
-            const centerX = 50, centerY = 40; // 少し上寄りに配置（スマホ対応）
+            const centerX = 50;
+            const centerY = 45; // 少し上寄り
             
-            // 縦長ダイヤモンド配置の基本パラメータ（適切な間隔で縦長に）
             const isMobile = window.innerWidth <= 768;
             
-            // 美しいシンメトリーダイヤモンドのための間隔調整
-            const baseSpacing = 10; // 基本間隔を最適化
-            const verticalSpacing = baseSpacing * (isMobile ? 1.5 : 1.3); // 縦方向（ダイヤモンド型に最適）
-            const horizontalSpacing = baseSpacing * (isMobile ? 0.8 : 0.9); // 横方向（適度に圧縮）
-            
-            // 完全にシンメトリーで美しいダイヤモンド配置
-            const diamondPattern = [
-                // Center: 1位
-                [0, 0],
-                
-                // Diamond Layer 1: 2-5位（小ダイヤ）
-                [0, -2], [1, 0], [0, 2], [-1, 0],
-                
-                // Diamond Layer 2: 6-13位（中ダイヤ）
-                [0, -4], [1, -2], [2, 0], [1, 2], [0, 4], [-1, 2], [-2, 0], [-1, -2],
-                
-                // Diamond Layer 3: 14-25位（大ダイヤ）
-                [0, -6], [1, -4], [2, -2], [3, 0], [2, 2], [1, 4], [0, 6], 
-                [-1, 4], [-2, 2], [-3, 0], [-2, -2], [-1, -4],
-                
-                // Diamond Layer 4: 26-41位（特大ダイヤ）
-                [0, -8], [1, -6], [2, -4], [3, -2], [4, 0], [3, 2], [2, 4], [1, 6], [0, 8],
-                [-1, 6], [-2, 4], [-3, 2], [-4, 0], [-3, -2], [-2, -4], [-1, -6],
-                
-                // Diamond Layer 5: 42-61位（超大ダイヤ）
-                [0, -10], [1, -8], [2, -6], [3, -4], [4, -2], [5, 0], [4, 2], [3, 4], [2, 6], [1, 8], [0, 10],
-                [-1, 8], [-2, 6], [-3, 4], [-4, 2], [-5, 0], [-4, -2], [-3, -4], [-2, -6], [-1, -8],
-                
-                // Diamond Layer 6: 62位以降（最外層ダイヤ）
-                [0, -12], [1, -10], [2, -8], [3, -6], [4, -4], [5, -2], [6, 0], [5, 2], [4, 4], [3, 6], [2, 8], [1, 10], [0, 12],
-                [-1, 10], [-2, 8], [-3, 6], [-4, 4], [-5, 2], [-6, 0], [-5, -2], [-4, -4], [-3, -6], [-2, -8], [-1, -10]
-            ];
-            
-            // 重複チェック用の関数（見やすい配置のために調整）
-            function isOverlapping(newX, newY, newSize, existingPositions, existingSizes) {
-                for (let j = 0; j < existingPositions.length; j++) {
-                    const existing = existingPositions[j];
-                    const existingSize = existingSizes[j] || 60;
-                    
-                    const dx = newX - existing.x;
-                    const dy = newY - existing.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // 統一的なサイズに合わせた最小距離を確保
-                    const sizeBasedDistance = (newSize + existingSize) * 0.12; // 12%のマージン（サイズが統一的なので調整）
-                    const minDistance = Math.max(7, sizeBasedDistance); // 最低7%の距離
-                    
-                    if (distance < minDistance) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            
+            // 花びら配置: シンプルで美しい放射状パターン
             for (let i = 0; i < count; i++) {
                 let x, y;
-                const currentSize = sizes[i] || 60;
                 
-                // ダイヤモンドパターンから座標を取得
-                if (i < diamondPattern.length) {
-                    const [diamondX, diamondY] = diamondPattern[i];
-                    
-                    // ダイヤモンド座標を画面座標に変換（密集配置）
-                    x = centerX + diamondX * horizontalSpacing;
-                    y = centerY + diamondY * verticalSpacing;
-                    
+                if (i === 0) {
+                    // 1位は中央
+                    x = centerX;
+                    y = centerY;
                 } else {
-                    // パターンを超えた場合は外側に配置
-                    const extraIndex = i - diamondPattern.length;
-                    const layer = Math.floor(extraIndex / 8) + 7; // 7層目以降
-                    const posInLayer = extraIndex % 8;
-                    const angle = (posInLayer / 8) * 2 * Math.PI;
+                    // 2位以降は美しい放射状に配置
+                    const layer = Math.ceil(Math.sqrt(i)); // レイヤー計算
+                    const itemsInLayer = layer * 6; // 各レイヤーの最大アイテム数
+                    const angleStep = (2 * Math.PI) / Math.max(itemsInLayer, i); // 角度ステップ
+                    const angle = (i - 1) * angleStep;
                     
-                    x = centerX + layer * horizontalSpacing * Math.cos(angle);
-                    y = centerY + layer * verticalSpacing * Math.sin(angle);
+                    // 半径を美しく調整（レイヤーごとに拡大）
+                    const baseRadius = isMobile ? 12 : 14;
+                    const radius = baseRadius + (layer - 1) * (isMobile ? 8 : 10);
+                    
+                    // 自然な散らばりを追加（規則的すぎるのを防ぐ）
+                    const naturalVariation = Math.sin(i * 1.618) * 2; // 黄金比を使用
+                    const adjustedRadius = radius + naturalVariation;
+                    
+                    x = centerX + Math.cos(angle) * adjustedRadius;
+                    y = centerY + Math.sin(angle) * adjustedRadius * (isMobile ? 1.1 : 1.0); // 少し縦長に
                 }
                 
-                // 境界チェック（より狭いマージン）
-                const margin = isMobile ? 6 : 8;
-                const rightMargin = isMobile ? 8 : margin;
-                
-                x = Math.max(margin, Math.min(100 - rightMargin, x));
+                // 境界内に収める
+                const margin = 8;
+                x = Math.max(margin, Math.min(100 - margin, x));
                 y = Math.max(margin, Math.min(100 - margin, y));
-                
-                // 数学的に正確な配置なので重複チェックは最小限に
-                // 美しいシンメトリーを保つため調整は行わない
                 
                 positions.push({ x, y });
             }
             
-            console.log('💎 縦長ダイヤモンド配置完了:', positions.slice(0, 5));
+            console.log('🌸 花びら放射状配置完了:', positions.slice(0, 5));
             return positions;
         }
         
