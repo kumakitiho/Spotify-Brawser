@@ -30,6 +30,29 @@
         }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #1DB954; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* レスポンシブ対応 - アーティスト写真クラウド */
+        @media (max-width: 768px) {
+            #artist-view-toggle {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .view-toggle-btn {
+                font-size: 0.75rem;
+                padding: 0.5rem 1rem;
+            }
+            #artist-cloud {
+                min-height: 24rem;
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #artist-cloud {
+                min-height: 20rem;
+                padding: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-spotify-dark text-white">
@@ -64,7 +87,25 @@
                     <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2023">2023年</button>
                     <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2022">2022年</button>
                 </div>
+                
+                <!-- アーティスト表示切り替え（アーティスト選択時のみ表示） -->
+                <div id="artist-view-toggle" class="flex gap-2 mb-6" style="display: none;">
+                    <button id="artist-list-view" class="view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                        </svg>
+                        リスト表示
+                    </button>
+                    <button id="artist-cloud-view" class="view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM4 9a2 2 0 100 4h12a2 2 0 100-4H4zM4 15a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+                        </svg>
+                        写真クラウド
+                    </button>
+                </div>
+                
                 <div id="ranking-list"></div>
+                <div id="artist-cloud" class="relative w-full min-h-96 bg-gradient-to-br from-spotify-dark via-spotify-dark to-gray-900 rounded-lg p-8" style="display: none;"></div>
             </main>
             
             <!-- 再生コントロールバー -->
@@ -351,6 +392,17 @@
                 button.addEventListener('click', (e) => {
                     document.querySelectorAll('.type-filter-btn').forEach(btn => btn.classList.remove('active'));
                     e.target.classList.add('active');
+                    
+                    // アーティスト選択時のみビュー切り替えボタンを表示
+                    const artistViewToggle = document.getElementById('artist-view-toggle');
+                    if (e.target.dataset.type === 'artists') {
+                        artistViewToggle.style.display = 'flex';
+                    } else {
+                        artistViewToggle.style.display = 'none';
+                        // トラック表示時はリスト表示に戻す
+                        showListView();
+                    }
+                    
                     fetchAndDisplayData();
                 });
             });
@@ -382,6 +434,10 @@
                     fetchAndDisplayData();
                 });
             });
+            
+            // ビュー切り替えボタンのイベントリスナー
+            document.getElementById('artist-list-view').addEventListener('click', showListView);
+            document.getElementById('artist-cloud-view').addEventListener('click', showCloudView);
         }
 
         // --- �f�[�^�擾�ƕ\�� ---
@@ -538,7 +594,21 @@
             addPlayButtonListeners();
         }
 
+        // グローバル変数で現在のアーティストデータを保存
+        let currentArtists = [];
+        let currentViewMode = 'list'; // 'list' or 'cloud'
+        
         function renderArtists(artists) {
+            currentArtists = artists; // データを保存
+            
+            if (currentViewMode === 'list') {
+                renderArtistsList(artists);
+            } else {
+                renderArtistsCloud(artists);
+            }
+        }
+        
+        function renderArtistsList(artists) {
             rankingList.innerHTML = '';
             if (!artists || artists.length === 0) {
                 renderMessage("データがありません。");
@@ -557,6 +627,148 @@
                 `;
                 rankingList.appendChild(element);
             });
+        }
+        
+        function renderArtistsCloud(artists) {
+            const artistCloud = document.getElementById('artist-cloud');
+            artistCloud.innerHTML = '';
+            
+            if (!artists || artists.length === 0) {
+                artistCloud.innerHTML = '<div class="text-center text-spotify-light-gray">データがありません。</div>';
+                return;
+            }
+            
+            // 写真サイズを計算（1位が最大、段階的に縮小）
+            const maxSize = 120;
+            const minSize = 40;
+            const positions = generateCloudPositions(artists.length);
+            
+            artists.forEach((artist, index) => {
+                const imageUrl = artist.images[0]?.url || 'https://placehold.co/64';
+                
+                // サイズ計算: 1位=120px, 2位=100px, 3位=80px, 以降段階的に縮小
+                // モバイルデバイスでは全体的にサイズを縮小
+                const isMobile = window.innerWidth <= 768;
+                const sizeMultiplier = isMobile ? 0.7 : 1;
+                
+                let size;
+                if (index === 0) size = Math.round(120 * sizeMultiplier);
+                else if (index === 1) size = Math.round(100 * sizeMultiplier);
+                else if (index === 2) size = Math.round(80 * sizeMultiplier);
+                else {
+                    const ratio = Math.max(0.3, 1 - (index - 2) * 0.05);
+                    size = Math.max(Math.round(minSize * sizeMultiplier), Math.round(70 * ratio * sizeMultiplier));
+                }
+                
+                const position = positions[index];
+                const element = document.createElement('div');
+                element.className = 'absolute cursor-pointer transition-all duration-300 hover:scale-110 hover:z-10';
+                element.style.left = position.x + '%';
+                element.style.top = position.y + '%';
+                element.style.transform = 'translate(-50%, -50%)';
+                
+                // z-indexを人気順で設定（1位が最前面）
+                element.style.zIndex = artists.length - index;
+                
+                element.innerHTML = `
+                    <div class="relative group">
+                        <img src="${imageUrl}" 
+                             class="rounded-full shadow-lg border-2 border-spotify-green/30 transition-all duration-300 group-hover:border-spotify-green group-hover:shadow-xl" 
+                             style="width: ${size}px; height: ${size}px;"
+                             alt="${artist.name}">
+                        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-90 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            #${index + 1} ${artist.name}
+                        </div>
+                    </div>
+                `;
+                
+                // クリックイベントを追加
+                element.addEventListener('click', () => {
+                    console.log(`${artist.name} がクリックされました`);
+                    // 将来的にアーティストの詳細ページやトップ楽曲表示を実装
+                });
+                
+                artistCloud.appendChild(element);
+            });
+        }
+        
+        function generateCloudPositions(count) {
+            const positions = [];
+            const centerX = 50, centerY = 50;
+            const maxAttempts = 1000;
+            
+            for (let i = 0; i < count; i++) {
+                let x, y, attempts = 0;
+                let validPosition = false;
+                
+                while (!validPosition && attempts < maxAttempts) {
+                    if (i === 0) {
+                        // 1位は中央に配置
+                        x = centerX;
+                        y = centerY;
+                    } else if (i <= 4) {
+                        // 2-5位は中央周辺に配置
+                        const angle = (i - 1) * (360 / 4) * (Math.PI / 180);
+                        const radius = 15 + Math.random() * 10;
+                        x = centerX + Math.cos(angle) * radius;
+                        y = centerY + Math.sin(angle) * radius;
+                    } else {
+                        // 6位以降はより外側にランダム配置
+                        const angle = Math.random() * 2 * Math.PI;
+                        const radius = 25 + Math.random() * 20;
+                        x = centerX + Math.cos(angle) * radius;
+                        y = centerY + Math.sin(angle) * radius;
+                    }
+                    
+                    // 境界チェック
+                    x = Math.max(10, Math.min(90, x));
+                    y = Math.max(10, Math.min(90, y));
+                    
+                    // 重複チェック
+                    validPosition = true;
+                    for (const pos of positions) {
+                        const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+                        if (distance < 8) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    
+                    attempts++;
+                }
+                
+                positions.push({ x, y });
+            }
+            
+            return positions;
+        }
+        
+        function showListView() {
+            currentViewMode = 'list';
+            document.getElementById('ranking-list').style.display = 'block';
+            document.getElementById('artist-cloud').style.display = 'none';
+            
+            // ボタンの状態を更新
+            document.getElementById('artist-list-view').className = 'view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            document.getElementById('artist-cloud-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            
+            if (currentArtists.length > 0) {
+                renderArtistsList(currentArtists);
+            }
+        }
+        
+        function showCloudView() {
+            currentViewMode = 'cloud';
+            document.getElementById('ranking-list').style.display = 'none';
+            document.getElementById('artist-cloud').style.display = 'block';
+            
+            // ボタンの状態を更新
+            document.getElementById('artist-list-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            document.getElementById('artist-cloud-view').className = 'view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            
+            if (currentArtists.length > 0) {
+                renderArtistsCloud(currentArtists);
+            }
         }
         
         function showLoader() {
