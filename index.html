@@ -761,7 +761,7 @@
             return artistsWithGenres;
         }
         
-        // ジャンルクラウドをレンダリング
+        // ジャンル横棒グラフをレンダリング
         function renderGenreCloud(artistsWithGenres) {
             const genreCloud = document.getElementById('genre-cloud');
             genreCloud.innerHTML = '';
@@ -774,69 +774,89 @@
             // ジャンル集計
             const genreCount = {};
             const genreArtists = {};
+            let totalWeight = 0;
             
             artistsWithGenres.forEach((artist, artistIndex) => {
+                const weight = (20 - artistIndex); // 上位アーティストほど重み大
                 artist.genres.forEach(genre => {
                     if (!genreCount[genre]) {
                         genreCount[genre] = 0;
                         genreArtists[genre] = [];
                     }
-                    genreCount[genre] += (20 - artistIndex); // 上位アーティストほど重み大
+                    genreCount[genre] += weight;
                     genreArtists[genre].push(artist);
                 });
+                totalWeight += weight * artist.genres.length;
             });
             
             // ジャンルを出現頻度順でソート
             const sortedGenres = Object.entries(genreCount)
                 .sort(([,a], [,b]) => b - a)
-                .slice(0, 20); // 上位20ジャンル
+                .slice(0, 12); // 上位12ジャンル
             
             if (sortedGenres.length === 0) {
                 genreCloud.innerHTML = '<div class="text-center text-spotify-light-gray">ジャンル情報がありません。</div>';
                 return;
             }
             
-            // サイズ計算
+            // パーセンテージ計算
             const maxCount = sortedGenres[0][1];
-            const minCount = sortedGenres[sortedGenres.length - 1][1];
-            const maxSize = 48;
-            const minSize = 14;
-            
             const genres = sortedGenres.map(([genre, count]) => ({
                 name: genre,
                 count,
                 artists: genreArtists[genre],
-                size: Math.round(minSize + ((count - minCount) / (maxCount - minCount)) * (maxSize - minSize))
+                percentage: Math.round((count / maxCount) * 100)
             }));
             
-            console.log('🎨 ジャンル分析完了:', genres.slice(0, 5));
+            console.log('📊 ジャンル分析完了:', genres.slice(0, 5));
             
-            // ワードクラウド風配置
-            const positions = generateGenreCloudPositions(genres.length);
+            // 横棒グラフを作成
+            genreCloud.innerHTML = `
+                <div class="space-y-4 max-w-2xl mx-auto">
+                    <h3 class="text-xl font-bold text-white mb-6 text-center">🎵 音楽ジャンル分析</h3>
+                    ${genres.map((genre, index) => `
+                        <div class="genre-bar-item cursor-pointer group" data-genre='${JSON.stringify(genre)}'>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-white font-semibold text-sm">${genre.name}</span>
+                                <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
+                            </div>
+                            <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
+                                <div class="genre-bar bg-gradient-to-r from-spotify-green to-green-400 h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
+                                     style="width: 0%; animation: fillBar${index} 1.5s ease-out ${index * 0.1}s forwards;">
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-1 text-xs text-gray-400">
+                                <span>${genre.artists.length}人のアーティスト</span>
+                                <span>クリックで詳細表示</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <style>
+                    ${genres.map((genre, index) => `
+                        @keyframes fillBar${index} {
+                            from { width: 0%; }
+                            to { width: ${genre.percentage}%; }
+                        }
+                    `).join('')}
+                    
+                    .genre-bar-item:hover .genre-bar {
+                        box-shadow: 0 0 20px rgba(30, 215, 96, 0.5);
+                    }
+                    
+                    .genre-bar-item:hover {
+                        transform: translateX(8px);
+                    }
+                </style>
+            `;
             
-            genres.forEach((genre, index) => {
-                const position = positions[index];
-                const element = document.createElement('div');
-                element.className = 'absolute cursor-pointer transition-all duration-300 hover:scale-110';
-                element.style.left = position.x + '%';
-                element.style.top = position.y + '%';
-                element.style.transform = 'translate(-50%, -50%)';
-                
-                element.innerHTML = `
-                    <div class="relative group">
-                        <span class="text-white font-bold px-3 py-2 rounded-full bg-gradient-to-r from-spotify-green/80 to-green-600/80 backdrop-blur-sm border border-spotify-green/30 hover:from-spotify-green hover:to-green-500 transition-all duration-300" 
-                              style="font-size: ${genre.size}px;">
-                            ${genre.name}
-                        </span>
-                    </div>
-                `;
-                
-                // ジャンルクリック時のイベント
-                element.addEventListener('click', () => {
+            // クリックイベントを追加
+            genreCloud.querySelectorAll('.genre-bar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const genre = JSON.parse(item.dataset.genre);
                     showGenreArtists(genre);
                 });
-                
-                genreCloud.appendChild(element);
             });
         }
         
