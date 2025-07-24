@@ -817,38 +817,45 @@
         
         function generateCloudPositions(count, sizes = []) {
             const positions = [];
-            const centerX = 50, centerY = 45; // 少し上寄りに配置（スマホ対応）
+            const centerX = 50, centerY = 40; // 少し上寄りに配置（スマホ対応）
             
-            // ハニカムグリッドの基本パラメータ
-            const hexRadius = 12; // 六角形の半径（%単位）
-            const verticalSpacing = hexRadius * Math.sqrt(3); // 六角形の縦間隔
-            const horizontalSpacing = hexRadius * 1.5; // 六角形の横間隔
+            // 縦長ダイヤモンド配置の基本パラメータ（間隔を大幅に縮小）
+            const spacing = 7; // 基本間隔（%単位）- 大幅に縮小
             
             // スマホ画面対応：縦長配置のための調整
             const isMobile = window.innerWidth <= 768;
-            const verticalStretch = isMobile ? 1.3 : 1.1; // 縦方向に少し伸ばす
-            const horizontalCompress = isMobile ? 0.9 : 0.95; // 横方向を少し圧縮
+            const verticalSpacing = spacing * (isMobile ? 1.0 : 0.9); // 縦間隔
+            const horizontalSpacing = spacing * (isMobile ? 0.8 : 0.85); // 横間隔（狭く）
             
-            // 人気順での配置パターン（中央から外側へ）
-            const hexPattern = [
-                // Ring 0: 中央（1位）
+            // 縦長ダイヤモンド配置パターン（中央から外側へ）
+            const diamondPattern = [
+                // Center: 1位
                 [0, 0],
-                // Ring 1: 中央周囲（2-7位）
-                [0, -1], [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0],
-                // Ring 2: 次の外側（8-19位）
-                [0, -2], [1, -2], [2, -2], [2, -1], [2, 0], [1, 1], 
-                [0, 2], [-1, 2], [-2, 2], [-2, 1], [-2, 0], [-1, -1],
-                // Ring 3: さらに外側（20-37位）
-                [0, -3], [1, -3], [2, -3], [3, -3], [3, -2], [3, -1], [3, 0],
-                [2, 1], [1, 2], [0, 3], [-1, 3], [-2, 3], [-3, 3], 
-                [-3, 2], [-3, 1], [-3, 0], [-2, -1], [-1, -2],
-                // Ring 4: 最外側（38位以降）
-                [0, -4], [1, -4], [2, -4], [3, -4], [4, -4], [4, -3], [4, -2], [4, -1], [4, 0],
-                [3, 1], [2, 2], [1, 3], [0, 4], [-1, 4], [-2, 4], [-3, 4], [-4, 4],
-                [-4, 3], [-4, 2], [-4, 1], [-4, 0], [-3, -1], [-2, -2], [-1, -3]
+                
+                // Layer 1: 2-5位（小さなダイヤ）
+                [0, -1], [1, 0], [0, 1], [-1, 0],
+                
+                // Layer 2: 6-13位（中サイズダイヤ）
+                [0, -2], [1, -1], [2, 0], [1, 1], [0, 2], [-1, 1], [-2, 0], [-1, -1],
+                
+                // Layer 3: 14-25位（大サイズダイヤ）
+                [0, -3], [1, -2], [2, -1], [3, 0], [2, 1], [1, 2], [0, 3], 
+                [-1, 2], [-2, 1], [-3, 0], [-2, -1], [-1, -2],
+                
+                // Layer 4: 26-41位（特大ダイヤ）
+                [0, -4], [1, -3], [2, -2], [3, -1], [4, 0], [3, 1], [2, 2], [1, 3], [0, 4],
+                [-1, 3], [-2, 2], [-3, 1], [-4, 0], [-3, -1], [-2, -2], [-1, -3],
+                
+                // Layer 5: 42位以降（最外層）
+                [0, -5], [1, -4], [2, -3], [3, -2], [4, -1], [5, 0], [4, 1], [3, 2], [2, 3], [1, 4], [0, 5],
+                [-1, 4], [-2, 3], [-3, 2], [-4, 1], [-5, 0], [-4, -1], [-3, -2], [-2, -3], [-1, -4],
+                
+                // 追加の外側配置
+                [0, -6], [1, -5], [2, -4], [3, -3], [4, -2], [5, -1], [6, 0], [5, 1], [4, 2], [3, 3], [2, 4], [1, 5], [0, 6],
+                [-1, 5], [-2, 4], [-3, 3], [-4, 2], [-5, 1], [-6, 0], [-5, -1], [-4, -2], [-3, -3], [-2, -4], [-1, -5]
             ];
             
-            // 重複チェック用の関数（ハニカム用に調整）
+            // 重複チェック用の関数（密集ダイヤモンド用に調整）
             function isOverlapping(newX, newY, newSize, existingPositions, existingSizes) {
                 for (let j = 0; j < existingPositions.length; j++) {
                     const existing = existingPositions[j];
@@ -858,8 +865,8 @@
                     const dy = newY - existing.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // ハニカム配置では隣接セルとの最小距離を保証
-                    const minDistance = Math.max(8, (newSize + existingSize) * 0.12);
+                    // 密集配置では最小限の距離のみ確保
+                    const minDistance = Math.max(5, (newSize + existingSize) * 0.08);
                     
                     if (distance < minDistance) {
                         return true;
@@ -872,43 +879,38 @@
                 let x, y;
                 const currentSize = sizes[i] || 60;
                 
-                // ハニカムパターンから座標を取得
-                if (i < hexPattern.length) {
-                    const [hexX, hexY] = hexPattern[i];
+                // ダイヤモンドパターンから座標を取得
+                if (i < diamondPattern.length) {
+                    const [diamondX, diamondY] = diamondPattern[i];
                     
-                    // 六角形グリッド座標を画面座標に変換
-                    x = centerX + hexX * horizontalSpacing * horizontalCompress;
-                    y = centerY + hexY * verticalSpacing * verticalStretch;
-                    
-                    // スマホ画面での縦長最適化
-                    if (isMobile) {
-                        // 縦方向により多くのスペースを使用
-                        const verticalAdjustment = Math.abs(hexY) * 0.5;
-                        y += hexY > 0 ? verticalAdjustment : -verticalAdjustment;
-                    }
+                    // ダイヤモンド座標を画面座標に変換（密集配置）
+                    x = centerX + diamondX * horizontalSpacing;
+                    y = centerY + diamondY * verticalSpacing;
                     
                 } else {
-                    // パターンを超えた場合は外側にランダム配置
-                    const angle = (i - hexPattern.length) * (360 / Math.max(1, count - hexPattern.length)) * (Math.PI / 180);
-                    const radius = 40 + (i - hexPattern.length) * 2;
+                    // パターンを超えた場合は外側に配置
+                    const extraIndex = i - diamondPattern.length;
+                    const layer = Math.floor(extraIndex / 8) + 7; // 7層目以降
+                    const posInLayer = extraIndex % 8;
+                    const angle = (posInLayer / 8) * 2 * Math.PI;
                     
-                    x = centerX + radius * Math.cos(angle) * horizontalCompress;
-                    y = centerY + radius * Math.sin(angle) * verticalStretch;
+                    x = centerX + layer * horizontalSpacing * Math.cos(angle);
+                    y = centerY + layer * verticalSpacing * Math.sin(angle);
                 }
                 
-                // 境界チェック（スマホ対応）
-                const margin = isMobile ? 8 : 10;
-                const rightMargin = isMobile ? 12 : margin; // スマホでは右側により余裕を
+                // 境界チェック（より狭いマージン）
+                const margin = isMobile ? 6 : 8;
+                const rightMargin = isMobile ? 8 : margin;
                 
                 x = Math.max(margin, Math.min(100 - rightMargin, x));
                 y = Math.max(margin, Math.min(100 - margin, y));
                 
-                // 簡単な重複チェック（ハニカム配置では基本的に重複しないが安全のため）
+                // 重複回避（最小限の調整）
                 let attempts = 0;
-                while (attempts < 20 && isOverlapping(x, y, currentSize, positions, sizes.slice(0, i))) {
-                    // 軽微な調整で重複を回避
-                    x += (Math.random() - 0.5) * 4;
-                    y += (Math.random() - 0.5) * 4;
+                while (attempts < 10 && isOverlapping(x, y, currentSize, positions, sizes.slice(0, i))) {
+                    // より小さな調整で重複を回避
+                    x += (Math.random() - 0.5) * 2;
+                    y += (Math.random() - 0.5) * 2;
                     
                     // 境界チェック再実行
                     x = Math.max(margin, Math.min(100 - rightMargin, x));
@@ -920,7 +922,7 @@
                 positions.push({ x, y });
             }
             
-            console.log('🍯 ハニカムグリッド配置完了:', positions.slice(0, 5));
+            console.log('💎 縦長ダイヤモンド配置完了:', positions.slice(0, 5));
             return positions;
         }
         
