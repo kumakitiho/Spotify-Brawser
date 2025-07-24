@@ -824,7 +824,6 @@
             const centerY = 50;
             
             const isMobile = window.innerWidth <= 768;
-            const containerWidth = isMobile ? window.innerWidth : 800; // 想定コンテナ幅
             
             for (let i = 0; i < count; i++) {
                 let x, y;
@@ -862,35 +861,28 @@
                     // 角度を計算（完全に均等、0度から開始で真上を起点）
                     const angle = (2 * Math.PI * positionInRing) / itemsInRing - Math.PI / 2;
                     
-                    // 写真サイズベースの半径計算（重なり防止）
-                    const currentPhotoSize = sizes[i] || 64;
-                    const avgPhotoSizeInRing = sizes.slice(
-                        ring === 1 ? 1 : (ring === 2 ? 7 : (ring === 3 ? 19 : 37)),
-                        ring === 1 ? 7 : (ring === 2 ? 19 : (ring === 3 ? 37 : count))
-                    ).reduce((a, b) => a + b, 0) / itemsInRing || 64;
+                    // シンプルな半径計算（リング数と写真数に基づく）
+                    const baseRadius = isMobile ? 15 : 20;
+                    const ringSpacing = baseRadius + (ring - 1) * 3; // リング間の間隔を調整
                     
-                    // 重ならない最小半径を計算
-                    const minRadiusForNoOverlap = (avgPhotoSizeInRing * containerWidth / 100) / (2 * Math.sin(Math.PI / itemsInRing));
-                    const minRadiusPercent = (minRadiusForNoOverlap / containerWidth) * 100;
-                    
-                    // 基本半径とのバランス
-                    const baseRadius = isMobile ? 14 : 18;
-                    const calculatedRadius = Math.max(ring * baseRadius, minRadiusPercent * 0.8);
+                    // 写真数が多いリングは少し外に
+                    const densityAdjustment = Math.max(0, (itemsInRing - 6) * 0.5);
+                    const calculatedRadius = ringSpacing + densityAdjustment;
                     
                     x = centerX + Math.cos(angle) * calculatedRadius;
                     y = centerY + Math.sin(angle) * calculatedRadius;
                 }
                 
-                // 境界チェック（写真サイズを考慮）
+                // 自然な境界チェック（写真が画面外に出ない程度の軽い制限）
                 const photoSize = sizes[i] || 64;
-                const marginPercent = (photoSize / 2) / (isMobile ? 8 : 12);
-                x = Math.max(marginPercent, Math.min(100 - marginPercent, x));
-                y = Math.max(marginPercent, Math.min(100 - marginPercent, y));
+                const marginPercent = 5; // 固定の軽いマージン
+                x = Math.max(marginPercent, Math.min(95, x));
+                y = Math.max(marginPercent, Math.min(95, y));
                 
                 positions.push({ x, y });
             }
             
-            console.log('🎯 スマート同心円配置完了:', positions.slice(0, 10));
+            console.log('🎯 自然な同心円配置完了:', positions.slice(0, 10));
             return positions;
         }
         
