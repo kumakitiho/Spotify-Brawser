@@ -823,38 +823,40 @@
             const centerX = 50;
             const centerY = 50;
             
-            // 超シンプル: ただのランダム配置（重複回避付き）
+            const isMobile = window.innerWidth <= 768;
+            const spacing = isMobile ? 7 : 8; // 隙間なく密集配置
+            
             for (let i = 0; i < count; i++) {
                 let x, y;
-                let attempts = 0;
                 
-                do {
-                    // 完全にランダムな位置
-                    x = 15 + Math.random() * 70; // 15%から85%の間
-                    y = 15 + Math.random() * 70; // 15%から85%の間
-                    attempts++;
+                if (i === 0) {
+                    // 1位は中央
+                    x = centerX;
+                    y = centerY;
+                } else {
+                    // 2位以降は中央の周りに円形に配置
+                    const ring = Math.ceil((Math.sqrt(4 * i - 3) - 1) / 2); // どのリングか計算
+                    const firstInRing = 3 * ring * (ring - 1) + 1; // そのリングの最初の番号
+                    const positionInRing = i - firstInRing; // リング内での位置
+                    const itemsInRing = 6 * ring; // そのリングの総アイテム数
                     
-                    // 重複チェック
-                    let overlapping = false;
-                    for (let j = 0; j < positions.length; j++) {
-                        const dx = x - positions[j].x;
-                        const dy = y - positions[j].y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < 12) { // 12%以上離す
-                            overlapping = true;
-                            break;
-                        }
-                    }
+                    // 角度を計算（均等に配置）
+                    const angle = (2 * Math.PI * positionInRing) / itemsInRing;
+                    const radius = ring * spacing;
                     
-                    if (!overlapping || attempts > 50) {
-                        break;
-                    }
-                } while (true);
+                    x = centerX + Math.cos(angle) * radius;
+                    y = centerY + Math.sin(angle) * radius;
+                }
+                
+                // 境界チェック
+                const margin = 5;
+                x = Math.max(margin, Math.min(100 - margin, x));
+                y = Math.max(margin, Math.min(100 - margin, y));
                 
                 positions.push({ x, y });
             }
             
-            console.log('🎯 シンプルランダム配置完了:', positions.slice(0, 5));
+            console.log('🎯 中央囲み配置完了:', positions.slice(0, 10));
             return positions;
         }
         
