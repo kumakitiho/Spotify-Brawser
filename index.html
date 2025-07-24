@@ -146,7 +146,7 @@
         
         /* ホバー時にツールチップを最前面に */
         .group:hover {
-            z-index: 100 !important;
+            z-index: 9998 !important;
         }
         
         @keyframes colorBleed {
@@ -753,19 +753,13 @@
                 return;
             }
             
-            // 写真サイズを計算（1位が最大、段階的に縮小）
+            // 写真サイズを事前に計算（重複回避のため）
             const maxSize = 120;
             const minSize = 40;
-            const positions = generateCloudPositions(artists.length);
+            const isMobile = window.innerWidth <= 768;
+            const sizeMultiplier = isMobile ? 0.7 : 1;
             
-            artists.forEach((artist, index) => {
-                const imageUrl = artist.images[0]?.url || 'https://placehold.co/64';
-                
-                // サイズ計算: 1位=120px, 2位=100px, 3位=80px, 以降段階的に縮小
-                // モバイルデバイスでは全体的にサイズを縮小
-                const isMobile = window.innerWidth <= 768;
-                const sizeMultiplier = isMobile ? 0.7 : 1;
-                
+            const sizes = artists.map((artist, index) => {
                 let size;
                 if (index === 0) size = Math.round(120 * sizeMultiplier);
                 else if (index === 1) size = Math.round(100 * sizeMultiplier);
@@ -774,6 +768,14 @@
                     const ratio = Math.max(0.3, 1 - (index - 2) * 0.05);
                     size = Math.max(Math.round(minSize * sizeMultiplier), Math.round(70 * ratio * sizeMultiplier));
                 }
+                return size;
+            });
+            
+            const positions = generateCloudPositions(artists.length, sizes);
+            
+            artists.forEach((artist, index) => {
+                const imageUrl = artist.images[0]?.url || 'https://placehold.co/64';
+                const size = sizes[index];
                 
                 const position = positions[index];
                 const element = document.createElement('div');
@@ -797,7 +799,7 @@
                              class="artist-photo rounded-full ${rankClass}" 
                              style="width: ${size}px; height: ${size}px;"
                              alt="${artist.name}">
-                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap backdrop-blur-sm border border-spotify-green/30 z-50">
+                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap backdrop-blur-sm border border-spotify-green/30" style="z-index: 9999;"
                             <span class="text-spotify-green font-bold">#${index + 1}</span> ${artist.name}
                         </div>
                     </div>
@@ -813,7 +815,7 @@
             });
         }
         
-        function generateCloudPositions(count) {
+        function generateCloudPositions(count, sizes = []) {
             const positions = [];
             const centerX = 50, centerY = 50;
             
@@ -824,53 +826,89 @@
             const maxRadius = 35; // 最大半径（%）
             const minRadius = 2;  // 最小半径（%）
             
+            // 重複チェック用の関数
+            function isOverlapping(newX, newY, newSize, existingPositions, existingSizes) {
+                for (let j = 0; j < existingPositions.length; j++) {
+                    const existing = existingPositions[j];
+                    const existingSize = existingSizes[j] || 60; // デフォルトサイズ
+                    
+                    const dx = newX - existing.x;
+                    const dy = newY - existing.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // 必要な最小距離（写真サイズの合計 + マージン）
+                    const minDistance = (newSize + existingSize) * 0.15 + 3; // %単位での計算
+                    
+                    if (distance < minDistance) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
             for (let i = 0; i < count; i++) {
                 let x, y;
+                const currentSize = sizes[i] || 60; // デフォルトサイズ
+                let attempts = 0;
+                const maxAttempts = 100;
                 
                 if (i === 0) {
                     // 1位は必ず中央に配置
                     x = centerX;
                     y = centerY;
                 } else {
-                    // フィボナッチ螺旋での配置計算
-                    // 半径は段階的に増加（密度調整付き）
-                    const normalizedIndex = (i - 1) / Math.max(1, count - 2);
+                    let validPosition = false;
                     
-                    // より美しい螺旋のための半径計算
-                    // 初期は密集、後半は広がる自然な分布
-                    let radius;
-                    if (i <= 3) {
-                        // 2-4位は中央付近に密集
-                        radius = minRadius + (i - 1) * 3;
-                    } else {
-                        // 5位以降は螺旋状に拡散
-                        radius = minRadius + 8 + Math.sqrt(normalizedIndex) * (maxRadius - minRadius - 8);
+                    while (!validPosition && attempts < maxAttempts) {
+                        // フィボナッチ螺旋での配置計算
+                        const normalizedIndex = (i - 1) / Math.max(1, count - 2);
+                        
+                        // より美しい螺旋のための半径計算
+                        let radius;
+                        if (i <= 3) {
+                            // 2-4位は中央付近に密集（重複を避けるため少し広げる）
+                            radius = minRadius + (i - 1) * 4 + attempts * 0.5;
+                        } else {
+                            // 5位以降は螺旋状に拡散
+                            radius = minRadius + 10 + Math.sqrt(normalizedIndex) * (maxRadius - minRadius - 10) + attempts * 0.3;
+                        }
+                        
+                        // 黄金角で回転（自然界の最も美しい角度）
+                        const angle = i * goldenAngle + attempts * 0.1;
+                        
+                        // 極座標から直交座標への変換
+                        x = centerX + radius * Math.cos(angle);
+                        y = centerY + radius * Math.sin(angle);
+                        
+                        // 有機的な配置のための微調整
+                        const gravityStrength = 0.15 + (0.2 / (1 + i * 0.05));
+                        const gravityFactor = 1 - gravityStrength;
+                        
+                        x = centerX + (x - centerX) * gravityFactor;
+                        y = centerY + (y - centerY) * gravityFactor;
+                        
+                        // 自然な変動を追加
+                        const naturalVariation = Math.sin(i * 2.618 + attempts * 0.1) * 1.5;
+                        x += naturalVariation;
+                        y += naturalVariation * Math.cos(i * 1.618);
+                        
+                        // 境界チェック
+                        const photoSizePercent = Math.max(4, 10 - i * 0.1);
+                        x = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, x));
+                        y = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, y));
+                        
+                        // 重複チェック
+                        if (!isOverlapping(x, y, currentSize, positions, sizes.slice(0, i))) {
+                            validPosition = true;
+                        }
+                        
+                        attempts++;
                     }
                     
-                    // 黄金角で回転（自然界の最も美しい角度）
-                    const angle = i * goldenAngle;
-                    
-                    // 極座標から直交座標への変換
-                    x = centerX + radius * Math.cos(angle);
-                    y = centerY + radius * Math.sin(angle);
-                    
-                    // 有機的な配置のための微調整
-                    // 1. 人気度重力効果：上位アーティストほど中央に引き寄せられる
-                    const gravityStrength = 0.2 + (0.3 / (1 + i * 0.05));
-                    const gravityFactor = 1 - gravityStrength;
-                    
-                    x = centerX + (x - centerX) * gravityFactor;
-                    y = centerY + (y - centerY) * gravityFactor;
-                    
-                    // 2. 自然な変動を追加（規則的すぎる配置を避ける）
-                    const naturalVariation = Math.sin(i * 2.618) * 2; // φ（黄金比）を使用
-                    x += naturalVariation;
-                    y += naturalVariation * Math.cos(i * 1.618);
-                    
-                    // 境界チェック（写真サイズを考慮した安全マージン）
-                    const photoSizePercent = Math.max(3, 8 - i * 0.15); // 写真サイズに応じたマージン
-                    x = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, x));
-                    y = Math.max(photoSizePercent, Math.min(100 - photoSizePercent, y));
+                    // 最大試行回数に達した場合は最後の位置を使用
+                    if (!validPosition) {
+                        console.warn(`アーティスト ${i + 1} の配置で最適位置が見つかりませんでした`);
+                    }
                 }
                 
                 positions.push({ x, y });
