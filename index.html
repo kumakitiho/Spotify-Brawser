@@ -348,6 +348,14 @@
                     paused
                 } = state;
 
+                // デバッグ: player_state_changedで取得される楽曲情報
+                console.log('🔄 player_state_changed - 楽曲情報:', {
+                    name: current_track?.name,
+                    artists: current_track?.artists?.map(a => a.name).join(', '),
+                    uri: current_track?.uri,
+                    paused: paused
+                });
+
                 updatePlaybackControl({
                     track: current_track,
                     position,
@@ -836,6 +844,8 @@
         
         // --- Web Playback SDK再生機能 ---
         async function playTrackWithWebPlayback(trackUri, trackInfo = null) {
+            console.log('🎵 playTrackWithWebPlayback呼び出し:', { trackUri, trackInfo });
+            
             if (!deviceId || !accessToken) {
                 console.error('デバイスIDまたはアクセストークンが利用できません');
                 return;
@@ -862,7 +872,7 @@
                         currentTrackImage.src = trackInfo.image;
                         showPlaybackControl();
                         
-                        console.log('楽曲情報を即座に設定:', trackInfo);
+                        console.log('⚡ 楽曲情報を即座に設定:', trackInfo);
                     } else {
                         // フォールバック: DOM から取得
                         setInitialTrackInfo(trackUri);
