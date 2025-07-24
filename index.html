@@ -822,10 +822,57 @@
             const positions = [];
             const centerX = 50;
             const centerY = 50;
-            
             const isMobile = window.innerWidth <= 768;
+            const containerWidth = isMobile ? window.innerWidth : 800;
+            
+            // 重なり検出関数
+            function isOverlapping(pos1, size1, pos2, size2) {
+                const radius1 = (size1 / 2) / containerWidth * 100; // %単位の半径
+                const radius2 = (size2 / 2) / containerWidth * 100;
+                const distance = Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+                return distance < (radius1 + radius2 + 1); // 1%のマージン追加
+            }
+            
+            // 位置調整関数
+            function adjustPosition(baseX, baseY, currentSize, existingPositions, maxAttempts = 20) {
+                let bestPos = { x: baseX, y: baseY };
+                let minOverlaps = Infinity;
+                
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    const angle = (Math.PI * 2 * attempt) / maxAttempts;
+                    const adjustDistance = attempt * 0.5; // 徐々に距離を広げる
+                    
+                    const testX = baseX + Math.cos(angle) * adjustDistance;
+                    const testY = baseY + Math.sin(angle) * adjustDistance;
+                    
+                    // 境界チェック
+                    const margin = 3;
+                    if (testX < margin || testX > 100 - margin || testY < margin || testY > 100 - margin) {
+                        continue;
+                    }
+                    
+                    // 重なり数をカウント
+                    let overlaps = 0;
+                    for (let j = 0; j < existingPositions.length; j++) {
+                        if (isOverlapping({ x: testX, y: testY }, currentSize, existingPositions[j].pos, existingPositions[j].size)) {
+                            overlaps++;
+                        }
+                    }
+                    
+                    if (overlaps < minOverlaps) {
+                        minOverlaps = overlaps;
+                        bestPos = { x: testX, y: testY };
+                        if (overlaps === 0) break; // 重なりなしなら完了
+                    }
+                }
+                
+                return bestPos;
+            }
+            
+            const placedPhotos = [];
             
             for (let i = 0; i < count; i++) {
+                const currentSize = sizes[i] || 64;
                 let x, y;
                 
                 if (i === 0) {
@@ -833,62 +880,48 @@
                     x = centerX;
                     y = centerY;
                 } else {
-                    // スマートな同心円配置
+                    // 理想的な同心円位置を計算
                     let ring, positionInRing, itemsInRing;
                     
                     if (i >= 1 && i <= 6) {
-                        // 第1リング: 2-7位（6個）
-                        ring = 1;
-                        positionInRing = i - 1;
-                        itemsInRing = 6;
+                        ring = 1; positionInRing = i - 1; itemsInRing = 6;
                     } else if (i >= 7 && i <= 18) {
-                        // 第2リング: 8-19位（12個）
-                        ring = 2;
-                        positionInRing = i - 7;
-                        itemsInRing = 12;
+                        ring = 2; positionInRing = i - 7; itemsInRing = 12;
                     } else if (i >= 19 && i <= 36) {
-                        // 第3リング: 20-37位（18個）
-                        ring = 3;
-                        positionInRing = i - 19;
-                        itemsInRing = 18;
+                        ring = 3; positionInRing = i - 19; itemsInRing = 18;
                     } else {
-                        // 第4リング以降: 24個ずつ
                         ring = 4 + Math.floor((i - 37) / 24);
                         positionInRing = (i - 37) % 24;
                         itemsInRing = 24;
                     }
                     
-                    // 角度を計算（完全に均等、0度から開始で真上を起点）
                     const angle = (2 * Math.PI * positionInRing) / itemsInRing - Math.PI / 2;
                     
-                    // 安全な範囲に収まる半径計算
-                    const itemCount = count;
-                    const scaleFactor = Math.min(0.8, Math.max(0.4, (20 - itemCount) / 25)); // より控えめな半径
+                    // 重なりを防ぐ適切な半径計算
+                    const avgPhotoSize = sizes.reduce((a, b) => a + b, 0) / sizes.length || 64;
+                    const minRadius = (avgPhotoSize * 1.2) / containerWidth * 100; // 最小間隔
                     
-                    const baseRadius = (isMobile ? 10 : 12) * scaleFactor;
-                    const ringSpacing = baseRadius + (ring - 1) * (isMobile ? 4 : 5) * scaleFactor;
+                    const baseRadius = Math.max(minRadius, (isMobile ? 12 : 15) * ring);
+                    const idealX = centerX + Math.cos(angle) * baseRadius;
+                    const idealY = centerY + Math.sin(angle) * baseRadius;
                     
-                    // 写真数調整も最小限に
-                    const densityAdjustment = Math.max(0, (itemsInRing - 6) * (isMobile ? 0.2 : 0.3) * scaleFactor);
-                    const calculatedRadius = ringSpacing + densityAdjustment;
-                    
-                    x = centerX + Math.cos(angle) * calculatedRadius;
-                    y = centerY + Math.sin(angle) * calculatedRadius;
+                    // 重なり回避調整
+                    const adjustedPos = adjustPosition(idealX, idealY, currentSize, placedPhotos);
+                    x = adjustedPos.x;
+                    y = adjustedPos.y;
                 }
                 
-                // 境界チェックを除去（自然な円形配置を優先）
-                // x = Math.max(2, Math.min(98, x));
-                // y = Math.max(2, Math.min(98, y));
-                
                 positions.push({ x, y });
+                placedPhotos.push({ pos: { x, y }, size: currentSize });
             }
             
-            console.log('🎯 配置計算完了:', {
+            console.log('🎯 重なり防止配置完了:', {
                 count,
-                first10: positions.slice(0, 10),
-                boundaryCheck: positions.filter(p => p.x <= 5 || p.x >= 95 || p.y <= 5 || p.y >= 95).length,
-                isMobile
+                overlaps: placedPhotos.length > 1 ? placedPhotos.filter((p1, i) => 
+                    placedPhotos.some((p2, j) => i !== j && isOverlapping(p1.pos, p1.size, p2.pos, p2.size))
+                ).length : 0
             });
+            
             return positions;
         }
         
