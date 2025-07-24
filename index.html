@@ -761,12 +761,16 @@
             
             const sizes = artists.map((artist, index) => {
                 let size;
-                if (index === 0) size = Math.round(120 * sizeMultiplier);
-                else if (index === 1) size = Math.round(100 * sizeMultiplier);
-                else if (index === 2) size = Math.round(80 * sizeMultiplier);
-                else {
-                    const ratio = Math.max(0.3, 1 - (index - 2) * 0.05);
-                    size = Math.max(Math.round(minSize * sizeMultiplier), Math.round(70 * ratio * sizeMultiplier));
+                // サイズを3段階に簡素化してダイヤモンド配置を優先
+                if (index === 0) {
+                    // 1位だけ特別に大きく
+                    size = Math.round(100 * sizeMultiplier);
+                } else if (index <= 5) {
+                    // 2-6位は中サイズで統一
+                    size = Math.round(80 * sizeMultiplier);
+                } else {
+                    // 7位以降は小サイズで統一
+                    size = Math.round(65 * sizeMultiplier);
                 }
                 return size;
             });
@@ -787,11 +791,10 @@
                 // z-indexを人気順で設定（1位が最前面）
                 element.style.zIndex = artists.length - index;
                 
-                // 人気度別のランククラスを決定
+                // 人気度別のランククラスを決定（簡素化）
                 let rankClass = '';
-                if (index === 0) rankClass = 'artist-rank-1';
-                else if (index === 1) rankClass = 'artist-rank-2';
-                else if (index === 2) rankClass = 'artist-rank-3';
+                if (index === 0) rankClass = 'artist-rank-1'; // 1位のみ特別なエフェクト
+                // 2位以降は基本のエフェクトで統一（ダイヤモンド配置を優先）
                 
                 element.innerHTML = `
                     <div class="relative group">
@@ -822,10 +825,10 @@
             // 縦長ダイヤモンド配置の基本パラメータ（適切な間隔で縦長に）
             const isMobile = window.innerWidth <= 768;
             
-            // 真の縦長配置：縦を大きく、横を狭く
-            const baseSpacing = 11; // 基本間隔を適切に設定
-            const verticalSpacing = baseSpacing * (isMobile ? 1.6 : 1.4); // 縦方向を大幅に拡張
-            const horizontalSpacing = baseSpacing * (isMobile ? 0.7 : 0.8); // 横方向を圧縮
+            // 真の縦長配置：縦を大きく、横を狭く（サイズ統一で間隔も最適化）
+            const baseSpacing = 12; // 基本間隔を少し拡大
+            const verticalSpacing = baseSpacing * (isMobile ? 1.8 : 1.6); // 縦方向をより大きく
+            const horizontalSpacing = baseSpacing * (isMobile ? 0.65 : 0.75); // 横方向をより圧縮
             
             // 縦長ダイヤモンド配置パターン（中央から外側へ）
             const diamondPattern = [
@@ -865,9 +868,9 @@
                     const dy = newY - existing.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // 写真サイズに応じた適切な最小距離を確保
-                    const sizeBasedDistance = (newSize + existingSize) * 0.15; // 15%のマージン
-                    const minDistance = Math.max(8, sizeBasedDistance); // 最低8%の距離
+                    // 統一的なサイズに合わせた最小距離を確保
+                    const sizeBasedDistance = (newSize + existingSize) * 0.12; // 12%のマージン（サイズが統一的なので調整）
+                    const minDistance = Math.max(7, sizeBasedDistance); // 最低7%の距離
                     
                     if (distance < minDistance) {
                         return true;
