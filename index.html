@@ -37,7 +37,7 @@
     <div id="app-container" class="p-4 md:p-8 max-w-4xl mx-auto">
         <div id="login-view" class="text-center py-20">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">あなたのSpotify統計</h1>
-            <p class="text-spotify-light-gray mb-8">あなたの再生履歴とランキングを、一年との まとめて見てみよう。</p>
+            <p class="text-spotify-light-gray mb-8">あなたの再生履歴とランキングを、まとめて見てみよう。</p>
             <button id="login-button" class="bg-spotify-green text-black font-bold py-3 px-8 rounded-full text-lg hover:scale-105 transition-transform">
                 Spotifyでログイン
             </button>
@@ -728,20 +728,20 @@
         function updatePlaybackControl({ track, position, duration, paused }) {
             if (!track) return;
             
+            // 楽曲情報の更新（常に実行）
+            currentTrackName.textContent = track.name;
+            currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
+            
+            if (track.album.images.length > 0) {
+                currentTrackImage.src = track.album.images[0].url;
+            }
+            
             // 現在再生中の楽曲URIを追跡
             if (track.uri && currentPlayingTrackUri !== track.uri) {
                 currentPlayingTrackUri = track.uri;
                 console.log('再生中楽曲URI更新:', track.uri);
                 // ボタン状態を更新
                 updateTrackButtonStates();
-            }
-            
-            // 楽曲情報の更新
-            currentTrackName.textContent = track.name;
-            currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
-            
-            if (track.album.images.length > 0) {
-                currentTrackImage.src = track.album.images[0].url;
             }
             
             // 再生時間の更新
