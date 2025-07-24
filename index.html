@@ -821,46 +821,40 @@
         function generateCloudPositions(count, sizes = []) {
             const positions = [];
             const centerX = 50;
-            const centerY = 45; // 少し上寄り
+            const centerY = 50;
             
-            const isMobile = window.innerWidth <= 768;
-            
-            // 花びら配置: シンプルで美しい放射状パターン
+            // 超シンプル: ただのランダム配置（重複回避付き）
             for (let i = 0; i < count; i++) {
                 let x, y;
+                let attempts = 0;
                 
-                if (i === 0) {
-                    // 1位は中央
-                    x = centerX;
-                    y = centerY;
-                } else {
-                    // 2位以降は美しい放射状に配置
-                    const layer = Math.ceil(Math.sqrt(i)); // レイヤー計算
-                    const itemsInLayer = layer * 6; // 各レイヤーの最大アイテム数
-                    const angleStep = (2 * Math.PI) / Math.max(itemsInLayer, i); // 角度ステップ
-                    const angle = (i - 1) * angleStep;
+                do {
+                    // 完全にランダムな位置
+                    x = 15 + Math.random() * 70; // 15%から85%の間
+                    y = 15 + Math.random() * 70; // 15%から85%の間
+                    attempts++;
                     
-                    // 半径を美しく調整（レイヤーごとに拡大）
-                    const baseRadius = isMobile ? 12 : 14;
-                    const radius = baseRadius + (layer - 1) * (isMobile ? 8 : 10);
+                    // 重複チェック
+                    let overlapping = false;
+                    for (let j = 0; j < positions.length; j++) {
+                        const dx = x - positions[j].x;
+                        const dy = y - positions[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 12) { // 12%以上離す
+                            overlapping = true;
+                            break;
+                        }
+                    }
                     
-                    // 自然な散らばりを追加（規則的すぎるのを防ぐ）
-                    const naturalVariation = Math.sin(i * 1.618) * 2; // 黄金比を使用
-                    const adjustedRadius = radius + naturalVariation;
-                    
-                    x = centerX + Math.cos(angle) * adjustedRadius;
-                    y = centerY + Math.sin(angle) * adjustedRadius * (isMobile ? 1.1 : 1.0); // 少し縦長に
-                }
-                
-                // 境界内に収める
-                const margin = 8;
-                x = Math.max(margin, Math.min(100 - margin, x));
-                y = Math.max(margin, Math.min(100 - margin, y));
+                    if (!overlapping || attempts > 50) {
+                        break;
+                    }
+                } while (true);
                 
                 positions.push({ x, y });
             }
             
-            console.log('🌸 花びら放射状配置完了:', positions.slice(0, 5));
+            console.log('🎯 シンプルランダム配置完了:', positions.slice(0, 5));
             return positions;
         }
         
