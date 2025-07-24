@@ -799,14 +799,33 @@
                 return;
             }
             
-            // パーセンテージ計算
+            // パーセンテージと色分け計算
             const maxCount = sortedGenres[0][1];
-            const genres = sortedGenres.map(([genre, count]) => ({
-                name: genre,
-                count,
-                artists: genreArtists[genre],
-                percentage: Math.round((count / maxCount) * 100)
-            }));
+            const genres = sortedGenres.map(([genre, count]) => {
+                const percentage = Math.round((count / maxCount) * 100);
+                let colorClass = '';
+                
+                // パーセンテージに応じた色分け
+                if (percentage >= 80) {
+                    colorClass = 'from-spotify-green to-green-400'; // 最高レベル
+                } else if (percentage >= 60) {
+                    colorClass = 'from-green-400 to-emerald-400'; // 高レベル
+                } else if (percentage >= 40) {
+                    colorClass = 'from-emerald-400 to-teal-400'; // 中レベル
+                } else if (percentage >= 20) {
+                    colorClass = 'from-teal-400 to-cyan-400'; // 低レベル
+                } else {
+                    colorClass = 'from-cyan-400 to-blue-400'; // 最低レベル
+                }
+                
+                return {
+                    name: genre,
+                    count,
+                    artists: genreArtists[genre],
+                    percentage,
+                    colorClass
+                };
+            });
             
             console.log('📊 ジャンル分析完了:', genres.slice(0, 5));
             
@@ -821,7 +840,7 @@
                                 <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
                             </div>
                             <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
-                                <div class="genre-bar bg-gradient-to-r from-spotify-green to-green-400 h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
+                                <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
                                      style="width: 0%; animation: fillBar${index} 1.5s ease-out ${index * 0.1}s forwards;">
                                 </div>
                             </div>
@@ -842,7 +861,8 @@
                     `).join('')}
                     
                     .genre-bar-item:hover .genre-bar {
-                        box-shadow: 0 0 20px rgba(30, 215, 96, 0.5);
+                        filter: brightness(1.2) saturate(1.3);
+                        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
                     }
                     
                     .genre-bar-item:hover {
@@ -1146,22 +1166,32 @@
             
             // ジャンルに属するアーティストをリスト表示
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[999999]';
+            modal.className = 'fixed inset-0 bg-black flex items-center justify-center z-[999999]';
             modal.innerHTML = `
-                <div class="bg-spotify-black border border-spotify-green rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-                    <h3 class="text-xl font-bold text-white mb-4 flex items-center">
-                        <span class="text-spotify-green mr-2">${genre.name}</span>
-                        <span class="text-sm text-gray-400">(${genre.artists.length}人)</span>
-                    </h3>
-                    <div class="space-y-2">
+                <div class="bg-spotify-black border-2 border-spotify-green rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-white flex items-center">
+                            <span class="text-spotify-green mr-3">${genre.name}</span>
+                        </h3>
+                        <div class="text-right">
+                            <div class="text-spotify-green font-bold text-lg">${genre.percentage}%</div>
+                            <div class="text-gray-400 text-sm">${genre.artists.length}人</div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
                         ${genre.artists.map((artist, index) => `
-                            <div class="flex items-center p-2 rounded hover:bg-spotify-gray transition-colors">
-                                <img src="${artist.images[0]?.url || 'https://placehold.co/32'}" class="w-8 h-8 rounded-full mr-3" alt="${artist.name}">
-                                <span class="text-white text-sm">${artist.name}</span>
+                            <div class="flex items-center p-3 rounded-lg bg-spotify-gray hover:bg-gray-700 transition-all duration-200 hover:transform hover:scale-105">
+                                <div class="w-10 h-10 mr-4 rounded-full overflow-hidden border-2 border-spotify-green/30">
+                                    <img src="${artist.images[0]?.url || 'https://placehold.co/40'}" class="w-full h-full object-cover" alt="${artist.name}">
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="text-white font-semibold">${artist.name}</div>
+                                    <div class="text-gray-400 text-sm">${index + 1}位のアーティスト</div>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
-                    <button class="mt-4 bg-spotify-green text-black px-4 py-2 rounded-full font-semibold hover:bg-green-400 transition-colors w-full" onclick="this.parentElement.parentElement.remove()">
+                    <button class="mt-6 bg-gradient-to-r from-spotify-green to-green-400 text-black px-6 py-3 rounded-full font-bold hover:from-green-400 hover:to-spotify-green transition-all duration-200 w-full shadow-lg hover:shadow-xl" onclick="this.parentElement.parentElement.remove()">
                         閉じる
                     </button>
                 </div>
