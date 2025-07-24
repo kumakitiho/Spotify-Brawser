@@ -861,26 +861,26 @@
                     // 角度を計算（完全に均等、0度から開始で真上を起点）
                     const angle = (2 * Math.PI * positionInRing) / itemsInRing - Math.PI / 2;
                     
-                    // 写真サイズを考慮した適切な半径計算
-                    const baseRadius = isMobile ? 18 : 22;
+                    // より密な配置のための半径計算
+                    const baseRadius = isMobile ? 12 : 16;
                     const maxPhotoSize = Math.max(...sizes.slice(0, Math.min(sizes.length, count))) || 80;
-                    const radiusMultiplier = Math.max(1, maxPhotoSize / 80);
+                    const radiusMultiplier = Math.max(0.8, maxPhotoSize / 100);
                     const radius = ring * baseRadius * radiusMultiplier;
                     
                     x = centerX + Math.cos(angle) * radius;
                     y = centerY + Math.sin(angle) * radius;
                 }
                 
-                // 境界チェック（写真サイズも考慮）
+                // 境界チェック（密な配置に最適化）
                 const photoSize = sizes[i] || 64;
-                const marginPercent = (photoSize / 2) / (isMobile ? 4 : 8); // 写真半径分のマージン
+                const marginPercent = (photoSize / 2) / (isMobile ? 6 : 10); // より狭いマージン
                 x = Math.max(marginPercent, Math.min(100 - marginPercent, x));
                 y = Math.max(marginPercent, Math.min(100 - marginPercent, y));
                 
                 positions.push({ x, y });
             }
             
-            console.log('🎯 修正済み同心円配置完了:', positions.slice(0, 10));
+            console.log('🎯 密な同心円配置完了:', positions.slice(0, 10));
             return positions;
         }
         
