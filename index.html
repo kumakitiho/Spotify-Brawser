@@ -824,7 +824,6 @@
             const centerY = 50;
             
             const isMobile = window.innerWidth <= 768;
-            const spacing = isMobile ? 7 : 8; // 隙間なく密集配置
             
             for (let i = 0; i < count; i++) {
                 let x, y;
@@ -834,29 +833,54 @@
                     x = centerX;
                     y = centerY;
                 } else {
-                    // 2位以降は中央の周りに円形に配置
-                    const ring = Math.ceil((Math.sqrt(4 * i - 3) - 1) / 2); // どのリングか計算
-                    const firstInRing = 3 * ring * (ring - 1) + 1; // そのリングの最初の番号
-                    const positionInRing = i - firstInRing; // リング内での位置
-                    const itemsInRing = 6 * ring; // そのリングの総アイテム数
+                    // 修正された同心円配置
+                    let ring, positionInRing, itemsInRing;
                     
-                    // 角度を計算（均等に配置）
-                    const angle = (2 * Math.PI * positionInRing) / itemsInRing;
-                    const radius = ring * spacing;
+                    if (i >= 1 && i <= 6) {
+                        // 第1リング: 2-7位（6個）
+                        ring = 1;
+                        positionInRing = i - 1;
+                        itemsInRing = 6;
+                    } else if (i >= 7 && i <= 18) {
+                        // 第2リング: 8-19位（12個）
+                        ring = 2;
+                        positionInRing = i - 7;
+                        itemsInRing = 12;
+                    } else if (i >= 19 && i <= 36) {
+                        // 第3リング: 20-37位（18個）
+                        ring = 3;
+                        positionInRing = i - 19;
+                        itemsInRing = 18;
+                    } else {
+                        // 第4リング以降: 24個ずつ
+                        ring = 4 + Math.floor((i - 37) / 24);
+                        positionInRing = (i - 37) % 24;
+                        itemsInRing = 24;
+                    }
+                    
+                    // 角度を計算（完全に均等、0度から開始で真上を起点）
+                    const angle = (2 * Math.PI * positionInRing) / itemsInRing - Math.PI / 2;
+                    
+                    // 写真サイズを考慮した適切な半径計算
+                    const baseRadius = isMobile ? 18 : 22;
+                    const maxPhotoSize = Math.max(...sizes.slice(0, Math.min(sizes.length, count))) || 80;
+                    const radiusMultiplier = Math.max(1, maxPhotoSize / 80);
+                    const radius = ring * baseRadius * radiusMultiplier;
                     
                     x = centerX + Math.cos(angle) * radius;
                     y = centerY + Math.sin(angle) * radius;
                 }
                 
-                // 境界チェック
-                const margin = 5;
-                x = Math.max(margin, Math.min(100 - margin, x));
-                y = Math.max(margin, Math.min(100 - margin, y));
+                // 境界チェック（写真サイズも考慮）
+                const photoSize = sizes[i] || 64;
+                const marginPercent = (photoSize / 2) / (isMobile ? 4 : 8); // 写真半径分のマージン
+                x = Math.max(marginPercent, Math.min(100 - marginPercent, x));
+                y = Math.max(marginPercent, Math.min(100 - marginPercent, y));
                 
                 positions.push({ x, y });
             }
             
-            console.log('🎯 中央囲み配置完了:', positions.slice(0, 10));
+            console.log('🎯 修正済み同心円配置完了:', positions.slice(0, 10));
             return positions;
         }
         
