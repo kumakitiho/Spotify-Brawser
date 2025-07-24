@@ -950,12 +950,25 @@
         function updatePlaybackControl({ track, position, duration, paused }) {
             if (!track) return;
             
-            // 楽曲情報の更新（常に実行）
-            currentTrackName.textContent = track.name;
-            currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
-            
-            if (track.album.images.length > 0) {
-                currentTrackImage.src = track.album.images[0].url;
+            // 楽曲情報の更新（楽曲情報が有効な場合のみ）
+            if (track.name && track.artists && track.artists.length > 0) {
+                currentTrackName.textContent = track.name;
+                currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
+                
+                if (track.album && track.album.images && track.album.images.length > 0) {
+                    currentTrackImage.src = track.album.images[0].url;
+                }
+                
+                console.log('✅ 楽曲情報を正常に更新:', {
+                    name: track.name,
+                    artists: track.artists.map(artist => artist.name).join(', ')
+                });
+            } else {
+                console.warn('⚠️ 楽曲情報が不完全なため更新をスキップ:', {
+                    name: track.name,
+                    artists: track.artists,
+                    uri: track.uri
+                });
             }
             
             // 現在再生中の楽曲URIを追跡
