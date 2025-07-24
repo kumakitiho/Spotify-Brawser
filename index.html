@@ -861,24 +861,24 @@
                     // 角度を計算（完全に均等、0度から開始で真上を起点）
                     const angle = (2 * Math.PI * positionInRing) / itemsInRing - Math.PI / 2;
                     
-                    // データ数に応じた動的な半径計算
+                    // 安全な範囲に収まる半径計算
                     const itemCount = count;
-                    const scaleFactor = Math.min(1, Math.max(0.6, (20 - itemCount) / 20)); // 少ないデータほど小さく
+                    const scaleFactor = Math.min(0.8, Math.max(0.4, (20 - itemCount) / 25)); // より控えめな半径
                     
-                    const baseRadius = (isMobile ? 15 : 20) * scaleFactor;
-                    const ringSpacing = baseRadius + (ring - 1) * (isMobile ? 6 : 8) * scaleFactor;
+                    const baseRadius = (isMobile ? 10 : 12) * scaleFactor;
+                    const ringSpacing = baseRadius + (ring - 1) * (isMobile ? 4 : 5) * scaleFactor;
                     
-                    // 写真数が多いリングの調整も縮小
-                    const densityAdjustment = Math.max(0, (itemsInRing - 6) * (isMobile ? 0.3 : 0.5) * scaleFactor);
+                    // 写真数調整も最小限に
+                    const densityAdjustment = Math.max(0, (itemsInRing - 6) * (isMobile ? 0.2 : 0.3) * scaleFactor);
                     const calculatedRadius = ringSpacing + densityAdjustment;
                     
                     x = centerX + Math.cos(angle) * calculatedRadius;
                     y = centerY + Math.sin(angle) * calculatedRadius;
                 }
                 
-                // 境界チェックを最小限に（自然な円形を保持）
-                x = Math.max(2, Math.min(98, x));
-                y = Math.max(2, Math.min(98, y));
+                // 境界チェックを除去（自然な円形配置を優先）
+                // x = Math.max(2, Math.min(98, x));
+                // y = Math.max(2, Math.min(98, y));
                 
                 positions.push({ x, y });
             }
