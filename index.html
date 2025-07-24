@@ -801,8 +801,9 @@
             
             // パーセンテージと色分け計算
             const maxCount = sortedGenres[0][1];
-            const genres = sortedGenres.map(([genre, count]) => {
-                const percentage = Math.round((count / maxCount) * 100);
+            const genres = sortedGenres.map(([genre, count], index) => {
+                // 最上位は確実に100%に設定
+                const percentage = index === 0 ? 100 : Math.round((count / maxCount) * 100);
                 let colorClass = '';
                 
                 // パーセンテージに応じた色分け
@@ -827,7 +828,15 @@
                 };
             });
             
-            console.log('📊 ジャンル分析完了:', genres.slice(0, 5));
+            console.log('📊 ジャンル分析完了:', {
+                maxCount,
+                genres: genres.slice(0, 5).map(g => ({
+                    name: g.name,
+                    count: g.count,
+                    percentage: g.percentage,
+                    colorClass: g.colorClass
+                }))
+            });
             
             // 横棒グラフを作成
             genreCloud.innerHTML = `
@@ -856,7 +865,7 @@
                     ${genres.map((genre, index) => `
                         @keyframes fillBar${index} {
                             from { width: 0%; }
-                            to { width: ${genre.percentage}%; }
+                            to { width: ${Math.max(1, genre.percentage)}%; }
                         }
                     `).join('')}
                     
