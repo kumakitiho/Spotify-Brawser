@@ -797,16 +797,22 @@
                 // 2位以降は基本のエフェクトで統一（ダイヤモンド配置を優先）
                 
                 element.innerHTML = `
-                    <div class="relative group hover:z-[99999]">
+                    <div class="relative group">
                         <img src="${imageUrl}" 
                              class="artist-photo rounded-full ${rankClass}" 
                              style="width: ${size}px; height: ${size}px;"
                              alt="${artist.name}">
-                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap backdrop-blur-sm border border-spotify-green/30" style="z-index: 999999;">
-                            <span class="text-spotify-green font-bold">#${index + 1}</span> ${artist.name}
-                        </div>
                     </div>
                 `;
+                
+                // グローバルツールチップ用のイベントリスナー
+                element.addEventListener('mouseenter', (e) => {
+                    showTooltip(e.target, `#${index + 1} ${artist.name}`, artist);
+                });
+                
+                element.addEventListener('mouseleave', () => {
+                    hideTooltip();
+                });
                 
                 // クリックイベントを追加
                 element.addEventListener('click', () => {
@@ -923,6 +929,38 @@
             });
             
             return positions;
+        }
+        
+        // グローバルツールチップシステム
+        let globalTooltip = null;
+        
+        function showTooltip(targetElement, text, artist) {
+            hideTooltip(); // 既存のツールチップを隠す
+            
+            globalTooltip = document.createElement('div');
+            globalTooltip.className = 'fixed bg-gradient-to-r from-transparent via-black to-transparent bg-opacity-95 text-white text-xs px-3 py-2 rounded-full backdrop-blur-sm border border-spotify-green/30 pointer-events-none transition-all duration-300 whitespace-nowrap';
+            globalTooltip.style.zIndex = '2147483647'; // 最大値
+            globalTooltip.innerHTML = `<span class="text-spotify-green font-bold">${text.split(' ')[0]}</span> ${text.split(' ').slice(1).join(' ')}`;
+            
+            document.body.appendChild(globalTooltip);
+            
+            // 位置計算
+            const rect = targetElement.getBoundingClientRect();
+            const tooltipRect = globalTooltip.getBoundingClientRect();
+            
+            const left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+            const top = rect.bottom + 8; // 写真の下8px
+            
+            globalTooltip.style.left = Math.max(8, Math.min(window.innerWidth - tooltipRect.width - 8, left)) + 'px';
+            globalTooltip.style.top = top + 'px';
+            globalTooltip.style.opacity = '1';
+        }
+        
+        function hideTooltip() {
+            if (globalTooltip) {
+                globalTooltip.remove();
+                globalTooltip = null;
+            }
         }
         
         function showListView() {
