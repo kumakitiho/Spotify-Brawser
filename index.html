@@ -850,7 +850,7 @@
                             </div>
                             <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
                                 <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
-                                     style="width: 0%; animation: fillBar${index} 1.5s ease-out ${index * 0.1}s forwards;">
+                                     style="width: 0%; animation: fillBar${index} 1.5s ease-out ${index * 0.1}s forwards; min-width: ${genre.percentage === 100 ? '100%' : '1px'};">
                                 </div>
                             </div>
                             <div class="flex items-center justify-between mt-1 text-xs text-gray-400">
@@ -864,8 +864,8 @@
                 <style>
                     ${genres.map((genre, index) => `
                         @keyframes fillBar${index} {
-                            from { width: 0%; }
-                            to { width: ${Math.max(1, genre.percentage)}%; }
+                            0% { width: 0%; }
+                            100% { width: ${genre.percentage === 100 ? '100' : genre.percentage}%; }
                         }
                     `).join('')}
                     
