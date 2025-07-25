@@ -263,8 +263,19 @@
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
 
     <script>
-        // --- �ݒ� ---
+        // --- 設定と定数 ---
         const { CLIENT_ID, REDIRECT_URI, SCOPES, TOKEN_ENDPOINT, AUTH_URL } = window.appConfig;
+        
+        // UI定数
+        const DELAYS = {
+            CLOUD_RENDER: 200,
+            CLOUD_RENDER_EXTENDED: 300,
+            GENRE_RENDER: 400,
+            GENRE_FALLBACK: 100
+        };
+        
+        const PROGRESS_UPDATE_INTERVAL = 1000; // ms
+        const DEFAULT_SEEK_TIMEOUT = 120000; // 2分
 
         // --- DOM要素 ---
         const loginView = document.getElementById('login-view');
@@ -582,7 +593,7 @@
 
         // --- �f�[�^�擾�ƕ\�� ---
         async function fetchAndDisplayData() {
-            showLoader();
+            showLoader('list');
             const type = document.querySelector('.type-filter-btn.active').dataset.type;
             
             // アクティブな期間ボタンまたは年別ボタンを取得
@@ -746,12 +757,12 @@
             if (currentViewMode === 'list') {
                 renderArtistsList(artists);
             } else if (currentViewMode === 'cloud') {
-                showCloudLoader();
+                showLoader('cloud');
                 setTimeout(() => {
                     renderArtistsCloud(artists);
-                }, 200);
+                }, DELAYS.CLOUD_RENDER);
             } else if (currentViewMode === 'genre') {
-                showGenreLoader();
+                showLoader('genre');
                 // ジャンル情報付きアーティストデータを取得
                 currentArtistsWithGenres = await fetchArtistsWithGenres(artists);
                 renderGenreCloud(currentArtistsWithGenres);
@@ -1284,16 +1295,24 @@
             });
         }
         
+        // ビューボタンの状態を更新するヘルパー関数
+        function updateViewToggleButtons(activeView) {
+            const baseClass = 'view-toggle-btn font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            const activeClass = `${baseClass} bg-spotify-green text-black`;
+            const inactiveClass = `${baseClass} bg-spotify-gray text-white`;
+            
+            document.getElementById('artist-list-view').className = activeView === 'list' ? activeClass : inactiveClass;
+            document.getElementById('artist-cloud-view').className = activeView === 'cloud' ? activeClass : inactiveClass;
+            document.getElementById('artist-genre-view').className = activeView === 'genre' ? activeClass : inactiveClass;
+        }
+
         function showListView() {
             currentViewMode = 'list';
             document.getElementById('ranking-list').style.display = 'block';
             document.getElementById('artist-cloud').style.display = 'none';
             document.getElementById('genre-cloud').style.display = 'none';
             
-            // ボタンの状態を更新
-            document.getElementById('artist-list-view').className = 'view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
-            document.getElementById('artist-cloud-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
-            document.getElementById('artist-genre-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            updateViewToggleButtons('list');
             
             if (currentArtists.length > 0) {
                 renderArtistsList(currentArtists);
@@ -1306,17 +1325,14 @@
             document.getElementById('artist-cloud').style.display = 'block';
             document.getElementById('genre-cloud').style.display = 'none';
             
-            // ボタンの状態を更新
-            document.getElementById('artist-list-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
-            document.getElementById('artist-cloud-view').className = 'view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
-            document.getElementById('artist-genre-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            updateViewToggleButtons('cloud');
             
             if (currentArtists.length > 0) {
-                showCloudLoader();
+                showLoader('cloud');
                 // 少し遅延を入れてローディングを見せる
                 setTimeout(() => {
                     renderArtistsCloud(currentArtists);
-                }, 300);
+                }, DELAYS.CLOUD_RENDER_EXTENDED);
             }
         }
         
@@ -1326,48 +1342,54 @@
             document.getElementById('artist-cloud').style.display = 'none';
             document.getElementById('genre-cloud').style.display = 'block';
             
-            // ボタンの状態を更新
-            document.getElementById('artist-list-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
-            document.getElementById('artist-cloud-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
-            document.getElementById('artist-genre-view').className = 'view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
+            updateViewToggleButtons('genre');
             
             if (currentArtistsWithGenres.length > 0) {
-                showGenreLoader();
+                showLoader('genre');
                 setTimeout(() => {
                     renderGenreCloud(currentArtistsWithGenres);
-                }, 400);
+                }, DELAYS.GENRE_RENDER);
             } else if (currentArtists.length > 0) {
-                showGenreLoader();
+                showLoader('genre');
                 // ジャンルデータがない場合は取得してから表示
                 setTimeout(async () => {
                     currentArtistsWithGenres = await fetchArtistsWithGenres(currentArtists);
                     renderGenreCloud(currentArtistsWithGenres);
-                }, 100);
+                }, DELAYS.GENRE_FALLBACK);
             }
         }
         
-        function showLoader() {
-            rankingList.innerHTML = '<div class="loader"></div>';
-        }
-        
-        function showCloudLoader() {
-            const artistCloud = document.getElementById('artist-cloud');
-            artistCloud.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-96">
-                    <div class="loader mb-4"></div>
-                    <p class="text-spotify-light-gray text-sm">イメージクラウドを生成中...</p>
-                </div>
-            `;
-        }
-        
-        function showGenreLoader() {
-            const genreCloud = document.getElementById('genre-cloud');
-            genreCloud.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-96">
-                    <div class="loader mb-4"></div>
-                    <p class="text-spotify-light-gray text-sm">ジャンル情報を取得中...</p>
-                </div>
-            `;
+        // 統合されたローダー表示関数
+        function showLoader(type = 'list') {
+            const loaderConfigs = {
+                list: {
+                    element: rankingList,
+                    html: '<div class="loader"></div>'
+                },
+                cloud: {
+                    element: document.getElementById('artist-cloud'),
+                    html: `
+                        <div class="flex flex-col items-center justify-center h-96">
+                            <div class="loader mb-4"></div>
+                            <p class="text-spotify-light-gray text-sm">イメージクラウドを生成中...</p>
+                        </div>
+                    `
+                },
+                genre: {
+                    element: document.getElementById('genre-cloud'),
+                    html: `
+                        <div class="flex flex-col items-center justify-center h-96">
+                            <div class="loader mb-4"></div>
+                            <p class="text-spotify-light-gray text-sm">ジャンル情報を取得中...</p>
+                        </div>
+                    `
+                }
+            };
+            
+            const config = loaderConfigs[type];
+            if (config) {
+                config.element.innerHTML = config.html;
+            }
         }
         
         function renderMessage(message) {
@@ -1722,7 +1744,7 @@
                 } catch (error) {
                     console.error('プログレス更新エラー:', error);
                 }
-            }, 1000); // 1秒ごとに更新
+            }, PROGRESS_UPDATE_INTERVAL);
         }
         
         function stopProgressUpdate() {
