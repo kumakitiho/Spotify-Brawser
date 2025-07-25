@@ -38,8 +38,12 @@
                 gap: 0.5rem;
             }
             .view-toggle-btn {
-                font-size: 0.75rem;
-                padding: 0.5rem 1rem;
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+                white-space: nowrap;
+            }
+            .view-toggle-btn svg {
+                display: none;
             }
             #artist-cloud {
                 min-height: 45rem; /* 縦長ダイヤモンド配置により高く */
@@ -218,8 +222,8 @@
                 </div>
                 
                 <div id="ranking-list"></div>
-                <div id="artist-cloud" class="relative w-full min-h-96 rounded-lg p-8" style="display: none;"></div>
-                <div id="genre-cloud" class="relative w-full min-h-96 rounded-lg p-8" style="display: none;"></div>
+                <div id="artist-cloud" class="relative w-full min-h-96 rounded-lg p-2 sm:p-8" style="display: none;"></div>
+                <div id="genre-cloud" class="relative w-full min-h-96 rounded-lg p-2 sm:p-8" style="display: none;"></div>
             </main>
             
             <!-- 再生コントロールバー -->
@@ -710,16 +714,16 @@
                 // すべてのトラックでSpotifyアプリでの再生を可能にする
                 const canPlay = 'cursor-pointer hover:bg-black/20 text-green-500';
                 const element = document.createElement('div');
-                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors';
+                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors gap-2 sm:gap-4';
                 element.innerHTML = `
-                    <div class="w-8 text-spotify-light-gray text-center font-bold">${index + 1}</div>
-                    <img src="${imageUrl}" class="w-12 h-12 mx-4 rounded-md" alt="アルバムアート">
-                    <div class="flex-grow overflow-hidden">
-                        <div class="font-semibold truncate">${track.name}</div>
-                        <div class="text-sm text-spotify-light-gray truncate">${artistName}</div>
+                    <div class="w-6 sm:w-8 text-spotify-light-gray text-center font-bold text-sm sm:text-base">${index + 1}</div>
+                    <img src="${imageUrl}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-md flex-shrink-0" alt="アルバムアート">
+                    <div class="flex-grow overflow-hidden min-w-0">
+                        <div class="font-semibold truncate text-sm sm:text-base">${track.name}</div>
+                        <div class="text-xs sm:text-sm text-spotify-light-gray truncate">${artistName}</div>
                     </div>
-                    <button class="p-3 rounded-full play-btn ${canPlay}" data-track-uri="${track.uri}" data-preview-url="${track.preview_url || ''}" type="button" title="Spotifyで再生">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <button class="p-2 sm:p-3 rounded-full play-btn ${canPlay} flex-shrink-0" data-track-uri="${track.uri}" data-preview-url="${track.preview_url || ''}" type="button" title="Spotifyで再生">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="sm:w-5 sm:h-5">
                             <path d="M8 5v14l11-7z"></path>
                         </svg>
                     </button>
@@ -961,12 +965,12 @@
             artists.forEach((artist, index) => {
                 const imageUrl = artist.images[0]?.url || 'https://placehold.co/64';
                 const element = document.createElement('div');
-                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors';
+                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors gap-2 sm:gap-4';
                 element.innerHTML = `
-                    <div class="w-8 text-spotify-light-gray text-center font-bold">${index + 1}</div>
-                    <img src="${imageUrl}" class="w-12 h-12 mx-4 rounded-full" alt="アーティスト写真">
-                    <div class="flex-grow">
-                        <div class="font-semibold">${artist.name}</div>
+                    <div class="w-6 sm:w-8 text-spotify-light-gray text-center font-bold text-sm sm:text-base">${index + 1}</div>
+                    <img src="${imageUrl}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0" alt="アーティスト写真">
+                    <div class="flex-grow overflow-hidden min-w-0">
+                        <div class="font-semibold truncate text-sm sm:text-base">${artist.name}</div>
                     </div>
                 `;
                 rankingList.appendChild(element);
