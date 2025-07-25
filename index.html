@@ -866,9 +866,10 @@
                                 <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
                             </div>
                             <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
-                                <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
-                                     style="--target-width: ${genre.percentage}%; width: 0%; animation: fillGenericBar 1.5s ease-out ${index * 0.1}s forwards;"
-                                     data-percentage="${genre.percentage}">
+                                <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full"
+                                     style="width: 0%;"
+                                     data-percentage="${genre.percentage}"
+                                     data-genre-name="${genre.name}">
                                 </div>
                             </div>
                             <div class="flex items-center justify-between mt-1 text-xs text-gray-400">
@@ -880,9 +881,8 @@
                 </div>
                 
                 <style>
-                    @keyframes fillGenericBar {
-                        from { width: 0%; }
-                        to { width: var(--target-width); }
+                    .genre-bar {
+                        transition: width 1.5s ease-out;
                     }
                     
                     .genre-bar-item:hover .genre-bar {
@@ -892,6 +892,7 @@
                     
                     .genre-bar-item:hover {
                         transform: translateX(8px);
+                        transition: transform 0.3s ease;
                     }
                 </style>
             `;
@@ -904,14 +905,23 @@
                 });
             });
             
-            // アニメーション完了後にバーの幅を確実に設定
+            // アニメーション効果を実装
             setTimeout(() => {
                 genreCloud.querySelectorAll('.genre-bar').forEach((bar, idx) => {
                     const percentage = parseInt(bar.dataset.percentage);
-                    console.log(`🔧 Setting ${percentage}% width for bar ${idx}:`, bar);
-                    bar.style.setProperty('width', percentage + '%', 'important');
+                    const genreName = bar.dataset.genreName;
+                    
+                    console.log(`🎨 Animating ${genreName}: ${percentage}%`);
+                    
+                    // 最初は0%にリセット
+                    bar.style.width = '0%';
+                    
+                    // 少し遅延してからアニメーション開始
+                    setTimeout(() => {
+                        bar.style.width = percentage + '%';
+                    }, idx * 100); // 順次アニメーション
                 });
-            }, 2000); // アニメーション完了を待つ
+            }, 100);
         }
         
         function renderArtistsList(artists) {
