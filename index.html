@@ -850,11 +850,11 @@
             });
             
             // 横棒グラフを作成
-            console.log('🔍 First genre debug:', {
-                name: genres[0]?.name,
-                percentage: genres[0]?.percentage,
-                isHundred: genres[0]?.percentage === 100
-            });
+            console.log('🔍 All genres debug:', genres.map(g => ({
+                name: g.name,
+                percentage: g.percentage,
+                count: g.count
+            })));
             
             genreCloud.innerHTML = `
                 <div class="space-y-4 max-w-2xl mx-auto">
@@ -867,7 +867,7 @@
                             </div>
                             <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
                                 <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
-                                     style="width: 0%; animation: fillBar${index} 1.5s ease-out ${index * 0.1}s forwards;"
+                                     style="--target-width: ${genre.percentage}%; width: 0%; animation: fillGenericBar 1.5s ease-out ${index * 0.1}s forwards;"
                                      data-percentage="${genre.percentage}">
                                 </div>
                             </div>
@@ -880,12 +880,10 @@
                 </div>
                 
                 <style>
-                    ${genres.map((genre, index) => `
-                        @keyframes fillBar${index} {
-                            from { width: 0%; }
-                            to { width: ${genre.percentage}%; }
-                        }
-                    `).join('')}
+                    @keyframes fillGenericBar {
+                        from { width: 0%; }
+                        to { width: var(--target-width); }
+                    }
                     
                     .genre-bar-item:hover .genre-bar {
                         filter: brightness(1.2) saturate(1.3);
