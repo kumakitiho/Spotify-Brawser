@@ -451,32 +451,43 @@
 
             // 再生状態の変更を監視
             player.addListener('player_state_changed', state => {
+                console.log('🔄 player_state_changed - 全状態:', state);
+                
                 if (!state) {
+                    console.log('⚠️ state is null - hiding playback control');
                     hidePlaybackControl();
                     return;
                 }
 
                 const {
-                    current_track,
+                    track_window,
                     position,
                     duration,
                     paused
                 } = state;
 
-                // デバッグ: player_state_changedで取得される楽曲情報
+                // current_trackは track_window.current_track にある
+                const current_track = track_window?.current_track;
+
                 console.log('🔄 player_state_changed - 楽曲情報:', {
+                    hasTrackWindow: !!track_window,
+                    current_track: current_track,
                     name: current_track?.name,
                     artists: current_track?.artists?.map(a => a.name).join(', '),
                     uri: current_track?.uri,
                     paused: paused
                 });
 
-                updatePlaybackControl({
-                    track: current_track,
-                    position,
-                    duration,
-                    paused
-                });
+                if (current_track) {
+                    updatePlaybackControl({
+                        track: current_track,
+                        position,
+                        duration,
+                        paused
+                    });
+                } else {
+                    console.warn('⚠️ current_track is undefined in player_state_changed');
+                }
 
                 isPlaying = !paused;
                 updatePlayPauseButton();
@@ -1468,22 +1479,23 @@
             // プレイヤー接続直後に現在の楽曲状態を確認
             try {
                 const state = await player.getCurrentState();
-                if (state && state.current_track) {
+                if (state && state.track_window?.current_track) {
+                    const current_track = state.track_window.current_track;
                     console.log('🎵 プレイヤー接続時の楽曲状態:', {
-                        track: state.current_track.name,
-                        artists: state.current_track.artists?.map(a => a.name).join(', '),
+                        track: current_track.name,
+                        artists: current_track.artists?.map(a => a.name).join(', '),
                         paused: state.paused
                     });
                     
                     // 初期楽曲情報を設定
                     updatePlaybackControl({
-                        track: state.current_track,
+                        track: current_track,
                         position: state.position,
                         duration: state.duration,
                         paused: state.paused
                     });
                     
-                    lastTrackUri = state.current_track.uri;
+                    lastTrackUri = current_track.uri;
                     isPlaying = !state.paused;
                     updatePlayPauseButton();
                     
@@ -1667,21 +1679,22 @@
                 
                 try {
                     const state = await player.getCurrentState();
-                    if (state && state.current_track) {
-                        const currentTrackUri = state.current_track.uri;
+                    if (state && state.track_window?.current_track) {
+                        const current_track = state.track_window.current_track;
+                        const currentTrackUri = current_track.uri;
                         
                         // 楽曲が変更されたかチェック
                         if (lastTrackUri !== currentTrackUri) {
                             console.log('🔄 楽曲変更を検出:', {
                                 old: lastTrackUri,
                                 new: currentTrackUri,
-                                track: state.current_track.name,
-                                artists: state.current_track.artists?.map(a => a.name).join(', ')
+                                track: current_track.name,
+                                artists: current_track.artists?.map(a => a.name).join(', ')
                             });
                             
                             // 楽曲情報を更新
                             updatePlaybackControl({
-                                track: state.current_track,
+                                track: current_track,
                                 position: state.position,
                                 duration: state.duration,
                                 paused: state.paused
