@@ -902,11 +902,7 @@
                                 <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
                             </div>
                             <div class="w-full bg-gray-600 rounded-full h-3">
-                                <div class="genre-bar h-full rounded-full"
-                                     style="width: 0%; background: linear-gradient(to right, #1ed760, #1db954); transition: width 0.8s ease-out;"
-                                     data-percentage="${genre.percentage}"
-                                     data-genre-name="${genre.name}">
-                                </div>
+                                <div class="h-full rounded-full bg-green-400" style="width: ${genre.percentage}%;"></div>
                             </div>
                             <div class="flex items-center justify-between mt-1 text-xs text-gray-400">
                                 <span>${genre.artists.length}人のアーティスト</span>
@@ -932,40 +928,6 @@
                 });
             });
             
-            // アニメーション効果を実装（高パーセンテージ対応版）
-            setTimeout(() => {
-                genreCloud.querySelectorAll('.genre-bar').forEach((bar, idx) => {
-                    const percentage = parseInt(bar.dataset.percentage);
-                    const genreName = bar.dataset.genreName;
-                    
-                    console.log(`🎨 Animating ${genreName}: ${percentage}%`);
-                    
-                    // 最初は0%にリセット
-                    bar.style.width = '0%';
-                    bar.style.transition = 'width 0.8s ease-out';
-                    
-                    // 少し遅延してからアニメーション開始
-                    setTimeout(() => {
-                        // 100%や96%の場合は直接設定で確実に表示
-                        if (percentage >= 95) {
-                            bar.style.width = percentage + '%';
-                            bar.style.background = 'linear-gradient(to right, #1ed760, #1db954)';
-                            console.log(`✅ High percentage set directly: ${percentage}%`);
-                        } else {
-                            bar.style.width = percentage + '%';
-                        }
-                        
-                        // 念のため再確認
-                        setTimeout(() => {
-                            if (bar.style.width !== percentage + '%') {
-                                console.warn(`⚠️ Bar not showing correctly, forcing: ${genreName} ${percentage}%`);
-                                bar.style.width = percentage + '%';
-                                bar.style.display = 'block';
-                            }
-                        }, 1000);
-                    }, idx * 100); // 順次アニメーション
-                });
-            }, 100);
         }
         
         function renderArtistsList(artists) {
