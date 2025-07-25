@@ -866,8 +866,8 @@
                                 <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
                             </div>
                             <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
-                                <div class="genre-bar ${genre.percentage >= 95 ? 'w-full' : ''} bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
-                                     style="${genre.percentage >= 95 ? 'width: ' + genre.percentage + '% !important;' : 'width: 0%; animation: fillBar' + index + ' 1.5s ease-out ' + (index * 0.1) + 's forwards;'}"
+                                <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
+                                     style="width: 0%; animation: fillBar${index} 1.5s ease-out ${index * 0.1}s forwards;"
                                      data-percentage="${genre.percentage}">
                                 </div>
                             </div>
@@ -882,8 +882,8 @@
                 <style>
                     ${genres.map((genre, index) => `
                         @keyframes fillBar${index} {
-                            0% { width: 0%; }
-                            100% { width: ${Math.max(1, genre.percentage)}%; }
+                            from { width: 0%; }
+                            to { width: ${genre.percentage}%; }
                         }
                     `).join('')}
                     
@@ -906,17 +906,14 @@
                 });
             });
             
-            // 高パーセンテージバーの強制設定（DOM更新後）
+            // アニメーション完了後にバーの幅を確実に設定
             setTimeout(() => {
-                genreCloud.querySelectorAll('.genre-bar').forEach(bar => {
+                genreCloud.querySelectorAll('.genre-bar').forEach((bar, idx) => {
                     const percentage = parseInt(bar.dataset.percentage);
-                    if (percentage >= 95) {
-                        console.log(`🔧 Forcing ${percentage}% width for bar:`, bar);
-                        bar.style.width = percentage + '%';
-                        bar.style.setProperty('width', percentage + '%', 'important');
-                    }
+                    console.log(`🔧 Setting ${percentage}% width for bar ${idx}:`, bar);
+                    bar.style.setProperty('width', percentage + '%', 'important');
                 });
-            }, 100);
+            }, 2000); // アニメーション完了を待つ
         }
         
         function renderArtistsList(artists) {
