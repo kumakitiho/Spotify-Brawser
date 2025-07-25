@@ -1436,18 +1436,9 @@
                 if (response.ok) {
                     console.log('✅ Web Playback SDKで再生開始!');
                     
-                    // 楽曲情報を即座に設定
-                    if (trackInfo) {
-                        currentTrackName.textContent = trackInfo.name;
-                        currentTrackArtist.textContent = trackInfo.artist;
-                        currentTrackImage.src = trackInfo.image;
-                        showPlaybackControl();
-                        
-                        console.log('⚡ 楽曲情報を即座に設定:', trackInfo);
-                    } else {
-                        // フォールバック: DOM から取得
-                        setInitialTrackInfo(trackUri);
-                    }
+                    // プレイヤーの楽曲情報を待つ（setInitialTrackInfoは使わない）
+                    showPlaybackControl();
+                    console.log('⚡ 楽曲再生開始 - プレイヤーからの情報を待機中');
                 } else if (response.status === 404) {
                     console.warn('デバイスが見つかりません。外部リンクで開きます。');
                     const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
@@ -1549,10 +1540,23 @@
         }
         
         function updatePlaybackControl({ track, position, duration, paused }) {
-            if (!track) return;
+            if (!track) {
+                console.warn('⚠️ updatePlaybackControl: track情報がありません');
+                return;
+            }
+            
+            console.log('🔄 updatePlaybackControl呼び出し:', {
+                trackName: track.name,
+                trackArtists: track.artists?.map(a => a.name).join(', '),
+                trackUri: track.uri,
+                paused: paused
+            });
             
             // 楽曲情報の更新（楽曲情報が有効な場合のみ）
             if (track.name && track.artists && track.artists.length > 0) {
+                const oldName = currentTrackName.textContent;
+                const oldArtist = currentTrackArtist.textContent;
+                
                 currentTrackName.textContent = track.name;
                 currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
                 
@@ -1560,9 +1564,12 @@
                     currentTrackImage.src = track.album.images[0].url;
                 }
                 
-                console.log('✅ 楽曲情報を正常に更新:', {
-                    name: track.name,
-                    artists: track.artists.map(artist => artist.name).join(', ')
+                console.log('✅ 楽曲表示を更新:', {
+                    oldName: oldName,
+                    newName: track.name,
+                    oldArtist: oldArtist,
+                    newArtist: track.artists.map(artist => artist.name).join(', '),
+                    changed: oldName !== track.name || oldArtist !== track.artists.map(artist => artist.name).join(', ')
                 });
             } else {
                 console.warn('⚠️ 楽曲情報が不完全なため更新をスキップ:', {
