@@ -266,13 +266,14 @@
         // --- �ݒ� ---
         const { CLIENT_ID, REDIRECT_URI, SCOPES, TOKEN_ENDPOINT, AUTH_URL } = window.appConfig;
 
-        // --- DOM�v�f ---
+        // --- DOM要素 ---
         const loginView = document.getElementById('login-view');
         const mainView = document.getElementById('main-view');
         const loginButton = document.getElementById('login-button');
         const rankingList = document.getElementById('ranking-list');
         const userProfile = { name: document.getElementById('user-name'), avatar: document.getElementById('user-avatar') };
         const audioPlayer = document.getElementById('audio-player');
+        const mainElement = document.querySelector('main');
         
         // 再生コントロール要素
         const playbackControl = document.getElementById('playback-control');
@@ -1627,10 +1628,12 @@
         
         function showPlaybackControl() {
             playbackControl.classList.remove('hidden');
+            mainElement.classList.add('pb-24');
         }
         
         function hidePlaybackControl() {
             playbackControl.classList.add('hidden');
+            mainElement.classList.remove('pb-24');
             stopProgressUpdate();
             currentPlayingTrackUri = null;
             console.log('再生中楽曲URI をクリア');
