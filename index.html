@@ -856,18 +856,54 @@
                 count: g.count
             })));
             
+            // まずテスト用のシンプルなバーを表示
             genreCloud.innerHTML = `
                 <div class="space-y-4 max-w-2xl mx-auto">
                     <h3 class="text-xl font-bold text-white mb-6 text-center">🎵 音楽ジャンル分析</h3>
+                    
+                    <!-- テスト用固定バー -->
+                    <div class="genre-bar-item">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-white font-semibold text-sm">テスト 100%</span>
+                            <span class="text-green-400 font-bold text-sm">100%</span>
+                        </div>
+                        <div class="w-full bg-gray-600 rounded-full h-3">
+                            <div class="bg-green-400 h-full rounded-full" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="genre-bar-item">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-white font-semibold text-sm">テスト 96%</span>
+                            <span class="text-green-400 font-bold text-sm">96%</span>
+                        </div>
+                        <div class="w-full bg-gray-600 rounded-full h-3">
+                            <div class="bg-green-400 h-full rounded-full" style="width: 96%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="genre-bar-item">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-white font-semibold text-sm">テスト 50%</span>
+                            <span class="text-green-400 font-bold text-sm">50%</span>
+                        </div>
+                        <div class="w-full bg-gray-600 rounded-full h-3">
+                            <div class="bg-green-400 h-full rounded-full" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4 border-gray-600">
+                    <h4 class="text-white text-sm mb-4">実際のデータ:</h4>
+                    
                     ${genres.map((genre, index) => `
                         <div class="genre-bar-item cursor-pointer group" data-genre='${JSON.stringify(genre)}'>
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-white font-semibold text-sm">${genre.name}</span>
                                 <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
                             </div>
-                            <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
-                                <div class="genre-bar bg-gradient-to-r ${genre.colorClass} h-full rounded-full"
-                                     style="width: 0%;"
+                            <div class="w-full bg-gray-600 rounded-full h-3">
+                                <div class="genre-bar h-full rounded-full"
+                                     style="width: 0%; background: linear-gradient(to right, #1ed760, #1db954); transition: width 0.8s ease-out;"
                                      data-percentage="${genre.percentage}"
                                      data-genre-name="${genre.name}">
                                 </div>
@@ -881,17 +917,8 @@
                 </div>
                 
                 <style>
-                    .genre-bar {
-                        transition: width 1.5s ease-out;
-                    }
-                    
-                    .genre-bar-item:hover .genre-bar {
-                        filter: brightness(1.2) saturate(1.3);
-                        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-                    }
-                    
                     .genre-bar-item:hover {
-                        transform: translateX(8px);
+                        transform: translateX(4px);
                         transition: transform 0.3s ease;
                     }
                 </style>
@@ -905,7 +932,7 @@
                 });
             });
             
-            // アニメーション効果を実装
+            // アニメーション効果を実装（高パーセンテージ対応版）
             setTimeout(() => {
                 genreCloud.querySelectorAll('.genre-bar').forEach((bar, idx) => {
                     const percentage = parseInt(bar.dataset.percentage);
@@ -915,10 +942,27 @@
                     
                     // 最初は0%にリセット
                     bar.style.width = '0%';
+                    bar.style.transition = 'width 0.8s ease-out';
                     
                     // 少し遅延してからアニメーション開始
                     setTimeout(() => {
-                        bar.style.width = percentage + '%';
+                        // 100%や96%の場合は直接設定で確実に表示
+                        if (percentage >= 95) {
+                            bar.style.width = percentage + '%';
+                            bar.style.background = 'linear-gradient(to right, #1ed760, #1db954)';
+                            console.log(`✅ High percentage set directly: ${percentage}%`);
+                        } else {
+                            bar.style.width = percentage + '%';
+                        }
+                        
+                        // 念のため再確認
+                        setTimeout(() => {
+                            if (bar.style.width !== percentage + '%') {
+                                console.warn(`⚠️ Bar not showing correctly, forcing: ${genreName} ${percentage}%`);
+                                bar.style.width = percentage + '%';
+                                bar.style.display = 'block';
+                            }
+                        }, 1000);
                     }, idx * 100); // 順次アニメーション
                 });
             }, 100);
