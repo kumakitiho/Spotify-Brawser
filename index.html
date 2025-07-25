@@ -725,15 +725,26 @@
         async function renderArtists(artists) {
             currentArtists = artists; // データを保存
             
-            // ジャンル情報付きアーティストデータを取得
-            currentArtistsWithGenres = await fetchArtistsWithGenres(artists);
-            
+            // 現在のビューモードに応じて適切な表示
             if (currentViewMode === 'list') {
                 renderArtistsList(artists);
             } else if (currentViewMode === 'cloud') {
-                renderArtistsCloud(artists);
+                showCloudLoader();
+                setTimeout(() => {
+                    renderArtistsCloud(artists);
+                }, 200);
             } else if (currentViewMode === 'genre') {
+                showGenreLoader();
+                // ジャンル情報付きアーティストデータを取得
+                currentArtistsWithGenres = await fetchArtistsWithGenres(artists);
                 renderGenreCloud(currentArtistsWithGenres);
+            }
+            
+            // バックグラウンドでジャンルデータを取得（他のビューモード用）
+            if (currentViewMode !== 'genre' && currentArtistsWithGenres.length === 0) {
+                fetchArtistsWithGenres(artists).then(data => {
+                    currentArtistsWithGenres = data;
+                });
             }
         }
         
@@ -1263,7 +1274,11 @@
             document.getElementById('artist-genre-view').className = 'view-toggle-btn bg-spotify-gray text-white font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
             
             if (currentArtists.length > 0) {
-                renderArtistsCloud(currentArtists);
+                showCloudLoader();
+                // 少し遅延を入れてローディングを見せる
+                setTimeout(() => {
+                    renderArtistsCloud(currentArtists);
+                }, 300);
             }
         }
         
@@ -1279,12 +1294,42 @@
             document.getElementById('artist-genre-view').className = 'view-toggle-btn bg-spotify-green text-black font-semibold py-2 px-4 rounded-full text-sm transition-all hover:scale-105';
             
             if (currentArtistsWithGenres.length > 0) {
-                renderGenreCloud(currentArtistsWithGenres);
+                showGenreLoader();
+                setTimeout(() => {
+                    renderGenreCloud(currentArtistsWithGenres);
+                }, 400);
+            } else if (currentArtists.length > 0) {
+                showGenreLoader();
+                // ジャンルデータがない場合は取得してから表示
+                setTimeout(async () => {
+                    currentArtistsWithGenres = await fetchArtistsWithGenres(currentArtists);
+                    renderGenreCloud(currentArtistsWithGenres);
+                }, 100);
             }
         }
         
         function showLoader() {
             rankingList.innerHTML = '<div class="loader"></div>';
+        }
+        
+        function showCloudLoader() {
+            const artistCloud = document.getElementById('artist-cloud');
+            artistCloud.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-96">
+                    <div class="loader mb-4"></div>
+                    <p class="text-spotify-light-gray text-sm">イメージクラウドを生成中...</p>
+                </div>
+            `;
+        }
+        
+        function showGenreLoader() {
+            const genreCloud = document.getElementById('genre-cloud');
+            genreCloud.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-96">
+                    <div class="loader mb-4"></div>
+                    <p class="text-spotify-light-gray text-sm">ジャンル情報を取得中...</p>
+                </div>
+            `;
         }
         
         function renderMessage(message) {
