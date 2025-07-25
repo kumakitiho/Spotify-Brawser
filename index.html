@@ -292,6 +292,7 @@
         let currentTrackInfo = null;
         let progressInterval = null;
         let currentPlayingTrackUri = null;
+        let lastTrackUri = null; // 楽曲変更検出用
 
         // --- PKCE Helper Functions ---
         const generateRandomString = (length) => {
@@ -1469,9 +1470,39 @@
         }
         
         // --- 再生コントロール機能 ---
-        function setupPlaybackControls() {
+        async function setupPlaybackControls() {
             playPauseBtn.addEventListener('click', togglePlayback);
             seekBar.addEventListener('click', handleSeek);
+            
+            // プレイヤー接続直後に現在の楽曲状態を確認
+            try {
+                const state = await player.getCurrentState();
+                if (state && state.current_track) {
+                    console.log('🎵 プレイヤー接続時の楽曲状態:', {
+                        track: state.current_track.name,
+                        artists: state.current_track.artists?.map(a => a.name).join(', '),
+                        paused: state.paused
+                    });
+                    
+                    // 初期楽曲情報を設定
+                    updatePlaybackControl({
+                        track: state.current_track,
+                        position: state.position,
+                        duration: state.duration,
+                        paused: state.paused
+                    });
+                    
+                    lastTrackUri = state.current_track.uri;
+                    isPlaying = !state.paused;
+                    updatePlayPauseButton();
+                    
+                    if (isPlaying) {
+                        startProgressUpdate();
+                    }
+                }
+            } catch (error) {
+                console.log('初期楽曲状態の取得に失敗:', error);
+            }
         }
         
         async function togglePlayback() {
@@ -1629,13 +1660,37 @@
                 
                 try {
                     const state = await player.getCurrentState();
-                    if (state && state.position && state.duration) {
-                        // リアルタイムで時間とプログレスバーを更新
-                        currentTime.textContent = formatTime(state.position);
-                        totalTime.textContent = formatTime(state.duration);
+                    if (state && state.current_track) {
+                        const currentTrackUri = state.current_track.uri;
                         
-                        const progress = (state.position / state.duration) * 100;
-                        progressBar.style.width = `${Math.min(progress, 100)}%`;
+                        // 楽曲が変更されたかチェック
+                        if (lastTrackUri !== currentTrackUri) {
+                            console.log('🔄 楽曲変更を検出:', {
+                                old: lastTrackUri,
+                                new: currentTrackUri,
+                                track: state.current_track.name,
+                                artists: state.current_track.artists?.map(a => a.name).join(', ')
+                            });
+                            
+                            // 楽曲情報を更新
+                            updatePlaybackControl({
+                                track: state.current_track,
+                                position: state.position,
+                                duration: state.duration,
+                                paused: state.paused
+                            });
+                            
+                            lastTrackUri = currentTrackUri;
+                        }
+                        
+                        // プログレスバーと時間を更新
+                        if (state.position && state.duration) {
+                            currentTime.textContent = formatTime(state.position);
+                            totalTime.textContent = formatTime(state.duration);
+                            
+                            const progress = (state.position / state.duration) * 100;
+                            progressBar.style.width = `${Math.min(progress, 100)}%`;
+                        }
                     }
                 } catch (error) {
                     console.error('プログレス更新エラー:', error);
@@ -1648,6 +1703,8 @@
                 clearInterval(progressInterval);
                 progressInterval = null;
             }
+            // 楽曲変更検出をリセット
+            lastTrackUri = null;
         }
         
         function setInitialTrackInfo(trackUri) {
