@@ -902,7 +902,7 @@
                                 <span class="text-spotify-green font-bold text-sm">${genre.percentage}%</span>
                             </div>
                             <div class="w-full bg-gray-600 rounded-full h-3">
-                                <div class="h-full rounded-full bg-green-400" style="width: ${genre.percentage}%;"></div>
+                                <div class="genre-bar-animate h-full rounded-full bg-green-400" style="width: ${genre.percentage}%;"></div>
                             </div>
                             <div class="flex items-center justify-between mt-1 text-xs text-gray-400">
                                 <span>${genre.artists.length}人のアーティスト</span>
@@ -913,9 +913,53 @@
                 </div>
                 
                 <style>
+                    .genre-bar-item {
+                        animation: slideInFromLeft 0.6s ease-out;
+                        animation-fill-mode: both;
+                    }
+                    
+                    .genre-bar-item:nth-child(1) { animation-delay: 0.1s; }
+                    .genre-bar-item:nth-child(2) { animation-delay: 0.2s; }
+                    .genre-bar-item:nth-child(3) { animation-delay: 0.3s; }
+                    .genre-bar-item:nth-child(4) { animation-delay: 0.4s; }
+                    .genre-bar-item:nth-child(5) { animation-delay: 0.5s; }
+                    .genre-bar-item:nth-child(6) { animation-delay: 0.6s; }
+                    .genre-bar-item:nth-child(7) { animation-delay: 0.7s; }
+                    .genre-bar-item:nth-child(8) { animation-delay: 0.8s; }
+                    .genre-bar-item:nth-child(9) { animation-delay: 0.9s; }
+                    .genre-bar-item:nth-child(10) { animation-delay: 1.0s; }
+                    .genre-bar-item:nth-child(11) { animation-delay: 1.1s; }
+                    .genre-bar-item:nth-child(12) { animation-delay: 1.2s; }
+                    
                     .genre-bar-item:hover {
                         transform: translateX(4px);
                         transition: transform 0.3s ease;
+                    }
+                    
+                    .genre-bar-animate {
+                        animation: growBar 1.2s ease-out;
+                        animation-fill-mode: both;
+                        transform-origin: left center;
+                    }
+                    
+                    @keyframes slideInFromLeft {
+                        from {
+                            opacity: 0;
+                            transform: translateX(-30px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+                    }
+                    
+                    @keyframes growBar {
+                        from {
+                            transform: scaleX(0);
+                        }
+                        to {
+                            transform: scaleX(1);
+                        }
                     }
                 </style>
             `;
