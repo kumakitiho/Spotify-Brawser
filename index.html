@@ -190,9 +190,9 @@
                     <button class="type-filter-btn filter-btn bg-spotify-gray text-white font-bold py-2 px-4 rounded-full text-sm" data-type="artists">トップアーティスト</button>
                 </div>
                 <div class="flex flex-wrap gap-3 mb-8">
-                    <button class="period-filter-btn filter-btn active bg-white text-black font-semibold py-1 px-3 rounded-md text-xs" data-range="medium_term">過去6ヶ月</button>
+                    <button class="period-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="medium_term">過去6ヶ月</button>
                     <button class="period-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="short_term">最近4週間</button>
-                    <button class="period-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="long_term">全期間</button>
+                    <button class="period-filter-btn filter-btn active bg-white text-black font-semibold py-1 px-3 rounded-md text-xs" data-range="long_term">全期間</button>
                     <span class="text-spotify-light-gray self-center mx-2">|</span>
                     <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2024">2024年</button>
                     <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2023">2023年</button>
@@ -601,6 +601,13 @@
             const activeYearBtn = document.querySelector('.year-filter-btn.active');
             const range = activePeriodBtn?.dataset.range || activeYearBtn?.dataset.range;
             
+            console.log('🔍 fetchAndDisplayData called:', {
+                type,
+                activePeriodBtn: activePeriodBtn?.textContent,
+                activeYearBtn: activeYearBtn?.textContent,
+                range
+            });
+            
             if (!isNaN(parseInt(range))) {
                 // Get long_term data from Spotify API with limit=50
                 const data = await apiRequest(`https://api.spotify.com/v1/me/top/${type}?time_range=long_term&limit=50`);
@@ -638,13 +645,36 @@
                     }
                 }
             } else {
-                const data = await apiRequest(`https://api.spotify.com/v1/me/top/${type}?time_range=${range}&limit=20`);
+                const apiUrl = `https://api.spotify.com/v1/me/top/${type}?time_range=${range}&limit=20`;
+                console.log('📡 Making API request:', apiUrl);
+                
+                const data = await apiRequest(apiUrl);
+                console.log('📊 API Response:', {
+                    hasData: !!data,
+                    hasItems: !!(data?.items),
+                    itemCount: data?.items?.length || 0,
+                    firstItem: data?.items?.[0]?.name || 'No items'
+                });
+                
                 if (data && data.items) {
                     if (type === 'tracks') {
-                        console.log('取得した楽曲データのサンプル:', data.items[0]);
+                        console.log('📀 Track data sample:', {
+                            name: data.items[0]?.name,
+                            artist: data.items[0]?.artists?.[0]?.name,
+                            timeRange: range
+                        });
                         renderTracks(data.items);
                     }
-                    if (type === 'artists') renderArtists(data.items);
+                    if (type === 'artists') {
+                        console.log('🎤 Artist data sample:', {
+                            name: data.items[0]?.name,
+                            timeRange: range
+                        });
+                        renderArtists(data.items);
+                    }
+                } else {
+                    console.warn('⚠️ No data received from API');
+                    renderMessage("データの取得に失敗しました。");
                 }
             }
         }
