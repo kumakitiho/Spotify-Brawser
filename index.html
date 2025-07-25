@@ -839,6 +839,12 @@
             });
             
             // 横棒グラフを作成
+            console.log('🔍 First genre debug:', {
+                name: genres[0]?.name,
+                percentage: genres[0]?.percentage,
+                isHundred: genres[0]?.percentage === 100
+            });
+            
             genreCloud.innerHTML = `
                 <div class="space-y-4 max-w-2xl mx-auto">
                     <h3 class="text-xl font-bold text-white mb-6 text-center">🎵 音楽ジャンル分析</h3>
@@ -850,7 +856,8 @@
                             </div>
                             <div class="w-full bg-spotify-gray rounded-full h-3 overflow-hidden">
                                 <div class="genre-bar ${genre.percentage === 100 ? 'w-full' : ''} bg-gradient-to-r ${genre.colorClass} h-full rounded-full transition-all duration-1000 ease-out transform origin-left group-hover:scale-105"
-                                     style="${genre.percentage === 100 ? 'width: 100% !important;' : 'width: 0%; animation: fillBar' + index + ' 1.5s ease-out ' + (index * 0.1) + 's forwards;'}">
+                                     style="${genre.percentage === 100 ? 'width: 100% !important; background: linear-gradient(to right, #1ed760, #1db954) !important;' : 'width: 0%; animation: fillBar' + index + ' 1.5s ease-out ' + (index * 0.1) + 's forwards;'}"
+                                     data-percentage="${genre.percentage}">
                                 </div>
                             </div>
                             <div class="flex items-center justify-between mt-1 text-xs text-gray-400">
@@ -887,6 +894,18 @@
                     showGenreArtists(genre);
                 });
             });
+            
+            // 100%バーの強制設定（DOM更新後）
+            setTimeout(() => {
+                genreCloud.querySelectorAll('.genre-bar').forEach(bar => {
+                    const percentage = parseInt(bar.dataset.percentage);
+                    if (percentage === 100) {
+                        console.log('🔧 Forcing 100% width for bar:', bar);
+                        bar.style.width = '100%';
+                        bar.style.background = 'linear-gradient(to right, #1ed760, #1db954)';
+                    }
+                });
+            }, 100);
         }
         
         function renderArtistsList(artists) {
