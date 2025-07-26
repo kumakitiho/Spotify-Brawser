@@ -655,23 +655,40 @@
         let trackEndTimeout = null;
         
         function detectTrackEnd(position, duration, paused) {
+            // デバッグ用詳細ログ
+            const remainingTime = duration - position;
+            const progressPercent = ((position / duration) * 100).toFixed(1);
+            
+            // 進行状況を定期的にログ（90%以上で詳細ログ）
+            if (progressPercent >= 90) {
+                console.log(`🎵 再生進行状況: ${progressPercent}% (残り ${Math.ceil(remainingTime / 1000)}秒)`, {
+                    position: Math.floor(position / 1000),
+                    duration: Math.floor(duration / 1000),
+                    paused,
+                    playlistLength: currentPlaylist.length,
+                    currentIndex: currentTrackIndex
+                });
+            }
+            
             // 既存のタイムアウトをクリア
             if (trackEndTimeout) {
                 clearTimeout(trackEndTimeout);
                 trackEndTimeout = null;
             }
             
-            const remainingTime = duration - position;
-            
-            // 楽曲が終了に近づいているかチェック（残り3秒以下）
-            if (remainingTime <= 3000 && remainingTime > 0 && !paused) {
-                console.log(`⏰ 楽曲終了まで ${Math.ceil(remainingTime / 1000)}秒`);
+            // 楽曲が終了に近づいているかチェック（残り5秒以下に変更）
+            if (remainingTime <= 5000 && remainingTime > 0 && !paused) {
+                console.log(`🚨 楽曲終了検出: 残り ${Math.ceil(remainingTime / 1000)}秒`, {
+                    hasPlaylist: currentPlaylist.length > 0,
+                    nextTrackExists: currentTrackIndex + 1 < currentPlaylist.length,
+                    nextTrack: currentPlaylist[currentTrackIndex + 1]?.name
+                });
                 
                 // 残り時間後に次曲再生をスケジュール
                 trackEndTimeout = setTimeout(() => {
-                    console.log('🎵 楽曲終了 - 次曲を再生します');
+                    console.log('🎵 楽曲終了タイムアウト実行 - 次曲を再生します');
                     playNextTrack();
-                }, remainingTime + 500); // 少し余裕を持たせる
+                }, remainingTime + 1000); // 余裕を持たせる
             }
         }
 
@@ -1673,6 +1690,10 @@
                                 artist: trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate')?.textContent || '不明なアーティスト',
                                 image: trackRow.querySelector('img')?.src || ''
                             };
+                            
+                            // プレイリストを更新し、現在の楽曲インデックスを設定
+                            updateCurrentPlaylist();
+                            findCurrentTrackIndex(trackUri);
                             
                             playTrackWithWebPlayback(trackUri, trackInfo);
                         } else if (trackUri) {
