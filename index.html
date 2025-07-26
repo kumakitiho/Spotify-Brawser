@@ -318,6 +318,8 @@
         let progressInterval = null;
         let currentPlayingTrackUri = null;
         let lastTrackUri = null; // 楽曲変更検出用
+        let currentPlaylist = []; // 現在の楽曲リスト
+        let currentTrackIndex = -1; // 現在再生中の楽曲のインデックス
 
         // --- PKCE Helper Functions ---
         const generateRandomString = (length) => {
@@ -598,6 +600,79 @@
             document.getElementById('artist-list-view').addEventListener('click', showListView);
             document.getElementById('artist-cloud-view').addEventListener('click', showCloudView);
             document.getElementById('artist-genre-view').addEventListener('click', showGenreView);
+        }
+
+        // --- 自動次曲再生機能 ---
+        function updateCurrentPlaylist() {
+            // 現在表示されている楽曲リストを取得
+            const playButtons = document.querySelectorAll('.play-btn[data-track-uri]');
+            currentPlaylist = Array.from(playButtons).map(btn => ({
+                uri: btn.dataset.trackUri,
+                name: btn.closest('.flex').querySelector('.font-semibold')?.textContent || 'Unknown',
+                artist: btn.closest('.flex').querySelector('.text-spotify-light-gray')?.textContent || 'Unknown'
+            }));
+            
+            console.log('📋 プレイリスト更新:', {
+                trackCount: currentPlaylist.length,
+                tracks: currentPlaylist.slice(0, 3).map(t => `${t.name} - ${t.artist}`)
+            });
+        }
+
+        function findCurrentTrackIndex(trackUri) {
+            const index = currentPlaylist.findIndex(track => track.uri === trackUri);
+            currentTrackIndex = index;
+            console.log('🎵 現在の楽曲インデックス:', { index, uri: trackUri });
+            return index;
+        }
+
+        async function playNextTrack() {
+            if (currentPlaylist.length === 0) {
+                console.log('⚠️ プレイリストが空のため次曲再生できません');
+                return;
+            }
+
+            const nextIndex = currentTrackIndex + 1;
+            if (nextIndex >= currentPlaylist.length) {
+                console.log('🔚 プレイリストの最後に達しました');
+                return;
+            }
+
+            const nextTrack = currentPlaylist[nextIndex];
+            console.log('⏭️ 次曲を再生:', {
+                index: nextIndex,
+                name: nextTrack.name,
+                artist: nextTrack.artist
+            });
+
+            try {
+                await playTrackWithWebPlayback(nextTrack.uri);
+                currentTrackIndex = nextIndex;
+            } catch (error) {
+                console.error('❌ 次曲再生エラー:', error);
+            }
+        }
+
+        let trackEndTimeout = null;
+        
+        function detectTrackEnd(position, duration, paused) {
+            // 既存のタイムアウトをクリア
+            if (trackEndTimeout) {
+                clearTimeout(trackEndTimeout);
+                trackEndTimeout = null;
+            }
+            
+            const remainingTime = duration - position;
+            
+            // 楽曲が終了に近づいているかチェック（残り3秒以下）
+            if (remainingTime <= 3000 && remainingTime > 0 && !paused) {
+                console.log(`⏰ 楽曲終了まで ${Math.ceil(remainingTime / 1000)}秒`);
+                
+                // 残り時間後に次曲再生をスケジュール
+                trackEndTimeout = setTimeout(() => {
+                    console.log('🎵 楽曲終了 - 次曲を再生します');
+                    playNextTrack();
+                }, remainingTime + 500); // 少し余裕を持たせる
+            }
         }
 
         // --- 年別ランキング推定 ---
@@ -1621,6 +1696,10 @@
                 console.error('デバイスIDまたはアクセストークンが利用できません');
                 return;
             }
+
+            // プレイリストを更新し、現在の楽曲インデックスを設定
+            updateCurrentPlaylist();
+            findCurrentTrackIndex(trackUri);
             
             try {
                 // 再生APIでトラックを開始
@@ -1795,6 +1874,11 @@
             // プログレスバーの更新
             const progress = (position / duration) * 100;
             progressBar.style.width = `${progress}%`;
+            
+            // 楽曲終了検出
+            if (position && duration) {
+                detectTrackEnd(position, duration, paused);
+            }
             
             // コントロールバーを表示
             showPlaybackControl();
