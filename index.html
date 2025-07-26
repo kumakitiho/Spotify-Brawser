@@ -276,6 +276,15 @@
         
         const PROGRESS_UPDATE_INTERVAL = 1000; // ms
         const DEFAULT_SEEK_TIMEOUT = 120000; // 2分
+        
+        // 年別ランキング推定の重み係数
+        const YEAR_RANKING_WEIGHTS = {
+            SAME_YEAR: 2.5,        // 同年リリース
+            ONE_YEAR_DIFF: 1.8,    // 1年差
+            TWO_YEAR_DIFF: 1.4,    // 2年差
+            THREE_YEAR_DIFF: 1.1,  // 3年差
+            OLD_TRACK: 0.4         // 5年以上古い楽曲
+        };
 
         // --- DOM要素 ---
         const loginView = document.getElementById('login-view');
@@ -591,7 +600,122 @@
             document.getElementById('artist-genre-view').addEventListener('click', showGenreView);
         }
 
-        // --- �f�[�^�擾�ƕ\�� ---
+        // --- 年別ランキング推定 ---
+        function estimateYearlyRanking(tracks, targetYear) {
+            console.log(`📅 年別ランキング推定開始: ${targetYear}年`);
+            
+            const rankedTracks = tracks.map((track, index) => {
+                // リリース年を取得
+                const releaseDate = track.album?.release_date;
+                if (!releaseDate) {
+                    console.warn('⚠️ リリース日が不明:', track.name);
+                    return { ...track, estimatedScore: 0, releaseYear: null };
+                }
+                
+                const releaseYear = new Date(releaseDate).getFullYear();
+                const yearDiff = Math.abs(targetYear - releaseYear);
+                
+                // 基本スコア（現在のランキング位置の逆数）
+                let baseScore = 100 - index;
+                
+                // 年度による重み付け
+                let yearWeight = 1.0;
+                if (yearDiff === 0) {
+                    yearWeight = YEAR_RANKING_WEIGHTS.SAME_YEAR;
+                } else if (yearDiff === 1) {
+                    yearWeight = YEAR_RANKING_WEIGHTS.ONE_YEAR_DIFF;
+                } else if (yearDiff === 2) {
+                    yearWeight = YEAR_RANKING_WEIGHTS.TWO_YEAR_DIFF;
+                } else if (yearDiff === 3) {
+                    yearWeight = YEAR_RANKING_WEIGHTS.THREE_YEAR_DIFF;
+                } else if (yearDiff >= 5) {
+                    yearWeight = YEAR_RANKING_WEIGHTS.OLD_TRACK;
+                }
+                
+                // 人気度スコアも考慮（0-100）
+                const popularityBonus = (track.popularity || 50) / 100;
+                
+                // 最終スコア計算
+                const estimatedScore = baseScore * yearWeight * (1 + popularityBonus * 0.3);
+                
+                return {
+                    ...track,
+                    estimatedScore,
+                    releaseYear,
+                    yearDiff,
+                    yearWeight,
+                    originalRank: index + 1
+                };
+            });
+            
+            // スコア順でソート
+            const sortedTracks = rankedTracks.sort((a, b) => b.estimatedScore - a.estimatedScore);
+            
+            // デバッグログ
+            console.log(`🎯 ${targetYear}年推定ランキング (上位10曲):`, 
+                sortedTracks.slice(0, 10).map((track, idx) => ({
+                    rank: idx + 1,
+                    name: track.name,
+                    artist: track.artists?.[0]?.name,
+                    releaseYear: track.releaseYear,
+                    originalRank: track.originalRank,
+                    score: Math.round(track.estimatedScore),
+                    yearWeight: track.yearWeight
+                }))
+            );
+            
+            return sortedTracks;
+        }
+
+        // アーティストの年別ランキング推定（シンプル版）
+        function estimateArtistYearlyRanking(artists, targetYear) {
+            console.log(`📅 アーティスト年別ランキング推定開始: ${targetYear}年`);
+            
+            // アーティストの場合はよりシンプルなロジック
+            // 人気度と活動期間を基準に判定
+            const rankedArtists = artists.map((artist, index) => {
+                let baseScore = 100 - index;
+                
+                // 人気度ボーナス
+                const popularityBonus = (artist.popularity || 50) / 100;
+                
+                // 最近のアーティスト（2020年以降デビュー）にボーナス
+                const genres = artist.genres || [];
+                let trendBonus = 1.0;
+                
+                // ジャンルから時代性を推定（簡易版）
+                if (targetYear >= 2020) {
+                    const modernGenres = ['pop', 'hip hop', 'electronic', 'indie', 'alternative'];
+                    const hasModernGenre = genres.some(genre => 
+                        modernGenres.some(modern => genre.toLowerCase().includes(modern))
+                    );
+                    if (hasModernGenre) trendBonus = 1.3;
+                }
+                
+                const estimatedScore = baseScore * (1 + popularityBonus * 0.4) * trendBonus;
+                
+                return {
+                    ...artist,
+                    estimatedScore,
+                    originalRank: index + 1
+                };
+            });
+            
+            const sortedArtists = rankedArtists.sort((a, b) => b.estimatedScore - a.estimatedScore);
+            
+            console.log(`🎯 ${targetYear}年アーティスト推定ランキング (上位10組):`, 
+                sortedArtists.slice(0, 10).map((artist, idx) => ({
+                    rank: idx + 1,
+                    name: artist.name,
+                    originalRank: artist.originalRank,
+                    score: Math.round(artist.estimatedScore)
+                }))
+            );
+            
+            return sortedArtists;
+        }
+
+        // --- データ取得と表示 ---
         async function fetchAndDisplayData() {
             showLoader('list');
             const type = document.querySelector('.type-filter-btn.active').dataset.type;
@@ -622,26 +746,34 @@
                 }
                 
                 if (type === 'tracks') {
-                    // Filter tracks by album release year
-                    const filteredTracks = data.items.filter(track => {
-                        if (!track || !track.album || !track.album.release_date) {
-                            return false;
-                        }
-                        const releaseYear = new Date(track.album.release_date).getFullYear();
-                        return releaseYear.toString() === range;
-                    });
+                    console.log(`🎯 ${range}年の推定ランキングを計算中...`);
                     
-                    if (filteredTracks.length === 0) {
-                        renderMessage(`${range}年にリリースされた楽曲が見つかりませんでした。`);
+                    // 年別ランキングを推定
+                    const estimatedRanking = estimateYearlyRanking(data.items, parseInt(range));
+                    
+                    // 上位20曲を表示
+                    const topTracks = estimatedRanking.slice(0, 20);
+                    
+                    if (topTracks.length === 0) {
+                        renderMessage(`${range}年の楽曲データが見つかりませんでした。`);
                     } else {
-                        renderTracks(filteredTracks);
+                        console.log(`✅ ${range}年推定ランキング完了: ${topTracks.length}曲を表示`);
+                        renderTracks(topTracks);
                     }
                 } else if (type === 'artists') {
-                    // For artists, show long_term data (since year filtering is difficult for artists)
-                    if (data.items.length === 0) {
-                        renderMessage("アーティストデータが見つかりませんでした。");
+                    console.log(`🎯 ${range}年のアーティスト推定ランキングを計算中...`);
+                    
+                    // アーティストの年別ランキングを推定
+                    const estimatedRanking = estimateArtistYearlyRanking(data.items, parseInt(range));
+                    
+                    // 上位20組を表示
+                    const topArtists = estimatedRanking.slice(0, 20);
+                    
+                    if (topArtists.length === 0) {
+                        renderMessage(`${range}年のアーティストデータが見つかりませんでした。`);
                     } else {
-                        renderArtists(data.items);
+                        console.log(`✅ ${range}年アーティスト推定ランキング完了: ${topArtists.length}組を表示`);
+                        renderArtists(topArtists);
                     }
                 }
             } else {
