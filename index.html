@@ -237,13 +237,23 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <button id="prev-btn" class="p-2 rounded-full text-white hover:text-spotify-green hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed" title="前の曲">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 6V18L3 18V6H7ZM21 12L9 18V6L21 12Z"/>
+                            </svg>
+                        </button>
                         <button id="play-pause-btn" class="p-2 rounded-full bg-white text-black hover:scale-110 transition-transform">
                             <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
                             </svg>
                             <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="hidden">
                                 <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </button>
+                        <button id="next-btn" class="p-2 rounded-full text-white hover:text-spotify-green hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed" title="次の曲">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17 6V18H21V6H17ZM3 12L15 6V18L3 12Z"/>
                             </svg>
                         </button>
                     </div>
@@ -298,6 +308,8 @@
         // 再生コントロール要素
         const playbackControl = document.getElementById('playback-control');
         const playPauseBtn = document.getElementById('play-pause-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         const currentTrackImage = document.getElementById('current-track-image');
@@ -622,6 +634,7 @@
             const index = currentPlaylist.findIndex(track => track.uri === trackUri);
             currentTrackIndex = index;
             console.log('🎵 現在の楽曲インデックス:', { index, uri: trackUri });
+            updateNavigationButtons();
             return index;
         }
 
@@ -647,8 +660,90 @@
             try {
                 await playTrackWithWebPlayback(nextTrack.uri);
                 currentTrackIndex = nextIndex;
+                updateNavigationButtons();
             } catch (error) {
                 console.error('❌ 次曲再生エラー:', error);
+            }
+        }
+
+        async function playPreviousTrack() {
+            if (currentPlaylist.length === 0) {
+                console.log('⚠️ プレイリストが空のため前曲再生できません');
+                return;
+            }
+
+            const prevIndex = currentTrackIndex - 1;
+            if (prevIndex < 0) {
+                console.log('🔙 プレイリストの最初に達しました');
+                return;
+            }
+
+            const prevTrack = currentPlaylist[prevIndex];
+            console.log('⏮️ 前曲を再生:', {
+                index: prevIndex,
+                name: prevTrack.name,
+                artist: prevTrack.artist
+            });
+
+            try {
+                await playTrackWithWebPlayback(prevTrack.uri);
+                currentTrackIndex = prevIndex;
+                updateNavigationButtons();
+            } catch (error) {
+                console.error('❌ 前曲再生エラー:', error);
+            }
+        }
+
+        function updateNavigationButtons() {
+            // 前の曲ボタンの状態更新
+            if (currentTrackIndex <= 0 || currentPlaylist.length === 0) {
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.disabled = false;
+            }
+
+            // 次の曲ボタンの状態更新
+            if (currentTrackIndex >= currentPlaylist.length - 1 || currentPlaylist.length === 0) {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
+
+            console.log('🎮 ナビゲーションボタン更新:', {
+                currentIndex: currentTrackIndex,
+                playlistLength: currentPlaylist.length,
+                prevDisabled: prevBtn.disabled,
+                nextDisabled: nextBtn.disabled
+            });
+        }
+
+        function handleKeyboardShortcuts(event) {
+            // 入力フィールドにフォーカスがある場合はショートカットを無効化
+            const activeElement = document.activeElement;
+            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                return;
+            }
+
+            switch (event.key) {
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    if (!prevBtn.disabled) {
+                        playPreviousTrack();
+                    }
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    if (!nextBtn.disabled) {
+                        playNextTrack();
+                    }
+                    break;
+                case ' ':
+                case 'Spacebar':
+                    event.preventDefault();
+                    togglePlayback();
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1763,7 +1858,15 @@
         // --- 再生コントロール機能 ---
         async function setupPlaybackControls() {
             playPauseBtn.addEventListener('click', togglePlayback);
+            prevBtn.addEventListener('click', playPreviousTrack);
+            nextBtn.addEventListener('click', playNextTrack);
             seekBar.addEventListener('click', handleSeek);
+            
+            // 初期状態でナビゲーションボタンを更新
+            updateNavigationButtons();
+            
+            // キーボードショートカット
+            document.addEventListener('keydown', handleKeyboardShortcuts);
             
             // プレイヤー接続直後に現在の楽曲状態を確認
             try {
