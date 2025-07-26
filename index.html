@@ -2234,6 +2234,34 @@
                 return null;
             }
         }
+        
+        // --- キーボードショートカット ---
+        document.addEventListener('keydown', (e) => {
+            // フォーカスが入力フィールドにある場合はスキップ
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (!prevBtn.disabled) {
+                        playPreviousTrack();
+                    }
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (!nextBtn.disabled) {
+                        playNextTrack();
+                    }
+                    break;
+                case ' ':
+                case 'Spacebar':
+                    e.preventDefault();
+                    togglePlayback();
+                    break;
+            }
+        });
     </script>
 
 </body>
