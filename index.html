@@ -164,6 +164,80 @@
                 box-shadow: 0 0 0 0 rgba(29, 185, 84, 0);
             }
         }
+
+        .insight-shell {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background:
+                radial-gradient(circle at top right, rgba(29, 185, 84, 0.26), transparent 28%),
+                linear-gradient(135deg, rgba(24, 24, 24, 0.96), rgba(18, 18, 18, 0.98));
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+        }
+
+        .insight-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 36%),
+                radial-gradient(circle at bottom left, rgba(32, 211, 104, 0.16), transparent 30%);
+        }
+
+        .insight-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-radius: 9999px;
+            padding: 0.35rem 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: #d1d5db;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .insight-card {
+            position: relative;
+            min-height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(14px);
+        }
+
+        .insight-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), transparent 45%);
+        }
+
+        .insight-breakdown-track {
+            overflow: hidden;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .insight-breakdown-fill {
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #1DB954, #46e38f);
+        }
+
+        .insight-share-btn {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .insight-share-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(29, 185, 84, 0.4);
+        }
     </style>
 </head>
 <body class="bg-spotify-dark text-white">
@@ -194,10 +268,27 @@
                     <button class="period-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="short_term">最近4週間</button>
                     <button class="period-filter-btn filter-btn active bg-white text-black font-semibold py-1 px-3 rounded-md text-xs" data-range="long_term">全期間</button>
                     <span class="text-spotify-light-gray self-center mx-2">|</span>
-                    <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2024">2024年</button>
-                    <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2023">2023年</button>
-                    <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="2022">2022年</button>
+                    <div id="year-filter-group" class="flex flex-wrap gap-3"></div>
                 </div>
+
+                <section id="insights-panel" class="mb-8 hidden">
+                    <div class="insight-shell rounded-[2rem] p-5 sm:p-6">
+                        <div class="relative z-10 flex flex-col gap-5">
+                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div class="max-w-2xl">
+                                    <div id="insights-kicker" class="insight-chip mb-3">LISTENING DNA</div>
+                                    <h2 id="insights-title" class="text-2xl sm:text-3xl font-bold leading-tight"></h2>
+                                    <p id="insights-description" class="mt-3 text-sm sm:text-base text-spotify-light-gray leading-relaxed"></p>
+                                </div>
+                                <button id="share-summary-btn" class="insight-share-btn rounded-full px-4 py-2 text-sm font-semibold text-white self-start" type="button">
+                                    結果をコピー
+                                </button>
+                            </div>
+                            <div id="insights-highlights" class="grid gap-3 sm:grid-cols-3"></div>
+                            <div id="insights-breakdown" class="rounded-3xl bg-black/20 p-4 sm:p-5"></div>
+                        </div>
+                    </div>
+                </section>
                 
                 <!-- アーティスト表示切り替え（アーティスト選択時のみ表示） -->
                 <div id="artist-view-toggle" class="flex gap-2 mb-6" style="display: none;">
@@ -299,6 +390,7 @@
         
         const PROGRESS_UPDATE_INTERVAL = 1000; // ms
         const DEFAULT_SEEK_TIMEOUT = 120000; // 2分
+        const YEAR_FILTER_BUTTON_COUNT = 5;
         
         // 年別ランキング推定の重み係数
         const YEAR_RANKING_WEIGHTS = {
@@ -317,6 +409,14 @@
         const userProfile = { name: document.getElementById('user-name'), avatar: document.getElementById('user-avatar') };
         const audioPlayer = document.getElementById('audio-player');
         const mainElement = document.querySelector('main');
+        const yearFilterGroup = document.getElementById('year-filter-group');
+        const insightsPanel = document.getElementById('insights-panel');
+        const insightsKicker = document.getElementById('insights-kicker');
+        const insightsTitle = document.getElementById('insights-title');
+        const insightsDescription = document.getElementById('insights-description');
+        const insightsHighlights = document.getElementById('insights-highlights');
+        const insightsBreakdown = document.getElementById('insights-breakdown');
+        const shareSummaryBtn = document.getElementById('share-summary-btn');
         
         // 再生コントロール要素
         const playbackControl = document.getElementById('playback-control');
@@ -350,6 +450,10 @@
         let lastTrackUri = null; // 楽曲変更検出用
         let currentPlaylist = []; // 現在の楽曲リスト
         let currentTrackIndex = -1; // 現在再生中の楽曲のインデックス
+        let currentInsightShareText = '';
+        let shareButtonResetTimeout = null;
+
+        const artistGenreCache = new Map();
 
         // --- PKCE Helper Functions ---
         const generateRandomString = (length) => {
@@ -452,6 +556,7 @@
         async function initializeApp() {
             loginView.classList.add('hidden');
             mainView.classList.remove('hidden');
+            renderYearFilterButtons();
             await fetchUserProfile();
             await initializeSpotifyPlayer();
             setupEventListeners();
@@ -578,6 +683,338 @@
             }
         }
 
+        function renderYearFilterButtons() {
+            const currentYear = new Date().getFullYear();
+            const years = Array.from({ length: YEAR_FILTER_BUTTON_COUNT }, (_, index) => currentYear - index);
+
+            yearFilterGroup.innerHTML = years.map((year) => `
+                <button class="year-filter-btn filter-btn bg-spotify-gray text-white font-semibold py-1 px-3 rounded-md text-xs" data-range="${year}">
+                    ${year}年
+                </button>
+            `).join('');
+        }
+
+        function formatRangeLabel(range) {
+            const labels = {
+                short_term: '最近4週間',
+                medium_term: '過去6ヶ月',
+                long_term: '全期間'
+            };
+
+            return labels[range] || `${range}年`;
+        }
+
+        function getActiveRangeInfo() {
+            const activePeriodBtn = document.querySelector('.period-filter-btn.active');
+            const activeYearBtn = document.querySelector('.year-filter-btn.active');
+            const range = activePeriodBtn?.dataset.range || activeYearBtn?.dataset.range || 'long_term';
+
+            return {
+                range,
+                label: formatRangeLabel(range),
+                isYearMode: !Number.isNaN(parseInt(range, 10))
+            };
+        }
+
+        function resetShareButtonLabel(label = '結果をコピー') {
+            shareSummaryBtn.textContent = label;
+        }
+
+        function hideInsights() {
+            insightsPanel.classList.add('hidden');
+            insightsHighlights.innerHTML = '';
+            insightsBreakdown.innerHTML = '';
+            insightsTitle.textContent = '';
+            insightsDescription.textContent = '';
+            currentInsightShareText = '';
+            clearTimeout(shareButtonResetTimeout);
+            resetShareButtonLabel();
+        }
+
+        function average(values) {
+            if (!values.length) return 0;
+            return values.reduce((total, value) => total + value, 0) / values.length;
+        }
+
+        function getTopEntries(entryMap, limit = 4) {
+            return Object.entries(entryMap)
+                .sort(([, left], [, right]) => right - left)
+                .slice(0, limit);
+        }
+
+        function buildBreakdownMarkup(title, items, footer) {
+            if (!items.length) {
+                return `
+                    <div class="text-sm text-spotify-light-gray">
+                        分析に使える十分なデータがまだありません。
+                    </div>
+                `;
+            }
+
+            return `
+                <div>
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <h3 class="text-lg font-bold text-white">${title}</h3>
+                        ${footer ? `<span class="text-xs text-spotify-light-gray">${footer}</span>` : ''}
+                    </div>
+                    <div class="space-y-3">
+                        ${items.map((item) => `
+                            <div>
+                                <div class="flex items-center justify-between gap-3 mb-1.5">
+                                    <span class="text-sm text-white">${item.label}</span>
+                                    <span class="text-xs text-spotify-light-gray">${item.value}</span>
+                                </div>
+                                <div class="insight-breakdown-track h-2.5">
+                                    <div class="insight-breakdown-fill h-full" style="width: ${item.width}%;"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function buildTrackInsights(tracks, rangeInfo) {
+            if (!tracks?.length) return null;
+
+            const currentYear = new Date().getFullYear();
+            const releaseYears = tracks
+                .map((track) => parseInt(track.album?.release_date?.slice(0, 4), 10))
+                .filter((year) => !Number.isNaN(year));
+            const popularityValues = tracks.map((track) => track.popularity || 0);
+            const explicitRatio = Math.round((tracks.filter((track) => track.explicit).length / tracks.length) * 100);
+            const recentRatio = releaseYears.length
+                ? Math.round((releaseYears.filter((year) => year >= currentYear - 1).length / releaseYears.length) * 100)
+                : 0;
+            const avgPopularity = Math.round(average(popularityValues));
+
+            const artistCounts = {};
+            tracks.forEach((track) => {
+                track.artists.forEach((artist) => {
+                    artistCounts[artist.name] = (artistCounts[artist.name] || 0) + 1;
+                });
+            });
+
+            const [topArtistName = '未集計', topArtistCount = 0] = getTopEntries(artistCounts, 1)[0] || [];
+            const artistFocusRatio = Math.round((topArtistCount / tracks.length) * 100);
+
+            const decadeCounts = {};
+            releaseYears.forEach((year) => {
+                const decadeLabel = `${Math.floor(year / 10) * 10}s`;
+                decadeCounts[decadeLabel] = (decadeCounts[decadeLabel] || 0) + 1;
+            });
+            const topDecades = getTopEntries(decadeCounts, 4);
+
+            let archetype = {
+                title: 'カタログ探検家',
+                description: '新旧の曲を横断しながら、広めに掘っていく聴き方です。'
+            };
+
+            if (recentRatio >= 55) {
+                archetype = {
+                    title: '新譜ハンター',
+                    description: '最近リリースの曲へ素早く反応する、アップデート感度の高い聴き方です。'
+                };
+            } else if (artistFocusRatio >= 30) {
+                archetype = {
+                    title: '推し特化型',
+                    description: '好きなアーティストを深く回す、熱量の高いリスナー像です。'
+                };
+            } else if (avgPopularity >= 78) {
+                archetype = {
+                    title: 'ヒットスナイパー',
+                    description: '今強い曲を外さず押さえる、切れ味の良いランキングです。'
+                };
+            }
+
+            const topTrack = tracks[0];
+            const breakdownItems = topDecades.map(([label, count]) => ({
+                label,
+                value: `${count}曲`,
+                width: Math.max(12, Math.round((count / tracks.length) * 100))
+            }));
+
+            const description = rangeInfo.isYearMode
+                ? `${archetype.description} Spotify API で年別履歴を直接取れないため、この表示は長期トップデータとリリース年からの推定です。`
+                : `${archetype.description} 上位20曲を見ると、${topArtistName} が ${topArtistCount} 曲に登場しています。`;
+
+            return {
+                kicker: rangeInfo.isYearMode ? 'YEAR IN REVIEW' : 'LISTENING DNA',
+                title: `${rangeInfo.label}のあなたは「${archetype.title}」`,
+                description,
+                cards: [
+                    {
+                        label: 'No.1 トラック',
+                        value: topTrack.name,
+                        detail: topTrack.artists.map((artist) => artist.name).join(', ')
+                    },
+                    {
+                        label: '推し集中度',
+                        value: `${artistFocusRatio}%`,
+                        detail: `${topArtistName} が ${topArtistCount} 曲で登場`
+                    },
+                    {
+                        label: '新譜比率',
+                        value: `${recentRatio}%`,
+                        detail: `${currentYear - 1}年以降リリース`
+                    }
+                ],
+                breakdownTitle: 'リリース年代ミックス',
+                breakdownFooter: `平均人気度 ${avgPopularity} / Explicit ${explicitRatio}%`,
+                breakdownItems,
+                shareText: [
+                    `Spotify Stats | ${rangeInfo.label}`,
+                    `リスナータイプ: ${archetype.title}`,
+                    `No.1: ${topTrack.name} - ${topTrack.artists.map((artist) => artist.name).join(', ')}`,
+                    `推し集中度: ${artistFocusRatio}% (${topArtistName})`,
+                    `新譜比率: ${recentRatio}%`
+                ].join('\n')
+            };
+        }
+
+        function buildArtistInsights(artists, rangeInfo) {
+            if (!artists?.length) return null;
+
+            const weightedGenreCounts = {};
+            const uniqueGenres = new Set();
+            const popularityValues = artists.map((artist) => artist.popularity || 0);
+
+            artists.forEach((artist, index) => {
+                const weight = artists.length - index;
+                (artist.genres || []).forEach((genre) => {
+                    uniqueGenres.add(genre);
+                    weightedGenreCounts[genre] = (weightedGenreCounts[genre] || 0) + weight;
+                });
+            });
+
+            const topGenres = getTopEntries(weightedGenreCounts, 5);
+            const [topGenreName = 'Genre Unknown', topGenreWeight = 0] = topGenres[0] || [];
+            const totalGenreWeight = Object.values(weightedGenreCounts).reduce((total, value) => total + value, 0);
+            const topGenreRatio = totalGenreWeight ? Math.round((topGenreWeight / totalGenreWeight) * 100) : 0;
+            const avgPopularity = Math.round(average(popularityValues));
+
+            let archetype = {
+                title: 'シーン横断型',
+                description: 'ひとつの文脈に寄りすぎず、シーンをまたいで聴くタイプです。'
+            };
+
+            if (uniqueGenres.size >= 12) {
+                archetype = {
+                    title: '雑食ディガー',
+                    description: 'ジャンルの壁を気にせず、発見を優先して広く掘るタイプです。'
+                };
+            } else if (topGenreRatio >= 32) {
+                archetype = {
+                    title: 'ジャンル職人',
+                    description: 'ひとつの音楽性をじっくり深く磨いていく、芯のあるランキングです。'
+                };
+            } else if (avgPopularity >= 75) {
+                archetype = {
+                    title: 'フェス最前列',
+                    description: '熱量の高い定番どころを強く押さえる、ライブ映えする並びです。'
+                };
+            }
+
+            const topArtist = artists[0];
+            const breakdownItems = topGenres.map(([label, count]) => ({
+                label,
+                value: `${Math.round((count / (topGenres[0]?.[1] || 1)) * 100)}%`,
+                width: Math.max(12, Math.round((count / (topGenres[0]?.[1] || 1)) * 100))
+            }));
+
+            const description = rangeInfo.isYearMode
+                ? `${archetype.description} 年別表示は長期トップアーティストの傾向から再構成した推定結果です。`
+                : `${archetype.description} 上位アーティスト全体で ${uniqueGenres.size || 0} 種類のジャンルが見えています。`;
+
+            return {
+                kicker: rangeInfo.isYearMode ? 'ARTIST PROFILE' : 'TASTE PROFILE',
+                title: `${rangeInfo.label}のあなたは「${archetype.title}」`,
+                description,
+                cards: [
+                    {
+                        label: 'No.1 アーティスト',
+                        value: topArtist.name,
+                        detail: topArtist.followers?.total ? `${topArtist.followers.total.toLocaleString()} followers` : 'Top rank artist'
+                    },
+                    {
+                        label: '主軸ジャンル',
+                        value: topGenreName,
+                        detail: `${topGenreRatio}% の比重`
+                    },
+                    {
+                        label: 'ジャンルの幅',
+                        value: `${uniqueGenres.size || 0}`,
+                        detail: `平均人気度 ${avgPopularity}`
+                    }
+                ],
+                breakdownTitle: 'ジャンル温度感',
+                breakdownFooter: `${artists.length}組のトップアーティストから集計`,
+                breakdownItems,
+                shareText: [
+                    `Spotify Stats | ${rangeInfo.label}`,
+                    `リスナータイプ: ${archetype.title}`,
+                    `No.1 Artist: ${topArtist.name}`,
+                    `主軸ジャンル: ${topGenreName}`,
+                    `ジャンル数: ${uniqueGenres.size || 0}`
+                ].join('\n')
+            };
+        }
+
+        function renderInsights(model) {
+            if (!model) {
+                hideInsights();
+                return;
+            }
+
+            currentInsightShareText = model.shareText;
+            insightsKicker.textContent = model.kicker;
+            insightsTitle.textContent = model.title;
+            insightsDescription.textContent = model.description;
+            insightsHighlights.innerHTML = model.cards.map((card) => `
+                <article class="insight-card rounded-3xl p-4 sm:p-5">
+                    <p class="text-xs font-semibold tracking-[0.18em] uppercase text-spotify-light-gray">${card.label}</p>
+                    <p class="mt-3 text-lg sm:text-xl font-bold text-white break-words">${card.value}</p>
+                    <p class="mt-2 text-sm text-spotify-light-gray leading-relaxed">${card.detail}</p>
+                </article>
+            `).join('');
+            insightsBreakdown.innerHTML = buildBreakdownMarkup(model.breakdownTitle, model.breakdownItems, model.breakdownFooter);
+            insightsPanel.classList.remove('hidden');
+            resetShareButtonLabel();
+        }
+
+        async function copySummaryToClipboard(text) {
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.setAttribute('readonly', '');
+                textArea.style.position = 'absolute';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                const copied = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return copied;
+            } catch (error) {
+                console.error('コピー失敗:', error);
+                return false;
+            }
+        }
+
+        async function handleShareSummary() {
+            if (!currentInsightShareText) return;
+
+            const copied = await copySummaryToClipboard(currentInsightShareText);
+            resetShareButtonLabel(copied ? 'コピーしました' : 'コピー失敗');
+
+            clearTimeout(shareButtonResetTimeout);
+            shareButtonResetTimeout = setTimeout(() => resetShareButtonLabel(), 1800);
+        }
+
         function setupEventListeners() {
             document.querySelectorAll('.type-filter-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -615,21 +1052,48 @@
                 });
             });
             
-            // 年別フィルター（2024年、2023年、2022年）
-            document.querySelectorAll('.year-filter-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    console.log('🔍 年別ボタンクリック:', e.target.textContent);
-                    resetAllRangeButtons();
-                    e.target.classList.add('active');
-                    console.log('✅ 年別ボタンアクティブ化完了');
-                    fetchAndDisplayData();
-                });
+            yearFilterGroup.addEventListener('click', (e) => {
+                const button = e.target.closest('.year-filter-btn');
+                if (!button) return;
+
+                console.log('🔍 年別ボタンクリック:', button.textContent);
+                resetAllRangeButtons();
+                button.classList.add('active');
+                console.log('✅ 年別ボタンアクティブ化完了');
+                fetchAndDisplayData();
             });
+
+            shareSummaryBtn.addEventListener('click', handleShareSummary);
             
             // ビュー切り替えボタンのイベントリスナー
             document.getElementById('artist-list-view').addEventListener('click', showListView);
             document.getElementById('artist-cloud-view').addEventListener('click', showCloudView);
             document.getElementById('artist-genre-view').addEventListener('click', showGenreView);
+        }
+
+        async function fetchGenresForArtistIds(artistIds) {
+            const missingIds = artistIds.filter((artistId) => artistId && !artistGenreCache.has(artistId));
+            if (!missingIds.length) return;
+
+            for (let index = 0; index < missingIds.length; index += 50) {
+                const batchIds = missingIds.slice(index, index + 50);
+                const response = await apiRequest(`https://api.spotify.com/v1/artists?ids=${batchIds.join(',')}`);
+                (response?.artists || []).forEach((artist) => {
+                    if (artist?.id) {
+                        artistGenreCache.set(artist.id, artist.genres || []);
+                    }
+                });
+            }
+        }
+
+        async function enrichArtistsWithGenres(artists) {
+            const artistIds = artists.map((artist) => artist.id).filter(Boolean);
+            await fetchGenresForArtistIds(artistIds);
+
+            return artists.map((artist) => ({
+                ...artist,
+                genres: artist.genres?.length ? artist.genres : (artistGenreCache.get(artist.id) || [])
+            }));
         }
 
         // --- 自動次曲再生機能 ---
@@ -923,17 +1387,15 @@
         // --- データ取得と表示 ---
         async function fetchAndDisplayData() {
             showLoader('list');
+            hideInsights();
             const type = document.querySelector('.type-filter-btn.active').dataset.type;
-            
-            // アクティブな期間ボタンまたは年別ボタンを取得
-            const activePeriodBtn = document.querySelector('.period-filter-btn.active');
-            const activeYearBtn = document.querySelector('.year-filter-btn.active');
-            const range = activePeriodBtn?.dataset.range || activeYearBtn?.dataset.range;
+            const rangeInfo = getActiveRangeInfo();
+            const { range } = rangeInfo;
             
             console.log('🔍 fetchAndDisplayData called:', {
                 type,
-                activePeriodBtn: activePeriodBtn?.textContent,
-                activeYearBtn: activeYearBtn?.textContent,
+                activePeriodBtn: document.querySelector('.period-filter-btn.active')?.textContent,
+                activeYearBtn: document.querySelector('.year-filter-btn.active')?.textContent,
                 range
             });
             
@@ -964,6 +1426,7 @@
                     } else {
                         console.log(`✅ ${range}年推定ランキング完了: ${topTracks.length}曲を表示`);
                         renderTracks(topTracks);
+                        renderInsights(buildTrackInsights(topTracks, rangeInfo));
                     }
                 } else if (type === 'artists') {
                     console.log(`🎯 ${range}年のアーティスト推定ランキングを計算中...`);
@@ -978,7 +1441,10 @@
                         renderMessage(`${range}年のアーティストデータが見つかりませんでした。`);
                     } else {
                         console.log(`✅ ${range}年アーティスト推定ランキング完了: ${topArtists.length}組を表示`);
-                        renderArtists(topArtists);
+                        const artistsWithGenres = await enrichArtistsWithGenres(topArtists);
+                        currentArtistsWithGenres = artistsWithGenres;
+                        renderArtists(artistsWithGenres);
+                        renderInsights(buildArtistInsights(artistsWithGenres, rangeInfo));
                     }
                 }
             } else {
@@ -1001,13 +1467,17 @@
                             timeRange: range
                         });
                         renderTracks(data.items);
+                        renderInsights(buildTrackInsights(data.items, rangeInfo));
                     }
                     if (type === 'artists') {
                         console.log('🎤 Artist data sample:', {
                             name: data.items[0]?.name,
                             timeRange: range
                         });
-                        renderArtists(data.items);
+                        const artistsWithGenres = await enrichArtistsWithGenres(data.items);
+                        currentArtistsWithGenres = artistsWithGenres;
+                        renderArtists(artistsWithGenres);
+                        renderInsights(buildArtistInsights(artistsWithGenres, rangeInfo));
                     }
                 } else {
                     console.warn('⚠️ No data received from API');
@@ -1119,6 +1589,9 @@
         
         async function renderArtists(artists) {
             currentArtists = artists; // データを保存
+            if (artists.some((artist) => Array.isArray(artist.genres))) {
+                currentArtistsWithGenres = artists;
+            }
             
             // 現在のビューモードに応じて適切な表示
             if (currentViewMode === 'list') {
@@ -1145,24 +1618,7 @@
         
         // アーティストのジャンル情報を取得
         async function fetchArtistsWithGenres(artists) {
-            const artistsWithGenres = [];
-            
-            for (const artist of artists) {
-                try {
-                    const response = await apiRequest(`https://api.spotify.com/v1/artists/${artist.id}`);
-                    artistsWithGenres.push({
-                        ...artist,
-                        genres: response?.genres || []
-                    });
-                } catch (error) {
-                    console.error(`ジャンル取得失敗: ${artist.name}`, error);
-                    artistsWithGenres.push({
-                        ...artist,
-                        genres: []
-                    });
-                }
-            }
-            
+            const artistsWithGenres = await enrichArtistsWithGenres(artists);
             console.log('🎵 ジャンル情報付きアーティスト:', artistsWithGenres.slice(0, 3));
             return artistsWithGenres;
         }
@@ -1760,6 +2216,7 @@
         }
         
         function renderMessage(message) {
+            hideInsights();
             rankingList.innerHTML = `<div class="text-center text-spotify-light-gray p-8">${message}</div>`;
         }
 
