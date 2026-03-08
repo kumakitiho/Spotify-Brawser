@@ -240,6 +240,8 @@
         }
 
         .compare-card {
+            min-width: 0;
+            overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.08);
             background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(10px);
@@ -318,7 +320,7 @@
                 </section>
 
                 <section id="comparison-panel" class="mb-8 hidden">
-                    <div class="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+                    <div class="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6 overflow-hidden">
                         <div class="flex flex-col gap-3 mb-5 lg:flex-row lg:items-start lg:justify-between">
                             <div class="max-w-2xl">
                                 <div class="compare-pill mb-3">PERIOD COMPARE</div>
@@ -326,7 +328,7 @@
                                 <p id="comparison-description" class="mt-2 text-sm text-spotify-light-gray leading-relaxed"></p>
                             </div>
                         </div>
-                        <div id="comparison-grid" class="grid gap-3 lg:grid-cols-3"></div>
+                        <div id="comparison-grid" class="grid gap-3 min-w-0 lg:grid-cols-3"></div>
                     </div>
                 </section>
                 
@@ -502,6 +504,7 @@
         let currentRenderedItems = [];
         let currentTrackItems = [];
         let currentUserProfileData = null;
+        let playButtonListenersBound = false;
 
         const artistGenreCache = new Map();
 
@@ -889,7 +892,7 @@
 
         function createComparisonListMarkup(title, accent, items, emptyMessage) {
             return `
-                <article class="compare-card rounded-3xl p-4">
+                <article class="compare-card rounded-3xl p-4 w-full min-w-0">
                     <div class="flex items-center justify-between gap-3 mb-3">
                         <h3 class="text-sm font-bold text-white">${title}</h3>
                         <span class="text-xs font-semibold ${accent}">${items.length}件</span>
@@ -897,12 +900,12 @@
                     <div>
                         ${items.length ? items.map((item) => `
                             <div class="compare-list-item py-2.5">
-                                <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start justify-between gap-3 min-w-0">
                                     <div class="min-w-0">
-                                        <div class="text-sm font-semibold text-white truncate">${item.name}</div>
-                                        <div class="text-xs text-spotify-light-gray truncate mt-1">${item.subtitle}</div>
+                                        <div class="text-sm font-semibold text-white leading-snug break-words">${item.name}</div>
+                                        <div class="text-xs text-spotify-light-gray mt-1 break-words">${item.subtitle}</div>
                                     </div>
-                                    <div class="text-xs text-spotify-light-gray whitespace-nowrap">${item.meta}</div>
+                                    <div class="text-xs text-spotify-light-gray whitespace-nowrap flex-shrink-0">${item.meta}</div>
                                 </div>
                             </div>
                         `).join('') : `<div class="py-3 text-sm text-spotify-light-gray">${emptyMessage}</div>`}
@@ -2546,62 +2549,64 @@
         }
 
         function addPlayButtonListeners() {
-            document.querySelectorAll('.play-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // ボタン要素からデータを取得（クリックされた要素がSVGでも対応）
-                    const buttonElement = e.target.closest('.play-btn');
-                    if (!buttonElement) return;
-                    
-                    const previewUrl = buttonElement.dataset.previewUrl;
-                    const trackUri = buttonElement.dataset.trackUri;
-                    
-                    if (previewUrl) {
-                        // プレビュー音源がある場合は従来通りの再生
-                        console.log('プレビュー再生中:', previewUrl);
-                        if (audioPlayer.paused || currentTrackUrl !== previewUrl) {
-                            audioPlayer.src = previewUrl;
-                            audioPlayer.play().then(() => {
-                                currentTrackUrl = previewUrl;
-                                console.log('プレビュー再生開始');
-                            }).catch(error => {
-                                console.error('プレビュー再生エラー:', error);
-                            });
-                        } else {
-                            audioPlayer.pause();
-                            console.log('プレビュー再生停止');
+            if (playButtonListenersBound) return;
+
+            rankingList.addEventListener('click', async (e) => {
+                const buttonElement = e.target.closest('.play-btn');
+                if (!buttonElement) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const previewUrl = buttonElement.dataset.previewUrl;
+                const trackUri = buttonElement.dataset.trackUri;
+
+                if (previewUrl) {
+                    console.log('プレビュー再生中:', previewUrl);
+                    if (audioPlayer.paused || currentTrackUrl !== previewUrl) {
+                        audioPlayer.src = previewUrl;
+                        try {
+                            await audioPlayer.play();
+                            currentTrackUrl = previewUrl;
+                            console.log('プレビュー再生開始');
+                        } catch (error) {
+                            console.error('プレビュー再生エラー:', error);
+                            if (trackUri) {
+                                const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
+                                window.open(spotifyUrl, '_blank');
+                            }
                         }
                     } else {
-                        // Web Playback SDKでフル再生を試行
-                        if (trackUri && deviceId) {
-                            console.log('Web Playback SDKでフル再生:', trackUri);
-                            
-                            // 楽曲情報を取得
-                            const trackRow = buttonElement.parentElement.parentElement;
-                            const trackInfo = {
-                                name: trackRow.querySelector('.font-semibold.truncate')?.textContent || '不明な楽曲',
-                                artist: trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate')?.textContent || '不明なアーティスト',
-                                image: trackRow.querySelector('img')?.src || ''
-                            };
-                            
-                            // プレイリストを更新し、現在の楽曲インデックスを設定
-                            updateCurrentPlaylist();
-                            findCurrentTrackIndex(trackUri);
-                            
-                            playTrackWithWebPlayback(trackUri, trackInfo);
-                        } else if (trackUri) {
-                            // デバイスが準備できていない場合は外部リンク
-                            const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                            console.log('デバイス未準備、Spotifyで開く:', spotifyUrl);
-                            window.open(spotifyUrl, '_blank');
-                        } else {
-                            alert('この楽曲の情報が取得できませんでした。');
-                        }
+                        audioPlayer.pause();
+                        console.log('プレビュー再生停止');
                     }
-                });
+                    return;
+                }
+
+                if (trackUri && deviceId) {
+                    console.log('Web Playback SDKでフル再生:', trackUri);
+
+                    const trackRow = buttonElement.parentElement.parentElement;
+                    const trackInfo = {
+                        name: trackRow.querySelector('.font-semibold.truncate')?.textContent || '不明な楽曲',
+                        artist: trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate')?.textContent || '不明なアーティスト',
+                        image: trackRow.querySelector('img')?.src || ''
+                    };
+
+                    updateCurrentPlaylist();
+                    findCurrentTrackIndex(trackUri);
+
+                    await playTrackWithWebPlayback(trackUri, trackInfo);
+                } else if (trackUri) {
+                    const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
+                    console.log('デバイス未準備、Spotifyで開く:', spotifyUrl);
+                    window.open(spotifyUrl, '_blank');
+                } else {
+                    alert('この楽曲の情報が取得できませんでした。');
+                }
             });
+
+            playButtonListenersBound = true;
         }
         
         // --- Web Playback SDK再生機能 ---
