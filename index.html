@@ -238,6 +238,28 @@
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(29, 185, 84, 0.4);
         }
+
+        .compare-card {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+        }
+
+        .compare-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.2rem 0.6rem;
+            background: rgba(29, 185, 84, 0.14);
+            color: #86efac;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .compare-list-item + .compare-list-item {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
     </style>
 </head>
 <body class="bg-spotify-dark text-white">
@@ -280,13 +302,31 @@
                                     <h2 id="insights-title" class="text-2xl sm:text-3xl font-bold leading-tight"></h2>
                                     <p id="insights-description" class="mt-3 text-sm sm:text-base text-spotify-light-gray leading-relaxed"></p>
                                 </div>
-                                <button id="share-summary-btn" class="insight-share-btn rounded-full px-4 py-2 text-sm font-semibold text-white self-start" type="button">
-                                    結果をコピー
-                                </button>
+                                <div class="flex flex-wrap gap-2">
+                                    <button id="create-playlist-btn" class="insight-share-btn rounded-full px-4 py-2 text-sm font-semibold text-white self-start hidden" type="button">
+                                        プレイリスト化
+                                    </button>
+                                    <button id="share-summary-btn" class="insight-share-btn rounded-full px-4 py-2 text-sm font-semibold text-white self-start" type="button">
+                                        結果をコピー
+                                    </button>
+                                </div>
                             </div>
                             <div id="insights-highlights" class="grid gap-3 sm:grid-cols-3"></div>
                             <div id="insights-breakdown" class="rounded-3xl bg-black/20 p-4 sm:p-5"></div>
                         </div>
+                    </div>
+                </section>
+
+                <section id="comparison-panel" class="mb-8 hidden">
+                    <div class="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+                        <div class="flex flex-col gap-3 mb-5 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="max-w-2xl">
+                                <div class="compare-pill mb-3">PERIOD COMPARE</div>
+                                <h2 id="comparison-title" class="text-xl sm:text-2xl font-bold text-white"></h2>
+                                <p id="comparison-description" class="mt-2 text-sm text-spotify-light-gray leading-relaxed"></p>
+                            </div>
+                        </div>
+                        <div id="comparison-grid" class="grid gap-3 lg:grid-cols-3"></div>
                     </div>
                 </section>
                 
@@ -417,6 +457,11 @@
         const insightsHighlights = document.getElementById('insights-highlights');
         const insightsBreakdown = document.getElementById('insights-breakdown');
         const shareSummaryBtn = document.getElementById('share-summary-btn');
+        const createPlaylistBtn = document.getElementById('create-playlist-btn');
+        const comparisonPanel = document.getElementById('comparison-panel');
+        const comparisonTitle = document.getElementById('comparison-title');
+        const comparisonDescription = document.getElementById('comparison-description');
+        const comparisonGrid = document.getElementById('comparison-grid');
         
         // 再生コントロール要素
         const playbackControl = document.getElementById('playback-control');
@@ -452,6 +497,11 @@
         let currentTrackIndex = -1; // 現在再生中の楽曲のインデックス
         let currentInsightShareText = '';
         let shareButtonResetTimeout = null;
+        let playlistButtonResetTimeout = null;
+        let currentRenderedType = 'tracks';
+        let currentRenderedItems = [];
+        let currentTrackItems = [];
+        let currentUserProfileData = null;
 
         const artistGenreCache = new Map();
 
@@ -676,6 +726,7 @@
         async function fetchUserProfile() {
             const data = await apiRequest('https://api.spotify.com/v1/me');
             if (data) {
+                currentUserProfileData = data;
                 userProfile.name.textContent = data.display_name;
                 if (data.images && data.images.length > 0) {
                     userProfile.avatar.src = data.images[0].url;
@@ -720,6 +771,10 @@
             shareSummaryBtn.textContent = label;
         }
 
+        function resetPlaylistButtonLabel(label = 'プレイリスト化') {
+            createPlaylistBtn.textContent = label;
+        }
+
         function hideInsights() {
             insightsPanel.classList.add('hidden');
             insightsHighlights.innerHTML = '';
@@ -729,6 +784,22 @@
             currentInsightShareText = '';
             clearTimeout(shareButtonResetTimeout);
             resetShareButtonLabel();
+            updatePlaylistButtonVisibility();
+        }
+
+        function hideComparison() {
+            comparisonPanel.classList.add('hidden');
+            comparisonTitle.textContent = '';
+            comparisonDescription.textContent = '';
+            comparisonGrid.innerHTML = '';
+        }
+
+        function updatePlaylistButtonVisibility() {
+            const shouldShow = currentRenderedType === 'tracks' && currentTrackItems.length > 0;
+            createPlaylistBtn.classList.toggle('hidden', !shouldShow);
+            createPlaylistBtn.disabled = false;
+            clearTimeout(playlistButtonResetTimeout);
+            resetPlaylistButtonLabel();
         }
 
         function average(values) {
@@ -772,6 +843,147 @@
                     </div>
                 </div>
             `;
+        }
+
+        function getTypeLabel(type) {
+            return type === 'artists' ? 'アーティスト' : '楽曲';
+        }
+
+        function getComparisonConfig(rangeInfo) {
+            if (rangeInfo.isYearMode) return null;
+
+            if (rangeInfo.range === 'short_term') {
+                return {
+                    baselineRange: 'medium_term',
+                    title: '最近4週間 vs 過去6ヶ月',
+                    description: '短期で一気に伸びた曲や、新しく入り込んだアーティストを見ます。'
+                };
+            }
+
+            if (rangeInfo.range === 'medium_term') {
+                return {
+                    baselineRange: 'long_term',
+                    title: '過去6ヶ月 vs 全期間',
+                    description: '中期で輪郭が強くなった好みと、定番とのズレを見ます。'
+                };
+            }
+
+            return {
+                baselineRange: 'short_term',
+                title: '全期間 vs 最近4週間',
+                description: '長く残る定番と、最近の勢いの差を見ます。'
+            };
+        }
+
+        function getComparableId(item, type) {
+            if (!item) return null;
+            return type === 'artists' ? item.id : item.uri;
+        }
+
+        function getComparableSubtitle(item, type) {
+            if (!item) return '';
+            return type === 'artists'
+                ? `${item.genres?.slice(0, 2).join(', ') || 'genre unknown'}`
+                : item.artists.map((artist) => artist.name).join(', ');
+        }
+
+        function createComparisonListMarkup(title, accent, items, emptyMessage) {
+            return `
+                <article class="compare-card rounded-3xl p-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h3 class="text-sm font-bold text-white">${title}</h3>
+                        <span class="text-xs font-semibold ${accent}">${items.length}件</span>
+                    </div>
+                    <div>
+                        ${items.length ? items.map((item) => `
+                            <div class="compare-list-item py-2.5">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-white truncate">${item.name}</div>
+                                        <div class="text-xs text-spotify-light-gray truncate mt-1">${item.subtitle}</div>
+                                    </div>
+                                    <div class="text-xs text-spotify-light-gray whitespace-nowrap">${item.meta}</div>
+                                </div>
+                            </div>
+                        `).join('') : `<div class="py-3 text-sm text-spotify-light-gray">${emptyMessage}</div>`}
+                    </div>
+                </article>
+            `;
+        }
+
+        function buildComparisonModel(currentItems, baselineItems, type, rangeInfo) {
+            const config = getComparisonConfig(rangeInfo);
+            if (!config || !currentItems?.length || !baselineItems?.length) return null;
+
+            const baselineRanks = new Map();
+            baselineItems.forEach((item, index) => {
+                const id = getComparableId(item, type);
+                if (id) baselineRanks.set(id, index + 1);
+            });
+
+            const currentRanks = new Map();
+            currentItems.forEach((item, index) => {
+                const id = getComparableId(item, type);
+                if (id) currentRanks.set(id, index + 1);
+            });
+
+            const rising = currentItems
+                .map((item, index) => {
+                    const id = getComparableId(item, type);
+                    const baselineRank = baselineRanks.get(id);
+                    if (!baselineRank) return null;
+                    const movement = baselineRank - (index + 1);
+                    if (movement <= 0) return null;
+                    return {
+                        name: item.name,
+                        subtitle: getComparableSubtitle(item, type),
+                        meta: `+${movement}`,
+                        movement
+                    };
+                })
+                .filter(Boolean)
+                .sort((left, right) => right.movement - left.movement)
+                .slice(0, 5);
+
+            const newEntries = currentItems
+                .filter((item) => !baselineRanks.has(getComparableId(item, type)))
+                .slice(0, 5)
+                .map((item, index) => ({
+                    name: item.name,
+                    subtitle: getComparableSubtitle(item, type),
+                    meta: `now #${index + 1}`
+                }));
+
+            const missing = baselineItems
+                .filter((item) => !currentRanks.has(getComparableId(item, type)))
+                .slice(0, 5)
+                .map((item, index) => ({
+                    name: item.name,
+                    subtitle: getComparableSubtitle(item, type),
+                    meta: `prev #${index + 1}`
+                }));
+
+            return {
+                title: `${getTypeLabel(type)}比較: ${config.title}`,
+                description: config.description,
+                html: [
+                    createComparisonListMarkup('上昇', 'text-green-300', rising, '大きく順位を上げた項目はまだありません。'),
+                    createComparisonListMarkup('新規', 'text-cyan-300', newEntries, '新しく入ってきた項目はありません。'),
+                    createComparisonListMarkup('離脱', 'text-amber-300', missing, 'ベース期間から消えた項目はありません。')
+                ].join('')
+            };
+        }
+
+        function renderComparison(model) {
+            if (!model) {
+                hideComparison();
+                return;
+            }
+
+            comparisonTitle.textContent = model.title;
+            comparisonDescription.textContent = model.description;
+            comparisonGrid.innerHTML = model.html;
+            comparisonPanel.classList.remove('hidden');
         }
 
         function buildTrackInsights(tracks, rangeInfo) {
@@ -1015,6 +1227,83 @@
             shareButtonResetTimeout = setTimeout(() => resetShareButtonLabel(), 1800);
         }
 
+        function chunkArray(items, size) {
+            const chunks = [];
+            for (let index = 0; index < items.length; index += size) {
+                chunks.push(items.slice(index, index + size));
+            }
+            return chunks;
+        }
+
+        function buildPlaylistPayload() {
+            if (currentRenderedType !== 'tracks' || !currentTrackItems.length) return null;
+
+            const rangeInfo = getActiveRangeInfo();
+            const now = new Date();
+            const dateLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const playlistName = `Spotify Stats ${rangeInfo.label} ${dateLabel}`;
+            const description = `${rangeInfo.label} の表示中トップ楽曲から自動生成 (${dateLabel})`;
+
+            return {
+                name: playlistName,
+                description,
+                uris: currentTrackItems.map((track) => track.uri).filter(Boolean)
+            };
+        }
+
+        async function handleCreatePlaylist() {
+            const payload = buildPlaylistPayload();
+            if (!payload || !currentUserProfileData?.id) return;
+
+            createPlaylistBtn.disabled = true;
+            resetPlaylistButtonLabel('作成中...');
+
+            try {
+                const playlist = await apiRequest(`https://api.spotify.com/v1/users/${currentUserProfileData.id}/playlists`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: payload.name,
+                        description: payload.description,
+                        public: false
+                    }),
+                    suppressUiError: true
+                });
+
+                if (!playlist?.id) {
+                    throw new Error('playlist creation failed');
+                }
+
+                const chunks = chunkArray(payload.uris, 100);
+                for (const uris of chunks) {
+                    const addResult = await apiRequest(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uris }),
+                        suppressUiError: true
+                    });
+
+                    if (addResult === null) {
+                        throw new Error('playlist track insertion failed');
+                    }
+                }
+
+                resetPlaylistButtonLabel('作成しました');
+                if (playlist.external_urls?.spotify) {
+                    window.open(playlist.external_urls.spotify, '_blank');
+                }
+            } catch (error) {
+                console.error('プレイリスト作成エラー:', error);
+                resetPlaylistButtonLabel('作成失敗');
+            } finally {
+                clearTimeout(playlistButtonResetTimeout);
+                playlistButtonResetTimeout = setTimeout(() => {
+                    createPlaylistBtn.disabled = false;
+                    resetPlaylistButtonLabel();
+                }, 2200);
+            }
+        }
+
         function setupEventListeners() {
             document.querySelectorAll('.type-filter-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -1064,6 +1353,7 @@
             });
 
             shareSummaryBtn.addEventListener('click', handleShareSummary);
+            createPlaylistBtn.addEventListener('click', handleCreatePlaylist);
             
             // ビュー切り替えボタンのイベントリスナー
             document.getElementById('artist-list-view').addEventListener('click', showListView);
@@ -1384,13 +1674,31 @@
             return sortedArtists;
         }
 
+        async function fetchComparisonItems(type, rangeInfo) {
+            const config = getComparisonConfig(rangeInfo);
+            if (!config) return null;
+
+            const data = await apiRequest(`https://api.spotify.com/v1/me/top/${type}?time_range=${config.baselineRange}&limit=20`, {
+                suppressUiError: true
+            });
+            if (!data?.items) return null;
+
+            if (type === 'artists') {
+                return enrichArtistsWithGenres(data.items);
+            }
+
+            return data.items;
+        }
+
         // --- データ取得と表示 ---
         async function fetchAndDisplayData() {
             showLoader('list');
             hideInsights();
+            hideComparison();
             const type = document.querySelector('.type-filter-btn.active').dataset.type;
             const rangeInfo = getActiveRangeInfo();
             const { range } = rangeInfo;
+            const comparisonPromise = rangeInfo.isYearMode ? Promise.resolve(null) : fetchComparisonItems(type, rangeInfo);
             
             console.log('🔍 fetchAndDisplayData called:', {
                 type,
@@ -1447,6 +1755,7 @@
                         renderInsights(buildArtistInsights(artistsWithGenres, rangeInfo));
                     }
                 }
+                renderComparison(null);
             } else {
                 const apiUrl = `https://api.spotify.com/v1/me/top/${type}?time_range=${range}&limit=20`;
                 console.log('📡 Making API request:', apiUrl);
@@ -1468,6 +1777,8 @@
                         });
                         renderTracks(data.items);
                         renderInsights(buildTrackInsights(data.items, rangeInfo));
+                        const comparisonItems = await comparisonPromise;
+                        renderComparison(buildComparisonModel(data.items, comparisonItems, type, rangeInfo));
                     }
                     if (type === 'artists') {
                         console.log('🎤 Artist data sample:', {
@@ -1478,6 +1789,8 @@
                         currentArtistsWithGenres = artistsWithGenres;
                         renderArtists(artistsWithGenres);
                         renderInsights(buildArtistInsights(artistsWithGenres, rangeInfo));
+                        const comparisonItems = await comparisonPromise;
+                        renderComparison(buildComparisonModel(artistsWithGenres, comparisonItems, type, rangeInfo));
                     }
                 } else {
                     console.warn('⚠️ No data received from API');
@@ -1543,6 +1856,10 @@
         }
 
         function renderTracks(tracks) {
+            currentRenderedType = 'tracks';
+            currentRenderedItems = tracks || [];
+            currentTrackItems = tracks || [];
+            updatePlaylistButtonVisibility();
             rankingList.innerHTML = '';
             if (!tracks || tracks.length === 0) {
                 renderMessage("データがありません。");
@@ -1589,6 +1906,10 @@
         
         async function renderArtists(artists) {
             currentArtists = artists; // データを保存
+            currentRenderedType = 'artists';
+            currentRenderedItems = artists || [];
+            currentTrackItems = [];
+            updatePlaylistButtonVisibility();
             if (artists.some((artist) => Array.isArray(artist.genres))) {
                 currentArtistsWithGenres = artists;
             }
@@ -2217,6 +2538,10 @@
         
         function renderMessage(message) {
             hideInsights();
+            hideComparison();
+            currentRenderedItems = [];
+            currentTrackItems = [];
+            updatePlaylistButtonVisibility();
             rankingList.innerHTML = `<div class="text-center text-spotify-light-gray p-8">${message}</div>`;
         }
 
@@ -2645,7 +2970,7 @@
             }
         }
 
-        async function apiRequest(url) {
+        async function apiRequest(url, options = {}) {
             // トークンが無い場合はログイン画面に戻す
             if (!accessToken) {
                 console.warn('No access token available');
@@ -2656,37 +2981,61 @@
             }
             
             try {
-                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                const { suppressUiError = false, headers = {}, ...fetchOptions } = options;
+                const response = await fetch(url, {
+                    ...fetchOptions,
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        ...headers
+                    }
+                });
                 
                 if (response.status === 401) {
                     console.warn('Token expired or invalid');
                     accessToken = null;
                     mainView.classList.add('hidden');
                     loginView.classList.remove('hidden');
-                    renderMessage("認証が切れました。再度ログインしてください。");
+                    if (!suppressUiError) {
+                        renderMessage("認証が切れました。再度ログインしてください。");
+                    }
                     return null;
                 }
                 
                 if (response.status === 403) {
                     console.warn('Insufficient permissions');
-                    renderMessage("このデータにアクセスする権限がありません。");
+                    if (!suppressUiError) {
+                        renderMessage("このデータにアクセスする権限がありません。");
+                    }
                     return null;
                 }
                 
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error(`API request failed: ${response.status} ${response.statusText}`, errorText);
-                    renderMessage(`データの取得に失敗しました (${response.status})`);
+                    if (!suppressUiError) {
+                        renderMessage(`データの取得に失敗しました (${response.status})`);
+                    }
                     return null;
                 }
-                
-                return await response.json();
+
+                if (response.status === 204) {
+                    return { success: true };
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    return await response.json();
+                }
+
+                return await response.text();
             } catch (error) {
                 console.error('API Request Error:', error);
-                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                    renderMessage("ネットワークエラーが発生しました。接続を確認してください。");
-                } else {
-                    renderMessage("データの取得中にエラーが発生しました。");
+                if (!options.suppressUiError) {
+                    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                        renderMessage("ネットワークエラーが発生しました。接続を確認してください。");
+                    } else {
+                        renderMessage("データの取得中にエラーが発生しました。");
+                    }
                 }
                 return null;
             }

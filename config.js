@@ -7,7 +7,7 @@ const config = {
         || (typeof process !== 'undefined' && process.env ? process.env.SPOTIFY_CLIENT_ID : undefined)
         || 'YOUR_SPOTIFY_CLIENT_ID_HERE',
     REDIRECT_URI: window.location.origin + '/',
-    SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state',
+    SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state playlist-modify-private',
     
     // Spotify API エンドポイント
     TOKEN_ENDPOINT: 'https://accounts.spotify.com/api/token',
