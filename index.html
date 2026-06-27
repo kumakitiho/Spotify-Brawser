@@ -266,8 +266,8 @@
         .profile-record-shell {
             position: relative;
             display: grid;
-            width: 44px;
-            height: 44px;
+            width: 64px;
+            height: 64px;
             flex-shrink: 0;
             place-items: center;
             border-radius: 9999px;
@@ -286,7 +286,7 @@
         }
 
         .profile-record-shell::before {
-            inset: -5px;
+            inset: -6px;
             border-radius: inherit;
             background: conic-gradient(from 0deg, #1DB954, rgba(255, 255, 255, 0.86), #282828, #1DB954);
             filter: drop-shadow(0 0 14px rgba(29, 185, 84, 0.36));
@@ -294,8 +294,8 @@
         }
 
         .profile-record-shell::after {
-            width: 10px;
-            height: 10px;
+            width: 14px;
+            height: 14px;
             border: 2px solid rgba(255, 255, 255, 0.86);
             border-radius: inherit;
             background: #121212;
@@ -324,8 +324,8 @@
             position: relative;
             z-index: 1;
             display: block;
-            width: 40px;
-            height: 40px;
+            width: 58px;
+            height: 58px;
             border-radius: 9999px;
             object-fit: cover;
             transform-origin: center;
@@ -335,8 +335,8 @@
             position: absolute;
             right: -2px;
             bottom: -2px;
-            width: 12px;
-            height: 12px;
+            width: 15px;
+            height: 15px;
             border: 2px solid #121212;
             border-radius: 9999px;
             background: #1DB954;
@@ -361,6 +361,21 @@
                 animation: none;
             }
         }
+
+        .track-row {
+            cursor: pointer;
+            min-height: 4rem;
+            outline: none;
+        }
+
+        .track-row:focus-visible {
+            box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.85);
+        }
+
+        .track-row .play-btn {
+            min-width: 44px;
+            min-height: 44px;
+        }
     </style>
 </head>
 <body class="bg-spotify-dark text-white">
@@ -378,10 +393,10 @@
             </button>
         </div>
         <div id="main-view" class="hidden">
-            <header class="flex justify-between items-center mb-8">
-                <h1 class="text-3xl font-bold">My Stats</h1>
-                <div id="user-profile" class="flex items-center gap-3">
-                    <span id="user-name" class="hidden sm:inline"></span>
+            <header class="sticky top-0 z-40 -mx-4 mb-8 flex items-center justify-between border-b border-white/10 bg-spotify-dark px-4 py-3 backdrop-blur-md md:-mx-8 md:px-8">
+                <h1 class="min-w-0 text-3xl font-bold">My Stats</h1>
+                <div id="user-profile" class="flex min-w-0 items-center gap-3">
+                    <span id="user-name" class="hidden max-w-[12rem] truncate sm:inline"></span>
                     <div id="profile-record-shell" class="profile-record-shell" title="プロフィール">
                         <img id="user-avatar" src="https://placehold.co/40x40/282828/FFFFFF?text=U" alt="ユーザーアイコン">
                         <span class="profile-now-playing-dot" aria-hidden="true"></span>
@@ -1540,8 +1555,8 @@
             const playButtons = document.querySelectorAll('.play-btn[data-track-uri]');
             currentPlaylist = Array.from(playButtons).map(btn => ({
                 uri: btn.dataset.trackUri,
-                name: btn.closest('.flex').querySelector('.font-semibold')?.textContent || 'Unknown',
-                artist: btn.closest('.flex').querySelector('.text-spotify-light-gray')?.textContent || 'Unknown'
+                name: btn.closest('.track-row')?.querySelector('.font-semibold')?.textContent || 'Unknown',
+                artist: btn.closest('.track-row')?.querySelector('.track-artist')?.textContent || 'Unknown'
             }));
             
             console.log('📋 プレイリスト更新:', {
@@ -2029,19 +2044,24 @@
                 // すべてのトラックでSpotifyアプリでの再生を可能にする
                 const canPlay = 'cursor-pointer hover:bg-black/20 text-green-500';
                 const element = document.createElement('div');
-                element.className = 'flex items-center p-2 rounded-md hover:bg-spotify-gray transition-colors gap-2 sm:gap-4';
+                element.className = 'track-row flex items-center rounded-md p-2 transition-colors hover:bg-spotify-gray focus-visible:bg-spotify-gray gap-2 sm:gap-4';
+                element.dataset.trackUri = track.uri || '';
+                element.dataset.previewUrl = track.preview_url || '';
+                element.setAttribute('role', 'button');
+                element.setAttribute('tabindex', '0');
+                element.setAttribute('aria-label', `${track.name} - ${artistName} を再生`);
                 element.innerHTML = `
                     <div class="w-6 sm:w-8 text-spotify-light-gray text-right font-bold text-sm sm:text-base flex-shrink-0">${index + 1}</div>
                     <img src="${imageUrl}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-md flex-shrink-0" alt="アルバムアート">
                     <div class="flex-grow overflow-hidden min-w-0">
                         <div class="font-semibold truncate text-sm sm:text-base">${track.name}</div>
-                        <div class="text-xs sm:text-sm text-spotify-light-gray truncate">${artistName}</div>
+                        <div class="track-artist text-xs sm:text-sm text-spotify-light-gray truncate">${artistName}</div>
                     </div>
-                    <button class="p-2 sm:p-3 rounded-full play-btn ${canPlay} flex-shrink-0" data-track-uri="${track.uri}" data-preview-url="${track.preview_url || ''}" type="button" title="Spotifyで再生">
+                    <span class="p-2 sm:p-3 rounded-full play-btn ${canPlay} flex-shrink-0" data-track-uri="${track.uri}" data-preview-url="${track.preview_url || ''}" title="Spotifyで再生" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="sm:w-5 sm:h-5">
                             <path d="M8 5v14l11-7z"></path>
                         </svg>
-                    </button>
+                    </span>
                 `;
                 rankingList.appendChild(element);
             });
@@ -2697,8 +2717,11 @@
         function addPlayButtonListeners() {
             if (playButtonListenersBound) return;
 
-            rankingList.addEventListener('click', async (e) => {
-                const buttonElement = e.target.closest('.play-btn');
+            const handleTrackActivation = async (e) => {
+                const trackRow = e.target.closest('.track-row');
+                if (!trackRow || !rankingList.contains(trackRow)) return;
+
+                const buttonElement = e.target.closest('.play-btn') || trackRow.querySelector('.play-btn');
                 if (!buttonElement) return;
 
                 e.preventDefault();
@@ -2732,10 +2755,10 @@
                 if (trackUri && deviceId) {
                     console.log('Web Playback SDKでフル再生:', trackUri);
 
-                    const trackRow = buttonElement.parentElement.parentElement;
+                    const trackRow = buttonElement.closest('.track-row');
                     const trackInfo = {
                         name: trackRow.querySelector('.font-semibold.truncate')?.textContent || '不明な楽曲',
-                        artist: trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate')?.textContent || '不明なアーティスト',
+                        artist: trackRow.querySelector('.track-artist')?.textContent || '不明なアーティスト',
                         image: trackRow.querySelector('img')?.src || ''
                     };
 
@@ -2750,6 +2773,12 @@
                 } else {
                     alert('この楽曲の情報が取得できませんでした。');
                 }
+            };
+
+            rankingList.addEventListener('click', handleTrackActivation);
+            rankingList.addEventListener('keydown', async (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                await handleTrackActivation(e);
             });
 
             playButtonListenersBound = true;
@@ -3099,11 +3128,12 @@
             for (const button of playButtons) {
                 if (button.dataset.trackUri === trackUri) {
                     // 親要素（楽曲の行全体）を取得
-                    const trackRow = button.parentElement.parentElement;
+                    const trackRow = button.closest('.track-row');
+                    if (!trackRow) continue;
                     
                     // 楽曲情報を取得
                     const trackNameElement = trackRow.querySelector('.font-semibold.truncate');
-                    const artistNameElement = trackRow.querySelector('.text-sm.text-spotify-light-gray.truncate');
+                    const artistNameElement = trackRow.querySelector('.track-artist');
                     const imageElement = trackRow.querySelector('img');
                     
                     if (trackNameElement && artistNameElement && imageElement) {
