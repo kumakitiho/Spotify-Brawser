@@ -1593,9 +1593,11 @@
             });
 
             try {
-                await playTrackWithWebPlayback(nextTrack.uri);
-                currentTrackIndex = nextIndex;
-                updateNavigationButtons();
+                const didStartPlayback = await playTrackWithWebPlayback(nextTrack.uri);
+                if (didStartPlayback) {
+                    currentTrackIndex = nextIndex;
+                    updateNavigationButtons();
+                }
             } catch (error) {
                 console.error('❌ 次曲再生エラー:', error);
             }
@@ -1621,9 +1623,11 @@
             });
 
             try {
-                await playTrackWithWebPlayback(prevTrack.uri);
-                currentTrackIndex = prevIndex;
-                updateNavigationButtons();
+                const didStartPlayback = await playTrackWithWebPlayback(prevTrack.uri);
+                if (didStartPlayback) {
+                    currentTrackIndex = prevIndex;
+                    updateNavigationButtons();
+                }
             } catch (error) {
                 console.error('❌ 前曲再生エラー:', error);
             }
@@ -2729,6 +2733,27 @@
 
                 const previewUrl = buttonElement.dataset.previewUrl;
                 const trackUri = buttonElement.dataset.trackUri;
+                const trackInfo = {
+                    name: trackRow.querySelector('.font-semibold.truncate')?.textContent || '不明な楽曲',
+                    artist: trackRow.querySelector('.track-artist')?.textContent || '不明なアーティスト',
+                    image: trackRow.querySelector('img')?.src || ''
+                };
+
+                if (trackUri && accessToken) {
+                    console.log('Web Playback SDKでフル再生:', trackUri);
+
+                    updateCurrentPlaylist();
+
+                    const didStartSpotifyPlayback = await playTrackWithWebPlayback(trackUri, trackInfo);
+                    if (didStartSpotifyPlayback) {
+                        findCurrentTrackIndex(trackUri);
+                        if (!audioPlayer.paused) {
+                            audioPlayer.pause();
+                            currentTrackUrl = null;
+                        }
+                        return;
+                    }
+                }
 
                 if (previewUrl) {
                     console.log('プレビュー再生中:', previewUrl);
@@ -2738,41 +2763,23 @@
                             await audioPlayer.play();
                             currentTrackUrl = previewUrl;
                             console.log('プレビュー再生開始');
+                            return;
                         } catch (error) {
                             console.error('プレビュー再生エラー:', error);
-                            if (trackUri) {
-                                const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                                window.open(spotifyUrl, '_blank');
-                            }
                         }
                     } else {
-                        audioPlayer.pause();
-                        console.log('プレビュー再生停止');
+                        console.log('同じプレビューを再生中です');
+                        return;
                     }
-                    return;
                 }
 
-                if (trackUri && deviceId) {
-                    console.log('Web Playback SDKでフル再生:', trackUri);
-
-                    const trackRow = buttonElement.closest('.track-row');
-                    const trackInfo = {
-                        name: trackRow.querySelector('.font-semibold.truncate')?.textContent || '不明な楽曲',
-                        artist: trackRow.querySelector('.track-artist')?.textContent || '不明なアーティスト',
-                        image: trackRow.querySelector('img')?.src || ''
-                    };
-
-                    updateCurrentPlaylist();
-                    findCurrentTrackIndex(trackUri);
-
-                    await playTrackWithWebPlayback(trackUri, trackInfo);
-                } else if (trackUri) {
+                if (trackUri) {
                     const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
                     console.log('デバイス未準備、Spotifyで開く:', spotifyUrl);
-                    window.open(spotifyUrl, '_blank');
-                } else {
-                    alert('この楽曲の情報が取得できませんでした。');
+                    window.location.href = spotifyUrl;
+                    return;
                 }
+                alert('この楽曲の情報が取得できませんでした。');
             };
 
             rankingList.addEventListener('click', handleTrackActivation);
@@ -2787,19 +2794,17 @@
         // --- Web Playback SDK再生機能 ---
         async function playTrackWithWebPlayback(trackUri, trackInfo = null) {
             console.log('🎵 playTrackWithWebPlayback呼び出し:', { trackUri, trackInfo });
-            
-            if (!deviceId || !accessToken) {
-                console.error('デバイスIDまたはアクセストークンが利用できません');
-                return;
+
+            if (!accessToken) {
+                console.error('アクセストークンが利用できません');
+                return false;
             }
 
-            // プレイリストを更新し、現在の楽曲インデックスを設定
-            updateCurrentPlaylist();
-            findCurrentTrackIndex(trackUri);
-            
             try {
-                // 再生APIでトラックを開始
-                const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+                const playUrl = deviceId
+                    ? `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`
+                    : 'https://api.spotify.com/v1/me/player/play';
+                const response = await fetch(playUrl, {
                     method: 'PUT',
                     body: JSON.stringify({ uris: [trackUri] }),
                     headers: {
@@ -2809,30 +2814,23 @@
                 });
 
                 if (response.ok) {
-                    console.log('✅ Web Playback SDKで再生開始!');
-                    
-                    // プレイヤーの楽曲情報を待つ（setInitialTrackInfoは使わない）
+                    console.log('✅ Web Playback SDKで再生開始');
                     showPlaybackControl();
-                    console.log('⚡ 楽曲再生開始 - プレイヤーからの情報を待機中');
-                } else if (response.status === 404) {
-                    console.warn('デバイスが見つかりません。外部リンクで開きます。');
-                    const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                    window.open(spotifyUrl, '_blank');
+                    console.log('⏱ 楽曲再生開始 - プレイヤーからの情報を待機中');
+                    return true;
+                }
+
+                if (response.status === 404) {
+                    console.warn('デバイスが見つかりません。プレビューまたは外部リンクへフォールバックします。');
                 } else {
                     const error = await response.text();
                     console.error('再生リクエストエラー:', response.status, error);
-                    
-                    // フォールバックで外部リンク
-                    const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                    window.open(spotifyUrl, '_blank');
                 }
             } catch (error) {
                 console.error('Web Playback再生エラー:', error);
-                
-                // フォールバックで外部リンク
-                const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                window.open(spotifyUrl, '_blank');
             }
+
+            return false;
         }
         
         // --- 再生コントロール機能 ---
