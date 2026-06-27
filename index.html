@@ -270,6 +270,10 @@
         <div id="login-view" class="text-center py-20">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">あなたのSpotify統計</h1>
             <p class="text-spotify-light-gray mb-8">あなたの再生履歴とランキングを、まとめて見てみよう。</p>
+            <div class="mx-auto mb-8 max-w-2xl text-left text-sm text-spotify-light-gray space-y-3">
+                <p>トップ楽曲、トップアーティスト、プレイリスト作成のためにSpotifyの閲覧・プレイリスト権限を使います。</p>
+                <p>ブラウザ内でのフル再生にはSpotify Premiumが必要です。Premiumでない場合も統計表示と30秒プレビューは利用できます。</p>
+            </div>
             <button id="login-button" class="bg-spotify-green text-black font-bold py-3 px-8 rounded-full text-lg hover:scale-105 transition-transform">
                 Spotifyでログイン
             </button>
@@ -294,6 +298,9 @@
                     <span class="text-spotify-light-gray self-center mx-2">|</span>
                     <div id="year-filter-group" class="flex flex-wrap gap-3"></div>
                 </div>
+                <p id="year-estimate-note" class="hidden -mt-5 mb-8 text-xs text-spotify-light-gray">
+                    年別表示はSpotify APIの長期トップデータとリリース年から再構成した推定です。
+                </p>
 
                 <section id="insights-panel" class="mb-8 hidden">
                     <div class="insight-shell rounded-[2rem] p-5 sm:p-6">
@@ -452,6 +459,7 @@
         const audioPlayer = document.getElementById('audio-player');
         const mainElement = document.querySelector('main');
         const yearFilterGroup = document.getElementById('year-filter-group');
+        const yearEstimateNote = document.getElementById('year-estimate-note');
         const insightsPanel = document.getElementById('insights-panel');
         const insightsKicker = document.getElementById('insights-kicker');
         const insightsTitle = document.getElementById('insights-title');
@@ -1701,6 +1709,7 @@
             const type = document.querySelector('.type-filter-btn.active').dataset.type;
             const rangeInfo = getActiveRangeInfo();
             const { range } = rangeInfo;
+            yearEstimateNote.classList.toggle('hidden', !rangeInfo.isYearMode);
             const comparisonPromise = rangeInfo.isYearMode ? Promise.resolve(null) : fetchComparisonItems(type, rangeInfo);
             
             console.log('🔍 fetchAndDisplayData called:', {

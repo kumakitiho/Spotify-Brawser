@@ -23,34 +23,51 @@
 
 ### 🔐 セキュリティ
 - **OAuth 2.0 PKCE**: 安全な認証フロー
-- **トークン管理**: 自動リフレッシュ対応
+- **トークン管理**: アクセストークン期限切れ時は再ログインを案内
 
-## 🚀 Renderでのデプロイ手順
+## 🚀 GitHub Pagesでのデプロイ手順
 
 ### 1. 前提条件
 - Spotifyアプリの作成（[Spotify Developer Dashboard](https://developer.spotify.com/dashboard)）
-- Renderアカウント
+- GitHub Pagesを有効化できるGitHubリポジトリ
 
 ### 2. Spotifyアプリ設定
 1. Spotify Developer Dashboardでアプリを作成
 2. `CLIENT_ID`をメモ
-3. Redirect URIsに本番URLを追加（例: `https://your-app.onrender.com/`）
+3. Redirect URIsにGitHub PagesのURLを追加
+   ```
+   https://kumakitiho.github.io/Spotify-Brawser/
+   ```
 
-### 3. Renderでのデプロイ
-1. GitHubにコードをプッシュ
-2. Renderで新しいStatic Siteを作成
-3. **重要**: 環境変数を設定:
+### 3. GitHub Pagesの設定
+1. GitHubリポジトリの **Settings > Pages** を開く
+2. **Build and deployment > Source** を `GitHub Actions` に変更
+3. **Settings > Secrets and variables > Actions** で `SPOTIFY_CLIENT_ID` をRepository SecretまたはVariableとして登録
    ```
    SPOTIFY_CLIENT_ID=your_spotify_client_id_here
    ```
-4. ビルドコマンド: `npm run build`（自動的にCLIENT_IDが注入されます）
+4. `main`ブランチにpushすると `.github/workflows/pages.yml` が自動でビルドと公開を実行
+5. 公開URLを確認
+   ```
+   https://kumakitiho.github.io/Spotify-Brawser/
+   ```
 
-### 4. セキュリティについて
+### 4. ビルドについて
+
+`npm run build` は `dist/` にGitHub Pages用の静的ファイルを生成します。追跡中の `config.js` は上書きしません。
+
+```bash
+SPOTIFY_CLIENT_ID=your_spotify_client_id_here PUBLIC_BASE_URL=https://kumakitiho.github.io/Spotify-Brawser/ npm run build
+```
+
+### 5. セキュリティについて
 **❌ CLIENT_IDをconfig.jsに直接書かないでください**
 
 - 開発環境: プレースホルダー値をそのまま使用
-- 本番環境: ビルド時に環境変数から自動注入
+- 本番環境: GitHub Actionsのビルド時に環境変数から `dist/config.js` へ自動注入
 - GitHubには実際のCLIENT_IDはコミットされません
+- CLIENT_IDはシークレットではありません。公開後はGitHub Pages上の `config.js` から閲覧できます
+- GitHub Pagesの通常公開URLでは `REDIRECT_URI` は `https://kumakitiho.github.io/Spotify-Brawser/` になります
 
 ## 🛠️ ローカル開発
 
@@ -68,8 +85,9 @@ npm start
 
 - `index.html` - メインアプリケーション（全機能統合）
 - `config.js` - 設定ファイル（CLIENT_ID等）
+- `.github/workflows/pages.yml` - GitHub Pages公開用のワークフロー
 - `package.json` - プロジェクト設定
-- `render.yaml` - Render公開設定
+- `dist/` - ビルド成果物（Git管理対象外）
 - `.gitignore` - Git除外設定
 
 ## 🎨 UI/UX機能

@@ -2,6 +2,7 @@
   "name": "spotify-stats-viewer",
   "version": "1.0.0",
   "description": "Spotify統計ビューアー - ユーザーのお気に入り楽曲とアーティストを表示",
+  "homepage": "https://kumakitiho.github.io/Spotify-Brawser/",
   "main": "index.html",
   "scripts": {
     "start": "serve -s . -l 3000",

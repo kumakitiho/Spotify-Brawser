@@ -1,12 +1,29 @@
 // 設定ファイル - 環境変数から設定を読み込み
 // 本番環境では適切な環境変数を設定してください
 
+function normalizeBaseUrl(url) {
+    return url.endsWith('/') ? url : `${url}/`;
+}
+
+function getRuntimeRedirectUri() {
+    const configuredBaseUrl = window.PUBLIC_BASE_URL || window.SPOTIFY_PUBLIC_BASE_URL;
+    if (configuredBaseUrl) {
+        return normalizeBaseUrl(configuredBaseUrl);
+    }
+
+    const path = window.location.pathname.endsWith('/')
+        ? window.location.pathname
+        : window.location.pathname.replace(/\/[^/]*$/, '/');
+
+    return `${window.location.origin}${path}`;
+}
+
 const config = {
     // Spotify API設定 - 本番環境では環境変数から取得
     CLIENT_ID: window.SPOTIFY_CLIENT_ID
         || (typeof process !== 'undefined' && process.env ? process.env.SPOTIFY_CLIENT_ID : undefined)
         || 'YOUR_SPOTIFY_CLIENT_ID_HERE',
-    REDIRECT_URI: window.location.origin + '/',
+    REDIRECT_URI: getRuntimeRedirectUri(),
     SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state playlist-modify-private',
     
     // Spotify API エンドポイント
