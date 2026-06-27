@@ -262,6 +262,105 @@
         .compare-list-item + .compare-list-item {
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
+
+        .profile-record-shell {
+            position: relative;
+            display: grid;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 9999px;
+            background: #282828;
+            isolation: isolate;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .profile-record-shell::before,
+        .profile-record-shell::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .profile-record-shell::before {
+            inset: -5px;
+            border-radius: inherit;
+            background: conic-gradient(from 0deg, #1DB954, rgba(255, 255, 255, 0.86), #282828, #1DB954);
+            filter: drop-shadow(0 0 14px rgba(29, 185, 84, 0.36));
+            z-index: -1;
+        }
+
+        .profile-record-shell::after {
+            width: 10px;
+            height: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.86);
+            border-radius: inherit;
+            background: #121212;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+            z-index: 2;
+        }
+
+        .profile-record-shell.playback-active {
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+        }
+
+        .profile-record-shell.playback-active::before,
+        .profile-record-shell.playback-active::after {
+            opacity: 1;
+        }
+
+        .profile-record-shell.is-playing #user-avatar {
+            animation: spinRecord 4.8s linear infinite;
+        }
+
+        .profile-record-shell.is-paused #user-avatar {
+            filter: saturate(0.8) brightness(0.78);
+        }
+
+        #user-avatar {
+            position: relative;
+            z-index: 1;
+            display: block;
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            object-fit: cover;
+            transform-origin: center;
+        }
+
+        .profile-now-playing-dot {
+            position: absolute;
+            right: -2px;
+            bottom: -2px;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #121212;
+            border-radius: 9999px;
+            background: #1DB954;
+            opacity: 0;
+            transform: scale(0.76);
+            z-index: 3;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .profile-record-shell.playback-active .profile-now-playing-dot {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        @keyframes spinRecord {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .profile-record-shell.is-playing #user-avatar {
+                animation: none;
+            }
+        }
     </style>
 </head>
 <body class="bg-spotify-dark text-white">
@@ -283,7 +382,10 @@
                 <h1 class="text-3xl font-bold">My Stats</h1>
                 <div id="user-profile" class="flex items-center gap-3">
                     <span id="user-name" class="hidden sm:inline"></span>
-                    <img id="user-avatar" src="https://placehold.co/40x40/282828/FFFFFF?text=U" class="rounded-full" alt="ユーザーアイコン">
+                    <div id="profile-record-shell" class="profile-record-shell" title="プロフィール">
+                        <img id="user-avatar" src="https://placehold.co/40x40/282828/FFFFFF?text=U" alt="ユーザーアイコン">
+                        <span class="profile-now-playing-dot" aria-hidden="true"></span>
+                    </div>
                 </div>
             </header>
             <main>
@@ -455,7 +557,11 @@
         const mainView = document.getElementById('main-view');
         const loginButton = document.getElementById('login-button');
         const rankingList = document.getElementById('ranking-list');
-        const userProfile = { name: document.getElementById('user-name'), avatar: document.getElementById('user-avatar') };
+        const userProfile = {
+            name: document.getElementById('user-name'),
+            avatar: document.getElementById('user-avatar'),
+            recordShell: document.getElementById('profile-record-shell')
+        };
         const audioPlayer = document.getElementById('audio-player');
         const mainElement = document.querySelector('main');
         const yearFilterGroup = document.getElementById('year-filter-group');
@@ -513,6 +619,7 @@
         let currentTrackItems = [];
         let currentUserProfileData = null;
         let playButtonListenersBound = false;
+        let userAvatarUrl = userProfile.avatar.src;
 
         const artistGenreCache = new Map();
 
@@ -710,6 +817,9 @@
                     });
                 } else {
                     console.warn('⚠️ current_track is undefined in player_state_changed');
+                    resetProfilePlaybackBadge();
+                    hidePlaybackControl();
+                    return;
                 }
 
                 isPlaying = !paused;
@@ -740,9 +850,36 @@
                 currentUserProfileData = data;
                 userProfile.name.textContent = data.display_name;
                 if (data.images && data.images.length > 0) {
-                    userProfile.avatar.src = data.images[0].url;
+                    userAvatarUrl = data.images[0].url;
+                    userProfile.avatar.src = userAvatarUrl;
                 }
             }
+        }
+
+        function getTrackImageUrl(track) {
+            return track?.album?.images?.[0]?.url || '';
+        }
+
+        function updateProfilePlaybackBadge(track, paused) {
+            const trackImageUrl = getTrackImageUrl(track);
+            if (!trackImageUrl) {
+                resetProfilePlaybackBadge();
+                return;
+            }
+
+            userProfile.avatar.src = trackImageUrl;
+            userProfile.avatar.alt = track?.name ? `再生中: ${track.name}` : '再生中の楽曲';
+            userProfile.recordShell.title = track?.name ? `再生中: ${track.name}` : '再生中の楽曲';
+            userProfile.recordShell.classList.add('playback-active');
+            userProfile.recordShell.classList.toggle('is-playing', !paused);
+            userProfile.recordShell.classList.toggle('is-paused', !!paused);
+        }
+
+        function resetProfilePlaybackBadge() {
+            userProfile.avatar.src = userAvatarUrl;
+            userProfile.avatar.alt = 'ユーザーアイコン';
+            userProfile.recordShell.title = 'プロフィール';
+            userProfile.recordShell.classList.remove('playback-active', 'is-playing', 'is-paused');
         }
 
         function renderYearFilterButtons() {
@@ -2779,9 +2916,11 @@
                 currentTrackName.textContent = track.name;
                 currentTrackArtist.textContent = track.artists.map(artist => artist.name).join(', ');
                 
-                if (track.album && track.album.images && track.album.images.length > 0) {
-                    currentTrackImage.src = track.album.images[0].url;
+                const trackImageUrl = getTrackImageUrl(track);
+                if (trackImageUrl) {
+                    currentTrackImage.src = trackImageUrl;
                 }
+                updateProfilePlaybackBadge(track, paused);
                 
                 console.log('✅ 楽曲表示を更新:', {
                     oldName: oldName,
@@ -2843,6 +2982,10 @@
             mainElement.classList.remove('pb-24');
             stopProgressUpdate();
             currentPlayingTrackUri = null;
+            isPlaying = false;
+            resetProfilePlaybackBadge();
+            updatePlayPauseButton();
+            updateTrackButtonStates();
             console.log('再生中楽曲URI をクリア');
         }
         
