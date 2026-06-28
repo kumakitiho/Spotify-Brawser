@@ -366,15 +366,45 @@
             cursor: pointer;
             min-height: 4rem;
             outline: none;
+            transform: translateZ(0);
+            transition: background-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
         }
 
         .track-row:focus-visible {
             box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.85);
         }
 
+        .track-row:active,
+        .track-row.is-activating {
+            background-color: rgba(40, 40, 40, 0.96);
+            box-shadow: inset 0 0 0 1px rgba(29, 185, 84, 0.45);
+            transform: scale(0.995);
+        }
+
+        .track-row:focus-visible.is-activating {
+            box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.85), inset 0 0 0 1px rgba(29, 185, 84, 0.45);
+        }
+
         .track-row .play-btn {
             min-width: 44px;
             min-height: 44px;
+        }
+
+        .track-row.is-activating .play-btn {
+            background: #1DB954;
+            color: #121212;
+            animation: playIntentPulse 0.72s ease-in-out infinite alternate;
+        }
+
+        @keyframes playIntentPulse {
+            from { box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.28); }
+            to { box-shadow: 0 0 0 8px rgba(29, 185, 84, 0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .track-row.is-activating .play-btn {
+                animation: none;
+            }
         }
     </style>
 </head>
@@ -2721,6 +2751,32 @@
         function addPlayButtonListeners() {
             if (playButtonListenersBound) return;
 
+            const setTrackRowPending = (trackRow, isPending, activationToken = null) => {
+                if (isPending) {
+                    clearTimeout(trackRow.feedbackTimeout);
+                    trackRow.feedbackToken = (trackRow.feedbackToken || 0) + 1;
+                    trackRow.classList.add('is-activating');
+                    trackRow.setAttribute('aria-busy', 'true');
+                    return trackRow.feedbackToken;
+                }
+
+                if (activationToken !== trackRow.feedbackToken) {
+                    return null;
+                }
+
+                clearTimeout(trackRow.feedbackTimeout);
+                trackRow.feedbackTimeout = setTimeout(() => {
+                    if (activationToken !== trackRow.feedbackToken) {
+                        return;
+                    }
+
+                    trackRow.classList.remove('is-activating');
+                    trackRow.removeAttribute('aria-busy');
+                    trackRow.feedbackToken = null;
+                }, 220);
+                return null;
+            };
+
             const handleTrackActivation = async (e) => {
                 const trackRow = e.target.closest('.track-row');
                 if (!trackRow || !rankingList.contains(trackRow)) return;
@@ -2730,6 +2786,7 @@
 
                 e.preventDefault();
                 e.stopPropagation();
+                const activationToken = setTrackRowPending(trackRow, true);
 
                 const previewUrl = buttonElement.dataset.previewUrl;
                 const trackUri = buttonElement.dataset.trackUri;
@@ -2739,47 +2796,51 @@
                     image: trackRow.querySelector('img')?.src || ''
                 };
 
-                if (trackUri && accessToken) {
-                    console.log('Web Playback SDKでフル再生:', trackUri);
+                try {
+                    if (trackUri && accessToken) {
+                        console.log('Web Playback SDKでフル再生:', trackUri);
 
-                    updateCurrentPlaylist();
+                        updateCurrentPlaylist();
 
-                    const didStartSpotifyPlayback = await playTrackWithWebPlayback(trackUri, trackInfo);
-                    if (didStartSpotifyPlayback) {
-                        findCurrentTrackIndex(trackUri);
-                        if (!audioPlayer.paused) {
-                            audioPlayer.pause();
-                            currentTrackUrl = null;
-                        }
-                        return;
-                    }
-                }
-
-                if (previewUrl) {
-                    console.log('プレビュー再生中:', previewUrl);
-                    if (audioPlayer.paused || currentTrackUrl !== previewUrl) {
-                        audioPlayer.src = previewUrl;
-                        try {
-                            await audioPlayer.play();
-                            currentTrackUrl = previewUrl;
-                            console.log('プレビュー再生開始');
+                        const didStartSpotifyPlayback = await playTrackWithWebPlayback(trackUri, trackInfo);
+                        if (didStartSpotifyPlayback) {
+                            findCurrentTrackIndex(trackUri);
+                            if (!audioPlayer.paused) {
+                                audioPlayer.pause();
+                                currentTrackUrl = null;
+                            }
                             return;
-                        } catch (error) {
-                            console.error('プレビュー再生エラー:', error);
                         }
-                    } else {
-                        console.log('同じプレビューを再生中です');
+                    }
+
+                    if (previewUrl) {
+                        console.log('プレビュー再生中:', previewUrl);
+                        if (audioPlayer.paused || currentTrackUrl !== previewUrl) {
+                            audioPlayer.src = previewUrl;
+                            try {
+                                await audioPlayer.play();
+                                currentTrackUrl = previewUrl;
+                                console.log('プレビュー再生開始');
+                                return;
+                            } catch (error) {
+                                console.error('プレビュー再生エラー:', error);
+                            }
+                        } else {
+                            console.log('同じプレビューを再生中です');
+                            return;
+                        }
+                    }
+
+                    if (trackUri) {
+                        const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
+                        console.log('デバイス未準備、Spotifyで開く:', spotifyUrl);
+                        window.location.href = spotifyUrl;
                         return;
                     }
+                    alert('この楽曲の情報が取得できませんでした。');
+                } finally {
+                    setTrackRowPending(trackRow, false, activationToken);
                 }
-
-                if (trackUri) {
-                    const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                    console.log('デバイス未準備、Spotifyで開く:', spotifyUrl);
-                    window.location.href = spotifyUrl;
-                    return;
-                }
-                alert('この楽曲の情報が取得できませんでした。');
             };
 
             rankingList.addEventListener('click', handleTrackActivation);
