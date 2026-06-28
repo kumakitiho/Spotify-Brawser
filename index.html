@@ -562,16 +562,11 @@
 
         .tonearm {
             position: absolute;
-            top: 14%;
-            right: 8%;
+            top: 10%;
+            right: 7%;
             width: 34%;
-            height: 7px;
-            border-radius: 9999px;
-            background:
-                linear-gradient(90deg, #d8d8d8, #7d7d7d 45%, #f5f5f5 55%, #8c8c8c);
-            transform: rotate(-43deg);
-            transform-origin: right center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);
+            height: 42%;
+            background: transparent;
             pointer-events: none;
             z-index: 4;
         }
@@ -579,8 +574,8 @@
         .tonearm::after {
             content: '';
             position: absolute;
-            right: -18px;
-            top: -17px;
+            right: 0;
+            top: 0;
             width: 40px;
             height: 40px;
             border-radius: 9999px;
@@ -597,15 +592,49 @@
         .tonearm::before {
             content: '';
             position: absolute;
-            left: -18px;
-            top: -8px;
+            display: none;
+        }
+
+        .tonearm .tonearm-pipe {
+            position: absolute;
+            right: 23px;
+            top: 23px;
+            width: 84%;
+            height: 8px;
+            border-radius: 9999px;
+            background:
+                linear-gradient(90deg, #e6e6e6, #777 44%, #fafafa 55%, #6f6f6f);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);
+            transform: rotate(-35deg);
+            transform-origin: right center;
+        }
+
+        .tonearm .tonearm-pipe::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 1px;
             width: 24px;
-            height: 18px;
-            border-radius: 5px 5px 8px 8px;
+            height: 7px;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #777, #dcdcdc);
+            transform: rotate(18deg);
+            transform-origin: right center;
+        }
+
+        .tonearm .tonearm-pipe::after {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: -7px;
+            width: 30px;
+            height: 21px;
+            border-radius: 6px 6px 9px 9px;
             background:
                 linear-gradient(135deg, #f4f4f4, #777 60%, #202020);
             border-bottom: 5px solid #1DB954;
-            transform: rotate(10deg);
+            transform: rotate(18deg);
+            transform-origin: right center;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.38);
         }
 
@@ -774,7 +803,9 @@
                                 <div class="record-label"></div>
                                 <div class="record-spindle" aria-hidden="true"></div>
                             </div>
-                            <div class="tonearm" aria-hidden="true"></div>
+                            <div class="tonearm" aria-hidden="true">
+                                <div class="tonearm-pipe"></div>
+                            </div>
                         </div>
 
                         <div class="mt-4 text-center">
