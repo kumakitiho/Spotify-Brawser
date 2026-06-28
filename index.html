@@ -445,7 +445,7 @@
             position: relative;
             display: grid;
             place-items: center;
-            width: min(60vw, 250px);
+            width: min(78vw, 340px);
             aspect-ratio: 1;
             margin-inline: auto;
             border-radius: 9999px;
@@ -473,7 +473,7 @@
         }
 
         .record-vinyl {
-            inset: 7%;
+            inset: 4%;
             background:
                 repeating-radial-gradient(circle, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px),
                 radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.16), transparent 20%),
@@ -481,10 +481,10 @@
         }
 
         .record-hero-art {
-            left: 18%;
-            top: 18%;
-            width: 64%;
-            height: 64%;
+            left: 22%;
+            top: 22%;
+            width: 56%;
+            height: 56%;
             overflow: hidden;
             background: #282828;
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -493,50 +493,56 @@
         }
 
         .record-groove {
-            inset: 29%;
+            inset: 17%;
             border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow:
+                0 0 0 18px rgba(255, 255, 255, 0.025),
+                0 0 0 34px rgba(255, 255, 255, 0.018),
+                0 0 0 52px rgba(255, 255, 255, 0.014);
         }
 
         .record-label {
-            inset: 42%;
+            inset: 43%;
             background: rgba(255, 255, 255, 0.88);
             box-shadow: inset 0 0 0 8px rgba(0, 0, 0, 0.78);
         }
 
         .tonearm {
             position: absolute;
-            top: 12%;
-            left: 62%;
-            width: 34%;
-            height: 6px;
+            top: -7%;
+            right: -18%;
+            width: 45%;
+            height: 5px;
             border-radius: 9999px;
             background: rgba(255, 255, 255, 0.78);
-            transform: rotate(56deg);
-            transform-origin: left center;
+            transform: rotate(-43deg);
+            transform-origin: right center;
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+            pointer-events: none;
         }
 
         .tonearm::after {
             content: '';
             position: absolute;
-            left: -9px;
-            top: -7px;
-            width: 20px;
-            height: 20px;
+            right: -13px;
+            top: -10px;
+            width: 26px;
+            height: 26px;
             border-radius: 9999px;
             background: #1DB954;
+            box-shadow: 0 0 0 8px rgba(29, 185, 84, 0.16), inset 0 0 0 5px rgba(0, 0, 0, 0.24);
         }
 
         .tonearm::before {
             content: '';
             position: absolute;
-            right: -4px;
-            top: -3px;
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
+            left: -5px;
+            top: -4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
             background: rgba(255, 255, 255, 0.88);
-            transform: rotate(10deg);
+            transform: rotate(-12deg);
         }
 
         .record-shelf-stage.is-playing .record-hero-art {
@@ -556,6 +562,10 @@
         .shelf-track {
             position: relative;
             flex: 0 0 6.6rem;
+            width: 6.6rem;
+            min-width: 6.6rem;
+            max-width: 6.6rem;
+            overflow: hidden;
             border: 0;
             border-radius: 1.25rem;
             padding: 0;
@@ -585,6 +595,15 @@
 
         .shelf-track.is-selected .shelf-track-cover {
             box-shadow: 0 0 0 2px #1DB954, 0 0 28px rgba(29, 185, 84, 0.26);
+        }
+
+        .shelf-track-title,
+        .shelf-track-artist {
+            display: block;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         #record-shelf-list {
@@ -697,12 +716,6 @@
                             <div class="mx-auto mt-4 h-1.5 max-w-xs overflow-hidden rounded-full bg-white/10">
                                 <div id="shelf-progress-fill" class="h-full rounded-full bg-spotify-green" style="width: 0%"></div>
                             </div>
-                        </div>
-
-                        <div class="mt-6 flex items-center justify-center gap-4">
-                            <button id="shelf-prev-btn" class="h-11 w-11 rounded-full bg-white/10 text-2xl font-bold transition hover:bg-white/20" type="button" title="前の曲" aria-label="Shelfの前の曲">‹</button>
-                            <button id="shelf-play-btn" class="h-16 w-16 rounded-full bg-spotify-green text-2xl font-bold text-black transition hover:scale-105" type="button" title="再生/一時停止" aria-label="Shelfの再生または一時停止">Ⅱ</button>
-                            <button id="shelf-next-btn" class="h-11 w-11 rounded-full bg-white/10 text-2xl font-bold transition hover:bg-white/20" type="button" title="次の曲" aria-label="Shelfの次の曲">›</button>
                         </div>
 
                         <div class="mt-7 flex items-center justify-between gap-3">
@@ -923,9 +936,6 @@
         const shelfTrackName = document.getElementById('shelf-track-name');
         const shelfTrackArtist = document.getElementById('shelf-track-artist');
         const shelfProgressFill = document.getElementById('shelf-progress-fill');
-        const shelfPrevBtn = document.getElementById('shelf-prev-btn');
-        const shelfPlayBtn = document.getElementById('shelf-play-btn');
-        const shelfNextBtn = document.getElementById('shelf-next-btn');
         const shelfMixBtn = document.getElementById('shelf-mix-btn');
         const shelfRecentStrip = document.getElementById('shelf-recent-strip');
         
@@ -1306,16 +1316,11 @@
             recordShelfList.querySelectorAll('.shelf-track').forEach((button) => {
                 button.classList.toggle('is-selected', button.dataset.trackUri === selectedShelfTrackUri);
             });
-
-            const selectedIndex = shelfTracks.findIndex((track) => track?.uri === selectedShelfTrackUri);
-            shelfPrevBtn.disabled = selectedIndex <= 0;
-            shelfNextBtn.disabled = selectedIndex === -1 || selectedIndex >= shelfTracks.length - 1;
         }
 
         function setShelfPreviewPlaying(track, playing) {
             isPlaying = playing;
             currentPlayingTrackUri = playing ? track?.uri || currentPlayingTrackUri : null;
-            shelfPlayBtn.textContent = playing ? 'Ⅱ' : '▶';
             recordShelfSection.classList.toggle('is-playing', playing);
             updateTrackButtonStates();
         }
@@ -1363,10 +1368,10 @@
                 image.src = getShelfTrackImage(track);
                 image.alt = `${track.name} のジャケット`;
                 const title = document.createElement('div');
-                title.className = 'mt-2 truncate text-xs font-bold';
+                title.className = 'shelf-track-title mt-2 text-xs font-bold';
                 title.textContent = track.name || '不明な楽曲';
                 const artist = document.createElement('div');
-                artist.className = 'truncate text-[0.68rem] text-spotify-light-gray';
+                artist.className = 'shelf-track-artist text-[0.68rem] text-spotify-light-gray';
                 artist.textContent = getTrackArtistName(track);
                 button.append(image, title, artist);
                 recordShelfList.appendChild(button);
@@ -1419,42 +1424,6 @@
 
             const spotifyUrl = track.uri.replace('spotify:track:', 'https://open.spotify.com/track/');
             window.location.href = spotifyUrl;
-        }
-
-        async function toggleShelfPlayback() {
-            const selectedTrack = getTrackByUri(selectedShelfTrackUri);
-            const selectedPreviewUrl = selectedTrack?.preview_url || '';
-            const isSelectedPreviewLoaded = !!selectedPreviewUrl && currentTrackUrl === selectedPreviewUrl;
-
-            if (isSelectedPreviewLoaded && !audioPlayer.paused) {
-                audioPlayer.pause();
-                setShelfPreviewPlaying(selectedTrack, false);
-                updateShelfHero(selectedTrack, { paused: true, label: 'PAUSED PREVIEW ON YOUR SHELF' });
-                return;
-            }
-
-            if (isSelectedPreviewLoaded && audioPlayer.paused) {
-                try {
-                    await audioPlayer.play();
-                    setShelfPreviewPlaying(selectedTrack, true);
-                    updateShelfHero(selectedTrack, { paused: false, label: 'PLAYING PREVIEW ON YOUR SHELF' });
-                    return;
-                } catch (error) {
-                    console.error('Shelf preview resume error:', error);
-                }
-            }
-
-            await togglePlayback();
-        }
-
-        async function playAdjacentShelfTrack(direction) {
-            if (!shelfTracks.length) return;
-            const currentIndex = shelfTracks.findIndex((track) => track?.uri === selectedShelfTrackUri);
-            const fallbackIndex = direction > 0 ? -1 : shelfTracks.length;
-            const nextIndex = (currentIndex === -1 ? fallbackIndex : currentIndex) + direction;
-            const nextTrack = shelfTracks[nextIndex];
-            if (!nextTrack) return;
-            await playTrackFromShelf(nextTrack, { intent: 'tap' });
         }
 
         function renderYearFilterButtons() {
@@ -2090,9 +2059,6 @@
                     fetchAndDisplayData();
                 }
             });
-            shelfPrevBtn.addEventListener('click', () => playAdjacentShelfTrack(-1));
-            shelfNextBtn.addEventListener('click', () => playAdjacentShelfTrack(1));
-            shelfPlayBtn.addEventListener('click', toggleShelfPlayback);
             shelfMixBtn.addEventListener('click', handleCreatePlaylist);
             setupShelfInteractions();
             
@@ -3741,12 +3707,10 @@
             if (isPlaying) {
                 playIcon.classList.add('hidden');
                 pauseIcon.classList.remove('hidden');
-                shelfPlayBtn.textContent = 'Ⅱ';
                 recordShelfSection.classList.add('is-playing');
             } else {
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
-                shelfPlayBtn.textContent = '▶';
                 recordShelfSection.classList.remove('is-playing');
             }
         }
