@@ -567,8 +567,14 @@
             width: 43%;
             height: 62%;
             background: transparent;
-            pointer-events: none;
+            cursor: grab;
+            pointer-events: auto;
+            touch-action: none;
             z-index: 4;
+        }
+
+        .tonearm.is-dragging {
+            cursor: grabbing;
         }
 
         .tonearm::after {
@@ -605,8 +611,13 @@
             background:
                 linear-gradient(90deg, #e6e6e6, #777 44%, #fafafa 55%, #6f6f6f);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);
-            transform: rotate(-72deg);
+            transform: rotate(var(--tonearm-angle, -72deg));
             transform-origin: right center;
+            transition: transform 0.22s ease;
+        }
+
+        .tonearm.is-dragging .tonearm-pipe {
+            transition: none;
         }
 
         .tonearm .tonearm-pipe::before {
@@ -638,8 +649,8 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.38);
         }
 
-        .record-shelf-stage.is-playing .record-disc {
-            animation: spinRecord 5.2s linear infinite;
+        .record-disc {
+            transform: rotate(var(--record-rotation, 0deg));
         }
 
         .record-shelf-stage.is-dropping .record-disc {
@@ -647,9 +658,9 @@
         }
 
         @keyframes recordDropPulse {
-            0% { transform: scale(0.92) rotate(-10deg); }
-            60% { transform: scale(1.06) rotate(12deg); }
-            100% { transform: scale(1) rotate(0deg); }
+            0% { transform: scale(0.92) rotate(calc(var(--record-rotation, 0deg) - 10deg)); }
+            60% { transform: scale(1.06) rotate(calc(var(--record-rotation, 0deg) + 12deg)); }
+            100% { transform: scale(1) rotate(var(--record-rotation, 0deg)); }
         }
 
         .shelf-track {
@@ -1029,6 +1040,8 @@
         const statsContent = document.getElementById('stats-content');
         const recordShelfSection = document.getElementById('record-shelf-section');
         const shelfDropZone = document.getElementById('shelf-drop-zone');
+        const recordDisc = document.querySelector('.record-disc');
+        const tonearm = document.querySelector('.tonearm');
         const recordShelfList = document.getElementById('record-shelf-list');
         const shelfRecordImage = document.getElementById('shelf-record-image');
         const shelfStateLabel = document.getElementById('shelf-state-label');
@@ -1084,7 +1097,15 @@
         let selectedShelfTrackUri = null;
         let recentShelfTracks = [];
         let shelfDragState = null;
+        let tonearmDragState = null;
+        let currentTonearmAngle = -72;
+        let recordRotationDegrees = 0;
+        let recordSpinFrameId = null;
+        let lastRecordSpinTimestamp = null;
         let suppressNextShelfClick = false;
+        const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const TONEARM_PLAY_ANGLE = -72;
+        const TONEARM_REST_ANGLE = -88;
 
         const artistGenreCache = new Map();
 
@@ -1397,6 +1418,7 @@
                 shelfTrackArtist.textContent = 'ジャケットを中央のレコードへ';
                 shelfStateLabel.textContent = 'DROP A TRACK ON THE RECORD';
                 recordShelfSection.classList.remove('is-playing');
+                updateRecordSpinState(false);
                 updateShelfSelectedState();
                 return;
             }
@@ -1408,6 +1430,7 @@
             shelfTrackArtist.textContent = getTrackArtistName(track);
             shelfStateLabel.textContent = label || (paused ? 'READY ON YOUR SHELF' : 'PLAYING ON YOUR SHELF');
             recordShelfSection.classList.toggle('is-playing', !paused);
+            updateRecordSpinState(!paused);
             updateShelfSelectedState();
         }
 
@@ -1421,7 +1444,136 @@
             isPlaying = playing;
             currentPlayingTrackUri = playing ? track?.uri || currentPlayingTrackUri : null;
             recordShelfSection.classList.toggle('is-playing', playing);
+            updateRecordSpinState(playing);
             updateTrackButtonStates();
+        }
+
+        function renderRecordRotation() {
+            recordDisc?.style.setProperty('--record-rotation', `${recordRotationDegrees}deg`);
+        }
+
+        function stopRecordSpin() {
+            if (recordSpinFrameId) {
+                cancelAnimationFrame(recordSpinFrameId);
+                recordSpinFrameId = null;
+            }
+            lastRecordSpinTimestamp = null;
+            renderRecordRotation();
+        }
+
+        function spinRecordFrame(timestamp) {
+            if (lastRecordSpinTimestamp === null) {
+                lastRecordSpinTimestamp = timestamp;
+            }
+
+            const elapsed = timestamp - lastRecordSpinTimestamp;
+            lastRecordSpinTimestamp = timestamp;
+            recordRotationDegrees = (recordRotationDegrees + (elapsed / 5200) * 360) % 360;
+            renderRecordRotation();
+            recordSpinFrameId = requestAnimationFrame(spinRecordFrame);
+        }
+
+        function updateRecordSpinState(playing = isPlaying) {
+            if (reduceMotionQuery.matches) {
+                stopRecordSpin();
+                return;
+            }
+
+            if (playing) {
+                if (!recordSpinFrameId) {
+                    recordSpinFrameId = requestAnimationFrame(spinRecordFrame);
+                }
+                return;
+            }
+
+            stopRecordSpin();
+        }
+
+        function setTonearmAngle(angle) {
+            const clampedAngle = Math.max(-88, Math.min(-24, angle));
+            currentTonearmAngle = clampedAngle;
+            tonearm?.style.setProperty('--tonearm-angle', `${clampedAngle}deg`);
+            return clampedAngle;
+        }
+
+        function getTonearmAngleFromPointer(clientX, clientY) {
+            const tonearmRect = tonearm.getBoundingClientRect();
+            const pivotX = tonearmRect.right - 23;
+            const pivotY = tonearmRect.top + 23;
+            const pointerAngle = Math.atan2(clientY - pivotY, clientX - pivotX) * 180 / Math.PI;
+            return pointerAngle - 180;
+        }
+
+        function getNeedleTipPoint(angle = currentTonearmAngle) {
+            const tonearmRect = tonearm.getBoundingClientRect();
+            const pivotX = tonearmRect.right - 23;
+            const pivotY = tonearmRect.top + 27;
+            const armLength = tonearmRect.width * 1.04 + 28;
+            const radians = angle * Math.PI / 180;
+
+            return {
+                x: pivotX - Math.cos(radians) * armLength,
+                y: pivotY - Math.sin(radians) * armLength
+            };
+        }
+
+        function getNeedleDropState({ x, y }) {
+            const discRect = recordDisc.getBoundingClientRect();
+            const centerX = discRect.left + discRect.width / 2;
+            const centerY = discRect.top + discRect.height / 2;
+            const radius = discRect.width / 2;
+            const distanceRatio = Math.hypot(x - centerX, y - centerY) / radius;
+
+            if (distanceRatio > 1.08) return 'off-record';
+            if (distanceRatio < 0.48) return 'silent-label';
+            if (distanceRatio >= 0.58 && distanceRatio <= 1.04) return 'groove';
+            return 'silent-label';
+        }
+
+        function getSelectedShelfTrack() {
+            return getTrackByUri(selectedShelfTrackUri) || shelfTracks[0] || currentTrackItems.find((track) => track?.uri) || null;
+        }
+
+        async function pausePlaybackFromTonearm() {
+            if (!audioPlayer.paused) {
+                audioPlayer.pause();
+                currentTrackUrl = null;
+            }
+
+            if (player && isPlaying) {
+                try {
+                    await player.pause();
+                    isPlaying = false;
+                    recordShelfSection.classList.remove('is-playing');
+                    updateRecordSpinState(false);
+                    updatePlayPauseButton();
+                    updateTrackButtonStates();
+                    return;
+                } catch (error) {
+                    console.error('Tonearm pause error:', error);
+                }
+            }
+
+            isPlaying = false;
+            recordShelfSection.classList.remove('is-playing');
+            updateRecordSpinState(false);
+            updatePlayPauseButton();
+            updateTrackButtonStates();
+        }
+
+        async function playSelectedTrackFromTonearm() {
+            const track = getSelectedShelfTrack();
+            if (!track) {
+                shelfStateLabel.textContent = 'DROP A TRACK ON THE RECORD';
+                return;
+            }
+
+            if (isPlaying && currentPlayingTrackUri === track.uri) {
+                shelfStateLabel.textContent = 'NEEDLE ON THE GROOVE';
+                return;
+            }
+
+            await playTrackFromShelf(track, { intent: 'tonearm' });
         }
 
         function renderShelfRecentStrip() {
@@ -2160,6 +2312,8 @@
             });
             shelfMixBtn.addEventListener('click', handleCreatePlaylist);
             setupShelfInteractions();
+            setupTonearmInteractions();
+            reduceMotionQuery.addEventListener?.('change', () => updateRecordSpinState(isPlaying));
             
             // ビュー切り替えボタンのイベントリスナー
             document.getElementById('artist-list-view').addEventListener('click', showListView);
@@ -2261,6 +2415,73 @@
                 shelfDragState.ghost?.remove();
                 shelfDropZone.classList.remove('is-drag-over');
                 shelfDragState = null;
+            });
+        }
+
+        function setupTonearmInteractions() {
+            tonearm.addEventListener('pointerdown', (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                event.preventDefault();
+                tonearm.setPointerCapture?.(event.pointerId);
+                tonearm.classList.add('is-dragging');
+                tonearmDragState = {
+                    pointerId: event.pointerId,
+                    lastDropState: null
+                };
+                shelfStateLabel.textContent = 'MOVE THE NEEDLE';
+            });
+
+            tonearm.addEventListener('pointermove', (event) => {
+                if (!tonearmDragState || event.pointerId !== tonearmDragState.pointerId) return;
+                event.preventDefault();
+
+                const angle = setTonearmAngle(getTonearmAngleFromPointer(event.clientX, event.clientY));
+                const dropState = getNeedleDropState(getNeedleTipPoint(angle));
+                tonearmDragState.lastDropState = dropState;
+
+                if (dropState === 'groove') {
+                    shelfStateLabel.textContent = 'RELEASE ON THE GROOVE';
+                } else if (dropState === 'off-record') {
+                    shelfStateLabel.textContent = 'RELEASE OUTSIDE TO STOP';
+                } else {
+                    shelfStateLabel.textContent = 'THE LABEL DOES NOT PLAY';
+                }
+            });
+
+            const finishTonearmDrag = async (event) => {
+                if (!tonearmDragState || event.pointerId !== tonearmDragState.pointerId) return;
+                event.preventDefault();
+
+                const dropState = tonearmDragState.lastDropState || getNeedleDropState(getNeedleTipPoint());
+                tonearmDragState = null;
+                tonearm.classList.remove('is-dragging');
+                tonearm.releasePointerCapture?.(event.pointerId);
+
+                if (dropState === 'groove') {
+                    setTonearmAngle(TONEARM_PLAY_ANGLE);
+                    shelfStateLabel.textContent = 'NEEDLE ON THE GROOVE';
+                    await playSelectedTrackFromTonearm();
+                    return;
+                }
+
+                if (dropState === 'off-record') {
+                    setTonearmAngle(TONEARM_REST_ANGLE);
+                    shelfStateLabel.textContent = 'NEEDLE OFF THE RECORD';
+                    await pausePlaybackFromTonearm();
+                    return;
+                }
+
+                setTonearmAngle(TONEARM_PLAY_ANGLE);
+                shelfStateLabel.textContent = 'MOVE THE NEEDLE TO THE GROOVE';
+            };
+
+            tonearm.addEventListener('pointerup', finishTonearmDrag);
+            tonearm.addEventListener('pointercancel', (event) => {
+                if (!tonearmDragState || event.pointerId !== tonearmDragState.pointerId) return;
+                tonearmDragState = null;
+                tonearm.classList.remove('is-dragging');
+                tonearm.releasePointerCapture?.(event.pointerId);
+                setTonearmAngle(isPlaying ? TONEARM_PLAY_ANGLE : TONEARM_REST_ANGLE);
             });
         }
 
@@ -3807,10 +4028,12 @@
                 playIcon.classList.add('hidden');
                 pauseIcon.classList.remove('hidden');
                 recordShelfSection.classList.add('is-playing');
+                updateRecordSpinState(true);
             } else {
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
                 recordShelfSection.classList.remove('is-playing');
+                updateRecordSpinState(false);
             }
         }
         
