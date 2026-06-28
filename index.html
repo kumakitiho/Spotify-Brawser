@@ -1524,10 +1524,15 @@
             const radius = discRect.width / 2;
             const distanceRatio = Math.hypot(x - centerX, y - centerY) / radius;
 
-            if (distanceRatio > 1.08) return 'off-record';
-            if (distanceRatio < 0.48) return 'silent-label';
-            if (distanceRatio >= 0.58 && distanceRatio <= 1.04) return 'groove';
+            if (distanceRatio > 0.98) return 'off-record';
+            if (distanceRatio < 0.5) return 'silent-label';
+            if (distanceRatio >= 0.5 && distanceRatio <= 0.98) return 'groove';
             return 'silent-label';
+        }
+
+        function getTonearmDropState(angle = currentTonearmAngle) {
+            if (angle <= -82) return 'off-record';
+            return getNeedleDropState(getNeedleTipPoint(angle));
         }
 
         function getSelectedShelfTrack() {
@@ -2436,7 +2441,7 @@
                 event.preventDefault();
 
                 const angle = setTonearmAngle(getTonearmAngleFromPointer(event.clientX, event.clientY));
-                const dropState = getNeedleDropState(getNeedleTipPoint(angle));
+                const dropState = getTonearmDropState(angle);
                 tonearmDragState.lastDropState = dropState;
 
                 if (dropState === 'groove') {
@@ -2452,7 +2457,7 @@
                 if (!tonearmDragState || event.pointerId !== tonearmDragState.pointerId) return;
                 event.preventDefault();
 
-                const dropState = tonearmDragState.lastDropState || getNeedleDropState(getNeedleTipPoint());
+                const dropState = tonearmDragState.lastDropState || getTonearmDropState();
                 tonearmDragState = null;
                 tonearm.classList.remove('is-dragging');
                 tonearm.releasePointerCapture?.(event.pointerId);
