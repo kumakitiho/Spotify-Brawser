@@ -267,66 +267,21 @@
         .profile-record-shell {
             position: relative;
             display: grid;
-            width: 64px;
-            height: 64px;
+            width: 46px;
+            height: 46px;
             flex-shrink: 0;
             place-items: center;
             border-radius: 9999px;
             background: #282828;
-            isolation: isolate;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .profile-record-shell::before,
-        .profile-record-shell::after {
-            content: '';
-            position: absolute;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .profile-record-shell::before {
-            inset: -6px;
-            border-radius: inherit;
-            background: conic-gradient(from 0deg, #1DB954, rgba(255, 255, 255, 0.86), #282828, #1DB954);
-            filter: drop-shadow(0 0 14px rgba(29, 185, 84, 0.36));
-            z-index: -1;
-        }
-
-        .profile-record-shell::after {
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.86);
-            border-radius: inherit;
-            background: #121212;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
-            z-index: 2;
-        }
-
-        .profile-record-shell.playback-active {
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
-        }
-
-        .profile-record-shell.playback-active::before,
-        .profile-record-shell.playback-active::after {
-            opacity: 1;
-        }
-
-        .profile-record-shell.is-playing #user-avatar {
-            animation: spinRecord 4.8s linear infinite;
-        }
-
-        .profile-record-shell.is-paused #user-avatar {
-            filter: saturate(0.8) brightness(0.78);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
         }
 
         #user-avatar {
             position: relative;
             z-index: 1;
             display: block;
-            width: 58px;
-            height: 58px;
+            width: 42px;
+            height: 42px;
             border-radius: 9999px;
             object-fit: cover;
             transform-origin: center;
@@ -347,20 +302,9 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        .profile-record-shell.playback-active .profile-now-playing-dot {
-            opacity: 1;
-            transform: scale(1);
-        }
-
         @keyframes spinRecord {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .profile-record-shell.is-playing #user-avatar {
-                animation: none;
-            }
         }
 
         .track-row {
@@ -773,10 +717,10 @@
             </button>
         </div>
         <div id="main-view" class="hidden">
-            <header class="sticky top-0 z-40 -mx-4 mb-8 flex items-center justify-between border-b border-white/10 bg-spotify-dark px-4 py-3 backdrop-blur-md md:-mx-8 md:px-8">
-                <h1 class="min-w-0 text-3xl font-bold">My Stats</h1>
-                <div id="user-profile" class="flex min-w-0 items-center gap-3">
-                    <span id="user-name" class="hidden max-w-[12rem] truncate sm:inline"></span>
+            <header class="sticky top-0 z-40 -mx-4 mb-5 flex items-center justify-between border-b border-white/10 bg-spotify-dark px-4 py-2 backdrop-blur-md md:-mx-8 md:px-8">
+                <h1 class="min-w-0 text-2xl font-bold">My Stats</h1>
+                <div id="user-profile" class="flex min-w-0 items-center gap-2">
+                    <span id="user-name" class="hidden max-w-[10rem] truncate text-sm sm:inline"></span>
                     <div id="profile-record-shell" class="profile-record-shell" title="プロフィール">
                         <img id="user-avatar" src="https://placehold.co/40x40/282828/FFFFFF?text=U" alt="ユーザーアイコン">
                         <span class="profile-now-playing-dot" aria-hidden="true"></span>
@@ -1347,25 +1291,15 @@
         }
 
         function updateProfilePlaybackBadge(track, paused) {
-            const trackImageUrl = getTrackImageUrl(track);
-            if (!trackImageUrl) {
-                resetProfilePlaybackBadge();
-                return;
-            }
-
-            userProfile.avatar.src = trackImageUrl;
-            userProfile.avatar.alt = track?.name ? `再生中: ${track.name}` : '再生中の楽曲';
-            userProfile.recordShell.title = track?.name ? `再生中: ${track.name}` : '再生中の楽曲';
-            userProfile.recordShell.classList.add('playback-active');
-            userProfile.recordShell.classList.toggle('is-playing', !paused);
-            userProfile.recordShell.classList.toggle('is-paused', !!paused);
+            userProfile.avatar.src = userAvatarUrl;
+            userProfile.avatar.alt = 'ユーザーアイコン';
+            userProfile.recordShell.title = track?.name ? `プロフィール / 再生中: ${track.name}` : 'プロフィール';
         }
 
         function resetProfilePlaybackBadge() {
             userProfile.avatar.src = userAvatarUrl;
             userProfile.avatar.alt = 'ユーザーアイコン';
             userProfile.recordShell.title = 'プロフィール';
-            userProfile.recordShell.classList.remove('playback-active', 'is-playing', 'is-paused');
         }
 
         function getTrackArtistName(track) {
@@ -1542,7 +1476,6 @@
         async function pausePlaybackFromTonearm() {
             if (!audioPlayer.paused) {
                 audioPlayer.pause();
-                currentTrackUrl = null;
             }
 
             if (player && isPlaying) {
@@ -1566,6 +1499,44 @@
             updateTrackButtonStates();
         }
 
+        async function resumeCurrentTrackFromTonearm(track) {
+            const previewUrl = track?.preview_url || '';
+
+            if (player) {
+                try {
+                    const state = await player.getCurrentState();
+                    const sdkTrackUri = state?.track_window?.current_track?.uri || null;
+                    if (sdkTrackUri === track?.uri) {
+                        await player.resume();
+                        isPlaying = true;
+                        currentPlayingTrackUri = track?.uri || currentPlayingTrackUri;
+                        recordShelfSection.classList.add('is-playing');
+                        updateRecordSpinState(true);
+                        updatePlayPauseButton();
+                        updateTrackButtonStates();
+                        updateShelfHero(track, { paused: false, label: 'NEEDLE BACK ON THE GROOVE' });
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Tonearm Spotify resume error:', error);
+                }
+            }
+
+            if (previewUrl && currentTrackUrl === previewUrl && audioPlayer.paused) {
+                try {
+                    await audioPlayer.play();
+                    setShelfPreviewPlaying(track, true);
+                    updateShelfHero(track, { paused: false, label: 'NEEDLE BACK ON THE GROOVE' });
+                    return true;
+                } catch (error) {
+                    console.error('Tonearm preview resume error:', error);
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
         async function playSelectedTrackFromTonearm() {
             const track = getSelectedShelfTrack();
             if (!track) {
@@ -1576,6 +1547,11 @@
             if (isPlaying && currentPlayingTrackUri === track.uri) {
                 shelfStateLabel.textContent = 'NEEDLE ON THE GROOVE';
                 return;
+            }
+
+            if (!isPlaying && currentPlayingTrackUri === track.uri) {
+                const didResume = await resumeCurrentTrackFromTonearm(track);
+                if (didResume) return;
             }
 
             await playTrackFromShelf(track, { intent: 'tonearm' });
@@ -2319,6 +2295,16 @@
             setupShelfInteractions();
             setupTonearmInteractions();
             reduceMotionQuery.addEventListener?.('change', () => updateRecordSpinState(isPlaying));
+            audioPlayer.addEventListener('ended', () => {
+                if (!currentTrackUrl) return;
+                isPlaying = false;
+                currentTrackUrl = null;
+                recordShelfSection.classList.remove('is-playing');
+                updateRecordSpinState(false);
+                updatePlayPauseButton();
+                updateTrackButtonStates();
+                updateShelfHero(getTrackByUri(selectedShelfTrackUri), { paused: true, label: 'PREVIEW FINISHED ON YOUR SHELF' });
+            });
             
             // ビュー切り替えボタンのイベントリスナー
             document.getElementById('artist-list-view').addEventListener('click', showListView);
