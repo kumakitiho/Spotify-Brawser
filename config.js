@@ -54,6 +54,10 @@ function loadShelfModeTurntableSkin() {
         {
             src: 'turntable-reference-match.js?v=20260705-reference-match-v4',
             key: 'turntable-reference-match'
+        },
+        {
+            src: 'turntable-no-drag.js?v=20260705-no-drag-v1',
+            key: 'turntable-no-drag'
         }
     ];
 
