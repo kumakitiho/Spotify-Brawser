@@ -1,0 +1,431 @@
+/* Photoreal Shelf Mode turntable skin
+   Loaded from config.js so the original inline styles stay intact and this file only overrides Shelf Mode. */
+
+#record-shelf-section.record-shelf-stage {
+    overflow: hidden;
+    border-color: rgba(255, 255, 255, 0.10);
+    background:
+        radial-gradient(circle at 22% 0%, rgba(29, 185, 84, 0.20), transparent 28%),
+        radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.10), transparent 24%),
+        linear-gradient(160deg, rgba(16, 17, 17, 0.98), rgba(4, 5, 5, 0.98));
+}
+
+#record-shelf-section .shelf-drop-zone {
+    width: min(100%, 900px) !important;
+    aspect-ratio: 900 / 665 !important;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: clamp(16px, 2.1vw, 24px);
+    border: 1px solid rgba(72, 80, 73, 0.78);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 8%, transparent 88%, rgba(56, 63, 58, 0.38)),
+        repeating-linear-gradient(16deg, rgba(255, 255, 255, 0.16) 0 1px, rgba(82, 91, 84, 0.07) 1px 5px, transparent 5px 13px),
+        radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.46), transparent 18%),
+        linear-gradient(135deg, #f4f5ee 0%, #d7d9d2 42%, #b8beb7 74%, #8e968f 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        inset 0 -12px 30px rgba(53, 61, 55, 0.32),
+        0 28px 68px rgba(0, 0, 0, 0.54);
+}
+
+#record-shelf-section .shelf-drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.72;
+    background:
+        radial-gradient(circle at 3.7% 5.2%, #f8f9f2 0 0.42rem, #576059 0.45rem 0.52rem, transparent 0.55rem),
+        radial-gradient(circle at 96.1% 5.2%, #f8f9f2 0 0.42rem, #576059 0.45rem 0.52rem, transparent 0.55rem),
+        radial-gradient(circle at 3.7% 94.5%, #f8f9f2 0 0.42rem, #576059 0.45rem 0.52rem, transparent 0.55rem),
+        radial-gradient(circle at 96.1% 94.5%, #f8f9f2 0 0.42rem, #576059 0.45rem 0.52rem, transparent 0.55rem),
+        radial-gradient(circle at 48% 58%, rgba(0, 0, 0, 0.10), transparent 54%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 14%, transparent 86%, rgba(0, 0, 0, 0.10));
+}
+
+#record-shelf-section .shelf-drop-zone::after {
+    content: '';
+    position: absolute;
+    left: 6.7%;
+    top: 7.4%;
+    width: 7.4%;
+    aspect-ratio: 1;
+    z-index: 5;
+    border-radius: 9999px;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 50% 50%, #777f78 0 7%, transparent 8%),
+        radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.92), rgba(238, 240, 232, 0.68) 24%, rgba(143, 151, 144, 0.82) 58%, rgba(44, 50, 47, 0.94) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(20, 24, 22, 0.72),
+        inset 0 0 0 13px rgba(255, 255, 255, 0.12),
+        0 7px 14px rgba(0, 0, 0, 0.24);
+}
+
+#record-shelf-section .shelf-drop-zone.is-drag-over {
+    transform: scale(1.01);
+    filter: drop-shadow(0 0 30px rgba(29, 185, 84, 0.28));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -12px 30px rgba(53, 61, 55, 0.32),
+        0 30px 74px rgba(29, 185, 84, 0.24);
+}
+
+#record-shelf-section .record-progress-ring,
+#record-shelf-section .turntable-platter,
+#record-shelf-section .record-disc,
+#record-shelf-section .record-vinyl,
+#record-shelf-section .record-hero-art,
+#record-shelf-section .record-groove,
+#record-shelf-section .record-label,
+#record-shelf-section .record-spindle {
+    position: absolute;
+    border-radius: 9999px;
+}
+
+#record-shelf-section .record-progress-ring {
+    left: 4.9%;
+    top: 6.2%;
+    width: 65.3%;
+    aspect-ratio: 1;
+    z-index: 4;
+    border: 0;
+    background:
+        repeating-conic-gradient(from -6deg, rgba(250, 252, 244, 0.96) 0 0.55deg, transparent 0.6deg 2.2deg),
+        repeating-conic-gradient(from 1deg, rgba(160, 168, 160, 0.86) 0 0.5deg, transparent 0.55deg 2.05deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 88%, #000 88.4% 100%);
+    mask: radial-gradient(circle, transparent 0 88%, #000 88.4% 100%);
+    box-shadow: none;
+}
+
+#record-shelf-section .record-progress-ring::before,
+#record-shelf-section .record-progress-ring::after {
+    content: '';
+    position: absolute;
+    inset: 3.7%;
+    border-radius: inherit;
+    background: repeating-conic-gradient(from 0.6deg, rgba(248, 250, 242, 0.86) 0 0.5deg, transparent 0.55deg 2.65deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 87%, #000 87.5% 100%);
+    mask: radial-gradient(circle, transparent 0 87%, #000 87.5% 100%);
+}
+
+#record-shelf-section .record-progress-ring::after {
+    inset: 7.2%;
+    opacity: 0.62;
+}
+
+#record-shelf-section .turntable-platter {
+    left: 4.9%;
+    top: 6.2%;
+    width: 65.3%;
+    aspect-ratio: 1;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.08), transparent 19%),
+        radial-gradient(circle, #1f2522 0 77%, #111514 78% 94%, #6e756e 95% 96%, #111413 97% 100%);
+    box-shadow:
+        inset 0 0 0 6px rgba(255, 255, 255, 0.05),
+        inset 0 -24px 46px rgba(0, 0, 0, 0.62),
+        0 18px 34px rgba(0, 0, 0, 0.42);
+}
+
+#record-shelf-section .record-disc {
+    left: 9.8%;
+    top: 12.8%;
+    width: 55.6%;
+    aspect-ratio: 1;
+    z-index: 3;
+    transform: rotate(var(--record-rotation, 0deg));
+    transform-origin: center;
+    filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35));
+}
+
+#record-shelf-section .record-vinyl {
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(ellipse at 34% 20%, rgba(255, 255, 255, 0.22), transparent 12%),
+        radial-gradient(ellipse at 62% 74%, rgba(255, 255, 255, 0.04), transparent 24%),
+        repeating-radial-gradient(circle, rgba(255, 255, 255, 0.075) 0 1px, rgba(0, 0, 0, 0) 1px 7px),
+        radial-gradient(circle, #232927 0 2%, #111514 14%, #050606 54%, #020303 78%, #151a17 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 0 42px rgba(0, 0, 0, 0.82),
+        inset 0 0 0 30px rgba(0, 0, 0, 0.08);
+}
+
+#record-shelf-section .record-vinyl::before,
+#record-shelf-section .record-vinyl::after {
+    content: '';
+    position: absolute;
+    inset: 8%;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+#record-shelf-section .record-vinyl::before {
+    background: repeating-radial-gradient(circle, transparent 0 14px, rgba(255, 255, 255, 0.035) 15px 16px, transparent 17px 24px);
+}
+
+#record-shelf-section .record-vinyl::after {
+    inset: 19%;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+        0 0 0 14px rgba(255, 255, 255, 0.018),
+        0 0 0 33px rgba(255, 255, 255, 0.014),
+        0 0 0 54px rgba(255, 255, 255, 0.010);
+}
+
+#record-shelf-section .record-groove {
+    inset: 6%;
+    z-index: 2;
+    border: 0;
+    background:
+        radial-gradient(circle, transparent 0 52%, rgba(255, 255, 255, 0.05) 52.2% 52.6%, transparent 52.8%),
+        radial-gradient(circle, transparent 0 63%, rgba(255, 255, 255, 0.04) 63.1% 63.4%, transparent 63.7%),
+        radial-gradient(circle, transparent 0 74%, rgba(255, 255, 255, 0.035) 74.1% 74.4%, transparent 74.8%);
+    box-shadow: none;
+    pointer-events: none;
+}
+
+#record-shelf-section .record-label {
+    inset: 35.8%;
+    z-index: 4;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 46%, rgba(112, 118, 112, 0.10)),
+        radial-gradient(circle at 35% 28%, #ffffff 0, #eeeeea 42%, #c8cbc3 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+        inset 0 0 0 16px rgba(255, 255, 255, 0.06),
+        0 0 0 18px rgba(0, 0, 0, 0.58);
+    opacity: 0.94;
+    pointer-events: none;
+}
+
+#record-shelf-section .record-label::before,
+#record-shelf-section .record-label::after {
+    content: '';
+    position: absolute;
+    left: 26%;
+    right: 26%;
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(97, 105, 98, 0.34);
+}
+
+#record-shelf-section .record-label::before { top: 37%; }
+#record-shelf-section .record-label::after { top: 57%; opacity: 0.68; }
+
+#record-shelf-section .record-hero-art {
+    left: 39.8%;
+    top: 39.8%;
+    width: 20.4%;
+    height: 20.4%;
+    z-index: 5;
+    border-radius: 9999px;
+    object-fit: cover;
+    opacity: 0.64;
+    filter: saturate(0.62) contrast(0.92) brightness(1.18);
+    mix-blend-mode: multiply;
+    border: 1px solid rgba(20, 24, 22, 0.22);
+    box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.32);
+}
+
+#record-shelf-section .record-spindle {
+    inset: 48.6%;
+    z-index: 6;
+    background:
+        radial-gradient(circle at 36% 28%, #ffffff, #b8bdb5 44%, #4f5851 100%);
+    box-shadow:
+        0 0 0 1px rgba(20, 24, 22, 0.58),
+        0 0 6px rgba(255, 255, 255, 0.42);
+}
+
+#record-shelf-section .tonearm {
+    top: 13.6%;
+    right: 8.4%;
+    width: 37.4%;
+    height: 72%;
+    z-index: 8;
+    filter: drop-shadow(3px 8px 6px rgba(0, 0, 0, 0.35));
+}
+
+#record-shelf-section .tonearm::after {
+    right: 0;
+    top: 0;
+    width: 23%;
+    max-width: 96px;
+    min-width: 58px;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    background:
+        radial-gradient(circle at 50% 50%, #1a1f1d 0 11%, transparent 12%),
+        radial-gradient(circle at 50% 50%, #dfe1da 0 26%, #b7bcb5 27% 39%, #f4f5ef 40% 54%, #8e978f 55% 70%, #101413 71% 100%);
+    border: 5px solid rgba(14, 17, 16, 0.92);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.26),
+        inset 0 -14px 22px rgba(0, 0, 0, 0.38),
+        0 0 0 10px rgba(0, 0, 0, 0.16),
+        0 14px 28px rgba(0, 0, 0, 0.34);
+}
+
+#record-shelf-section .tonearm::before {
+    content: '';
+    display: block;
+    position: absolute;
+    right: 4.5%;
+    top: -7.5%;
+    width: 19%;
+    height: 8.2%;
+    border-radius: 10px;
+    background:
+        repeating-linear-gradient(0deg, rgba(54, 61, 56, 0.55) 0 2px, transparent 2px 5px),
+        linear-gradient(135deg, #ffffff, #9fa79f 42%, #4e5750 100%);
+    border: 2px solid rgba(54, 61, 56, 0.7);
+    box-shadow: 0 9px 14px rgba(0, 0, 0, 0.26);
+}
+
+#record-shelf-section .tonearm .tonearm-pipe {
+    right: 23px;
+    top: 23px;
+    width: 103%;
+    height: 10px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #f3f5ef 0%, #97a098 24%, #fcfdf8 48%, #768079 76%, #39413c 100%);
+    box-shadow:
+        0 9px 13px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74),
+        inset 0 -2px 0 rgba(40, 47, 42, 0.48);
+    transform: rotate(var(--tonearm-angle, -72deg));
+    transform-origin: right center;
+    transition: transform 0.22s ease;
+}
+
+#record-shelf-section .tonearm .tonearm-pipe::before {
+    left: -15%;
+    top: -1px;
+    width: 23%;
+    height: 10px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #667069, #f2f4ee 56%, #7a837c);
+    transform: rotate(18deg);
+    box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+#record-shelf-section .tonearm .tonearm-pipe::after {
+    left: -28%;
+    top: -20px;
+    width: 24%;
+    min-width: 58px;
+    height: 42px;
+    border-radius: 8px 8px 11px 11px;
+    background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.10), transparent 32%),
+        linear-gradient(135deg, #252d29 0%, #0c0f0e 68%, #020303 100%);
+    border: 2px solid rgba(0, 0, 0, 0.78);
+    border-bottom: 5px solid #1DB954;
+    transform: rotate(28deg);
+    transform-origin: right center;
+    box-shadow:
+        0 10px 17px rgba(0, 0, 0, 0.42),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 10px 14px rgba(255, 255, 255, 0.05);
+}
+
+#record-shelf-section .tonearm.is-dragging .tonearm-pipe {
+    transition: none;
+}
+
+#record-shelf-section .tonearm-rest {
+    right: 6.3%;
+    top: 29.5%;
+    width: 4.3%;
+    height: 14%;
+    border-radius: 9999px;
+    background: linear-gradient(145deg, #353d38, #0a0d0c);
+    border: 2px solid rgba(0, 0, 0, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 10px 17px rgba(0, 0, 0, 0.28);
+}
+
+#record-shelf-section .turntable-control.start {
+    display: none !important;
+}
+
+#record-shelf-section .turntable-control.stop {
+    right: 3.9%;
+    top: 45.2%;
+    bottom: auto;
+    width: 7.8%;
+    height: 40%;
+    aspect-ratio: auto;
+    border-radius: 2px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78), transparent 13%, transparent 87%, rgba(64, 72, 66, 0.18)),
+        #f0f1eb;
+    border: 2px solid rgba(84, 93, 86, 0.78);
+    box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.22),
+        inset 0 0 0 6px rgba(255, 255, 255, 0.28);
+}
+
+#record-shelf-section .turntable-control.stop::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 12%;
+    bottom: 12%;
+    width: 4px;
+    border-radius: 9999px;
+    transform: translateX(-50%);
+    background: #17201b;
+    box-shadow: 2px 0 0 rgba(255, 255, 255, 0.32);
+}
+
+#record-shelf-section .turntable-control.stop::after {
+    content: '';
+    position: absolute;
+    left: 18%;
+    top: 43%;
+    width: 64%;
+    height: 11%;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #e6e8df, #8f9890 48%, #3f4841 100%);
+    border: 2px solid rgba(57, 65, 59, 0.9);
+    box-shadow:
+        0 8px 12px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+#record-shelf-section.is-dropping .record-disc {
+    animation: photorealRecordDropPulse 0.55s ease;
+}
+
+@keyframes photorealRecordDropPulse {
+    0% { transform: scale(0.94) rotate(calc(var(--record-rotation, 0deg) - 8deg)); filter: drop-shadow(0 24px 24px rgba(0, 0, 0, 0.45)); }
+    58% { transform: scale(1.025) rotate(calc(var(--record-rotation, 0deg) + 8deg)); }
+    100% { transform: scale(1) rotate(var(--record-rotation, 0deg)); }
+}
+
+@media (max-width: 640px) {
+    #record-shelf-section .shelf-drop-zone {
+        width: calc(100vw - 2rem) !important;
+        margin-left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #record-shelf-section .shelf-drop-zone.is-drag-over {
+        transform: translateX(-50%) scale(1.01);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #record-shelf-section.is-dropping .record-disc {
+        animation: none;
+    }
+}
