@@ -19,10 +19,10 @@ function getRuntimeRedirectUri() {
 }
 
 function loadShelfModeTurntableSkin() {
-    const href = 'turntable-realism.css';
+    const href = 'turntable-realism.css?v=20260705-photoreal-turntable';
 
     const appendStylesheet = () => {
-        if (document.querySelector(`link[href="${href}"]`)) return;
+        if (document.querySelector('link[data-shelf-mode-skin="photoreal-turntable"]')) return;
 
         const link = document.createElement('link');
         link.rel = 'stylesheet';
