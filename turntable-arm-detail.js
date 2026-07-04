@@ -2,9 +2,40 @@
 
 (function () {
     const DETAIL_MARKER = 'turntableArmDetailApplied';
+    const STROBE_MARKER = 'turntableStrobeRingApplied';
 
     function getSvg() {
         return document.querySelector('#record-shelf-section .turntable-svg-arm');
+    }
+
+    function getDropZone() {
+        return document.querySelector('#record-shelf-section .shelf-drop-zone');
+    }
+
+    function applyStrobeRing() {
+        const dropZone = getDropZone();
+        if (!dropZone || dropZone.dataset[STROBE_MARKER] === 'true') return false;
+        dropZone.dataset[STROBE_MARKER] = 'true';
+
+        const strobeMarkup = `
+            <svg class="turntable-strobe-svg" viewBox="0 0 900 665" aria-hidden="true" focusable="false">
+                <g pointer-events="none">
+                    <circle cx="338" cy="335" r="287" fill="none" stroke="#f8faf0" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9" opacity="0.98"/>
+                    <circle cx="338" cy="335" r="277" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.92"/>
+                    <circle cx="338" cy="335" r="267" fill="none" stroke="#bfc8bd" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.78"/>
+                    <circle cx="338" cy="335" r="292" fill="none" stroke="#0c0f0d" stroke-width="1.5" opacity="0.64"/>
+                    <circle cx="338" cy="335" r="259" fill="none" stroke="#0c0f0d" stroke-width="2" opacity="0.54"/>
+                </g>
+            </svg>`;
+
+        const platter = dropZone.querySelector('.turntable-platter');
+        if (platter) {
+            platter.insertAdjacentHTML('afterend', strobeMarkup);
+        } else {
+            dropZone.insertAdjacentHTML('beforeend', strobeMarkup);
+        }
+
+        return true;
     }
 
     function applyStaticDetail(svg) {
@@ -128,18 +159,32 @@
                 <path d="M648 401 H672" stroke="#f4f6ef" stroke-width="1.5" opacity="0.5" transform="rotate(12 660 401)"/>
                 <path d="M642 418 C633 453 615 501 588 538" fill="none" stroke="#1b201e" stroke-width="3" stroke-linecap="round" opacity="0.44"/>
 
-                <!-- headshell screw slots and cartridge wires -->
-                <path d="M514 583 C501 599 493 612 488 628" fill="none" stroke="#aeb7b0" stroke-width="2" opacity="0.58"/>
-                <path d="M519 588 C506 604 498 618 494 634" fill="none" stroke="#1db954" stroke-width="2" opacity="0.62"/>
-                <path d="M525 593 C513 609 506 623 502 639" fill="none" stroke="#d65b4d" stroke-width="1.8" opacity="0.54"/>
-                <circle cx="532" cy="594" r="3" fill="#dce0d7" stroke="#1c211f" stroke-width="1"/>
-                <circle cx="547" cy="602" r="3" fill="#dce0d7" stroke="#1c211f" stroke-width="1"/>
+                <!-- Technics-style silver headshell overlay: slots, screws, cartridge; no visible lead wires -->
+                <g transform="translate(492 571) rotate(-25)">
+                    <path d="M-9 4 L10 -10 H73 Q83 -10 88 0 L80 42 Q78 53 66 54 H2 Q-8 54 -12 44 Z" fill="url(#svgArmMetal)" stroke="#343c36" stroke-width="2.5" opacity="0.98"/>
+                    <path d="M3 9 H24 Q29 9 29 14 V35 Q29 40 23 40 H2 Q-4 40 -3 34 L2 14 Q3 9 8 9" fill="#0a0d0c" opacity="0.78"/>
+                    <path d="M49 8 H71 Q76 8 76 14 V34 Q76 40 70 40 H49 Q43 40 44 34 L49 14 Q50 8 55 8" fill="#0a0d0c" opacity="0.78"/>
+                    <path d="M3 9 H24 Q29 9 29 14 V35 Q29 40 23 40 H2 Q-4 40 -3 34 L2 14 Q3 9 8 9" fill="none" stroke="#f5f6ee" stroke-width="1" opacity="0.38"/>
+                    <path d="M49 8 H71 Q76 8 76 14 V34 Q76 40 70 40 H49 Q43 40 44 34 L49 14 Q50 8 55 8" fill="none" stroke="#f5f6ee" stroke-width="1" opacity="0.38"/>
+                    <circle cx="35" cy="17" r="5" fill="#1a201d" stroke="#eef1ea" stroke-width="1.4"/>
+                    <circle cx="38" cy="36" r="5" fill="#1a201d" stroke="#eef1ea" stroke-width="1.4"/>
+                    <circle cx="35" cy="17" r="1.8" fill="#eef1ea" opacity="0.82"/>
+                    <circle cx="38" cy="36" r="1.8" fill="#eef1ea" opacity="0.82"/>
+                    <text x="2" y="51" fill="#1b211e" font-size="7" font-family="Inter, Arial" font-weight="800" transform="rotate(0 2 51)">Technics</text>
+                    <rect x="-6" y="47" width="44" height="15" rx="3" fill="#c7b08b" stroke="#5d5140" stroke-width="1.4"/>
+                    <rect x="3" y="59" width="28" height="9" rx="2" fill="#2d322f" stroke="#111514" stroke-width="1"/>
+                    <path class="turntable-svg-needle" d="M17 67 L43 78" stroke="#1DB954" stroke-width="3" stroke-linecap="round" filter="url(#svgNeedleGlow)"/>
+                    <circle class="turntable-svg-needle" cx="43" cy="78" r="3.5" fill="#1DB954" filter="url(#svgNeedleGlow)"/>
+                    <path d="M10 -8 H74" stroke="#ffffff" stroke-width="2" opacity="0.34"/>
+                    <path d="M-6 44 H76" stroke="#59635c" stroke-width="1.6" opacity="0.52"/>
+                </g>
             </g>`;
 
-        armGroup.insertAdjacentHTML('afterbegin', movingMarkup);
+        armGroup.insertAdjacentHTML('beforeend', movingMarkup);
     }
 
     function applyDetail() {
+        applyStrobeRing();
         const svg = getSvg();
         if (!svg) return false;
         applyStaticDetail(svg);
