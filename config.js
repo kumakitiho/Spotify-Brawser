@@ -33,7 +33,7 @@ function loadShelfModeTurntableSkin() {
             key: 'turntable-physics'
         },
         {
-            href: 'turntable-reference-match.css?v=20260705-reference-match-v3',
+            href: 'turntable-reference-match.css?v=20260705-reference-match-v4',
             key: 'turntable-reference-match'
         }
     ];
@@ -52,7 +52,7 @@ function loadShelfModeTurntableSkin() {
             key: 'turntable-polish'
         },
         {
-            src: 'turntable-reference-match.js?v=20260705-reference-match-v3',
+            src: 'turntable-reference-match.js?v=20260705-reference-match-v4',
             key: 'turntable-reference-match'
         }
     ];
