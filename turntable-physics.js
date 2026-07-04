@@ -3,7 +3,7 @@
 
 (function () {
     const ARM_REST_ANGLE = -88;
-    const ARM_PLAY_ANGLE = -72;
+    const ARM_PLAY_ANGLE = -60;
     const ARM_CUE_MS = 980;
     const NEEDLE_SETTLE_MS = 160;
 
