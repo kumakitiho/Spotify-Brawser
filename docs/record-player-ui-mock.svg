@@ -1,67 +1,110 @@
 <svg width="900" height="665" viewBox="0 0 900 665" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Realistic Record Player UI Mock - Reference Ratio</title>
-  <desc id="desc">A realistic top-down DJ turntable mock using a reference-image-like aspect ratio, with the platter visually dominant, fixed strobe dots, S-shaped tonearm, and pitch slider.</desc>
+  <title id="title">Realistic Record Player UI Mock - Photoreal Direction</title>
+  <desc id="desc">A detailed top-down DJ turntable mock with a dominant platter, fixed strobe dots, layered vinyl grooves, brushed metal, screws, realistic S-shaped tonearm, headshell, needle glow, and pitch slider.</desc>
   <defs>
     <linearGradient id="plinth" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f5f5f0"/>
-      <stop offset="0.52" stop-color="#d8d9d4"/>
-      <stop offset="1" stop-color="#aeb1ad"/>
+      <stop offset="0" stop-color="#f8f8f2"/>
+      <stop offset="0.16" stop-color="#e6e7e1"/>
+      <stop offset="0.52" stop-color="#cfd2cc"/>
+      <stop offset="0.78" stop-color="#b7bbb5"/>
+      <stop offset="1" stop-color="#8f9690"/>
     </linearGradient>
     <linearGradient id="plinthEdge" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.72"/>
-      <stop offset="1" stop-color="#6f746f" stop-opacity="0.52"/>
+      <stop offset="0" stop-color="#fff" stop-opacity="0.85"/>
+      <stop offset="0.5" stop-color="#c8cbc4" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#626a64" stop-opacity="0.55"/>
     </linearGradient>
-    <radialGradient id="record" cx="43%" cy="36%" r="66%">
-      <stop offset="0" stop-color="#202422"/>
-      <stop offset="0.38" stop-color="#0b0d0c"/>
-      <stop offset="0.74" stop-color="#050606"/>
-      <stop offset="1" stop-color="#151817"/>
+    <radialGradient id="record" cx="42%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#252a27"/>
+      <stop offset="0.18" stop-color="#151918"/>
+      <stop offset="0.55" stop-color="#060707"/>
+      <stop offset="0.82" stop-color="#030403"/>
+      <stop offset="1" stop-color="#171b19"/>
     </radialGradient>
-    <radialGradient id="label" cx="36%" cy="28%" r="72%">
+    <radialGradient id="label" cx="36%" cy="26%" r="78%">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.48" stop-color="#eeeeea"/>
-      <stop offset="1" stop-color="#b8bab6"/>
+      <stop offset="0.34" stop-color="#f0f0ea"/>
+      <stop offset="0.68" stop-color="#d1d2ca"/>
+      <stop offset="1" stop-color="#aeb2aa"/>
     </radialGradient>
     <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.28" stop-color="#c7c9c7"/>
-      <stop offset="0.56" stop-color="#f2f3ef"/>
-      <stop offset="1" stop-color="#787d7b"/>
+      <stop offset="0.24" stop-color="#bfc4bf"/>
+      <stop offset="0.46" stop-color="#f4f6ef"/>
+      <stop offset="0.68" stop-color="#929991"/>
+      <stop offset="1" stop-color="#4f5851"/>
     </linearGradient>
-    <filter id="deepShadow" x="-20%" y="-20%" width="140%" height="140%">
+    <linearGradient id="darkMetal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#646b66"/>
+      <stop offset="0.55" stop-color="#252b28"/>
+      <stop offset="1" stop-color="#0e1110"/>
+    </linearGradient>
+    <linearGradient id="armTube" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef1ea"/>
+      <stop offset="0.22" stop-color="#a7afa8"/>
+      <stop offset="0.48" stop-color="#fbfcf7"/>
+      <stop offset="0.72" stop-color="#7e8780"/>
+      <stop offset="1" stop-color="#414842"/>
+    </linearGradient>
+    <filter id="deepShadow" x="-22%" y="-22%" width="144%" height="144%">
       <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.34"/>
       <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000" flood-opacity="0.32"/>
     </filter>
     <filter id="smallShadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.30"/>
     </filter>
-    <filter id="needleGlow" x="-80%" y="-80%" width="260%" height="260%">
-      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#1DB954" flood-opacity="0.65"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#1DB954" flood-opacity="0.35"/>
+    <filter id="armShadow" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="3" dy="8" stdDeviation="5" flood-color="#000" flood-opacity="0.38"/>
     </filter>
-    <pattern id="brushed" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
-      <rect width="9" height="9" fill="transparent"/>
-      <path d="M0 1 H9" stroke="#fff" stroke-opacity="0.15" stroke-width="1"/>
-      <path d="M0 7 H9" stroke="#4d524f" stroke-opacity="0.08" stroke-width="1"/>
+    <filter id="needleGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#1DB954" flood-opacity="0.70"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#1DB954" flood-opacity="0.32"/>
+    </filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="9" result="noise"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.55 0 0 0 0 0.55 0 0 0 0 0.55 0 0 0 .12 0"/>
+    </filter>
+    <pattern id="brushed" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(16)">
+      <rect width="12" height="12" fill="transparent"/>
+      <path d="M0 1 H12" stroke="#fff" stroke-opacity="0.18" stroke-width="1"/>
+      <path d="M0 5 H12" stroke="#6d756e" stroke-opacity="0.08" stroke-width="1"/>
+      <path d="M0 10 H12" stroke="#fff" stroke-opacity="0.10" stroke-width="1"/>
     </pattern>
     <style>
       .tiny { fill: #2d312f; font: 700 10px Inter, Arial, sans-serif; letter-spacing: .08em; }
+      .micro { fill: #353a37; font: 700 7px Inter, Arial, sans-serif; letter-spacing: .12em; }
       .ticks { stroke: #3b403d; stroke-width: 1; opacity: .72; }
       .record-spin { transform-origin: 338px 335px; animation: spin 7s linear infinite; }
       .shine { animation: shine 4s ease-in-out infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
-      @keyframes shine { 0%,100% { opacity: .16; } 50% { opacity: .42; } }
+      @keyframes shine { 0%,100% { opacity: .12; } 50% { opacity: .46; } }
     </style>
   </defs>
 
-  <rect width="900" height="665" rx="38" fill="#111"/>
-  <rect x="34" y="28" width="832" height="609" rx="20" fill="url(#plinth)" stroke="#5f6460" stroke-width="3" filter="url(#deepShadow)"/>
-  <rect x="43" y="37" width="814" height="591" rx="15" fill="url(#brushed)" opacity="0.58"/>
+  <rect width="900" height="665" rx="38" fill="#0e0f0f"/>
+  <rect x="34" y="28" width="832" height="609" rx="20" fill="url(#plinth)" stroke="#59615b" stroke-width="3" filter="url(#deepShadow)"/>
+  <rect x="43" y="37" width="814" height="591" rx="15" fill="url(#brushed)" opacity="0.64"/>
+  <rect x="43" y="37" width="814" height="591" rx="15" filter="url(#grain)" opacity="0.34"/>
   <path d="M43 58 Q43 37 64 37 H836 Q857 37 857 58" fill="none" stroke="url(#plinthEdge)" stroke-width="8" opacity="0.72"/>
+  <path d="M46 621 H854" stroke="#747b75" stroke-width="4" opacity="0.42"/>
+
+  <!-- body screws and rubber feet -->
+  <g filter="url(#smallShadow)">
+    <circle cx="66" cy="58" r="9" fill="url(#metal)" stroke="#424943" stroke-width="2"/>
+    <path d="M61 58 H71" stroke="#2c312e" stroke-width="1.5"/>
+    <circle cx="832" cy="58" r="9" fill="url(#metal)" stroke="#424943" stroke-width="2"/>
+    <path d="M827 58 H837" stroke="#2c312e" stroke-width="1.5"/>
+    <circle cx="66" cy="607" r="9" fill="url(#metal)" stroke="#424943" stroke-width="2"/>
+    <path d="M61 607 H71" stroke="#2c312e" stroke-width="1.5"/>
+    <circle cx="832" cy="607" r="9" fill="url(#metal)" stroke="#424943" stroke-width="2"/>
+    <path d="M827 607 H837" stroke="#2c312e" stroke-width="1.5"/>
+  </g>
 
   <!-- 45 adapter / top-left metal disc -->
   <g filter="url(#smallShadow)">
-    <circle cx="104" cy="91" r="34" fill="url(#metal)" stroke="#222" stroke-width="3"/>
+    <circle cx="104" cy="91" r="34" fill="#2c322f" opacity="0.18"/>
+    <circle cx="104" cy="91" r="31" fill="url(#metal)" stroke="#222" stroke-width="3"/>
+    <circle cx="104" cy="91" r="20" fill="none" stroke="#656d66" stroke-width="2" opacity="0.45"/>
     <circle cx="104" cy="91" r="5" fill="#7a7d79"/>
     <path d="M104 91 L82 72" stroke="#fff" stroke-width="2" opacity=".55"/>
     <path d="M104 91 L136 84" stroke="#2d302e" stroke-width="2" opacity=".28"/>
@@ -69,66 +112,98 @@
 
   <!-- main platter and record: large like the reference image, but fully inside the body -->
   <g filter="url(#deepShadow)">
-    <circle cx="338" cy="335" r="294" fill="#232725" stroke="#737873" stroke-width="4"/>
-    <circle cx="338" cy="335" r="282" fill="#171a19" stroke="#040505" stroke-width="3"/>
+    <circle cx="338" cy="335" r="294" fill="#1f2421" stroke="#717971" stroke-width="4"/>
+    <circle cx="338" cy="335" r="287" fill="none" stroke="#f3f4ec" stroke-width="1.5" opacity="0.18"/>
+    <circle cx="338" cy="335" r="282" fill="#111413" stroke="#050606" stroke-width="3"/>
+    <circle cx="338" cy="335" r="274" fill="none" stroke="#485049" stroke-width="2" opacity="0.55"/>
     <!-- strobe dots are printed on the platter, so they stay fixed while only the record rotates -->
     <g>
       <circle cx="338" cy="335" r="285" fill="none" stroke="#e5e6de" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9" opacity="0.9"/>
       <circle cx="338" cy="335" r="273" fill="none" stroke="#f6f7ef" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.82"/>
       <circle cx="338" cy="335" r="262" fill="none" stroke="#9ca19c" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.62"/>
     </g>
+    <circle cx="338" cy="335" r="257" fill="#090b0a" opacity="0.75"/>
     <g class="record-spin">
-      <circle cx="338" cy="335" r="250" fill="url(#record)" stroke="#090a09" stroke-width="6"/>
-      <circle cx="338" cy="335" r="229" fill="none" stroke="#343936" stroke-width="1" opacity="0.7"/>
+      <circle cx="338" cy="335" r="250" fill="url(#record)" stroke="#080909" stroke-width="6"/>
+      <circle cx="338" cy="335" r="241" fill="none" stroke="#111513" stroke-width="3" opacity="0.88"/>
+      <circle cx="338" cy="335" r="229" fill="none" stroke="#343936" stroke-width="1" opacity="0.72"/>
+      <circle cx="338" cy="335" r="218" fill="none" stroke="#1b201e" stroke-width="1" opacity="0.60"/>
       <circle cx="338" cy="335" r="208" fill="none" stroke="#313633" stroke-width="1" opacity="0.62"/>
+      <circle cx="338" cy="335" r="197" fill="none" stroke="#151918" stroke-width="1" opacity="0.52"/>
       <circle cx="338" cy="335" r="187" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.58"/>
+      <circle cx="338" cy="335" r="177" fill="none" stroke="#111513" stroke-width="1" opacity="0.48"/>
       <circle cx="338" cy="335" r="166" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.52"/>
+      <circle cx="338" cy="335" r="153" fill="none" stroke="#101312" stroke-width="1" opacity="0.44"/>
       <circle cx="338" cy="335" r="141" fill="none" stroke="#343936" stroke-width="1" opacity="0.45"/>
+      <circle cx="338" cy="335" r="129" fill="none" stroke="#101312" stroke-width="1" opacity="0.42"/>
       <circle cx="338" cy="335" r="108" fill="#050606" opacity="0.72"/>
+      <circle cx="338" cy="335" r="84" fill="none" stroke="#272c29" stroke-width="1" opacity="0.55"/>
       <circle cx="338" cy="335" r="70" fill="url(#label)" stroke="#d0d2cc" stroke-width="2"/>
-      <circle cx="338" cy="335" r="9" fill="url(#metal)" stroke="#4e5450" stroke-width="2"/>
+      <circle cx="338" cy="335" r="55" fill="none" stroke="#b1b5ad" stroke-width="1" opacity="0.72"/>
+      <circle cx="338" cy="335" r="38" fill="none" stroke="#e7e8e0" stroke-width="1" opacity="0.42"/>
+      <rect x="305" y="309" width="66" height="5" rx="2.5" fill="#b9bdb5" opacity="0.50"/>
+      <rect x="301" y="321" width="74" height="4" rx="2" fill="#9fa49c" opacity="0.36"/>
+      <rect x="312" y="352" width="52" height="4" rx="2" fill="#8f958d" opacity="0.32"/>
+      <circle cx="338" cy="335" r="12" fill="#141817" stroke="#e4e6dc" stroke-width="1.5" opacity="0.85"/>
+      <circle cx="338" cy="335" r="8" fill="url(#metal)" stroke="#4e5450" stroke-width="2"/>
       <path d="M167 189 C261 107 444 94 563 183" fill="none" stroke="#fff" stroke-width="16" stroke-opacity="0.05" class="shine"/>
+      <path d="M178 489 C288 573 450 571 558 489" fill="none" stroke="#fff" stroke-width="13" stroke-opacity="0.035"/>
     </g>
     <circle cx="338" cy="335" r="10" fill="none" stroke="#111" stroke-width="2"/>
   </g>
 
   <!-- tonearm base assembly -->
   <g filter="url(#deepShadow)">
-    <circle cx="710" cy="172" r="92" fill="#111514" stroke="#303532" stroke-width="6"/>
+    <circle cx="710" cy="172" r="92" fill="#0f1211" stroke="#303532" stroke-width="6"/>
+    <circle cx="710" cy="172" r="83" fill="none" stroke="#747b74" stroke-width="1.5" opacity="0.55"/>
     <circle cx="710" cy="172" r="71" fill="#d9dbd4" stroke="#4d534f" stroke-width="4" opacity="0.88"/>
+    <circle cx="710" cy="172" r="59" fill="none" stroke="#f8f9f1" stroke-width="1" opacity="0.38"/>
     <circle cx="710" cy="172" r="50" fill="#b8bbb5" stroke="#4e5550" stroke-width="4"/>
     <circle cx="710" cy="172" r="32" fill="#eef0ea" stroke="#5c625e" stroke-width="4"/>
+    <circle cx="710" cy="172" r="21" fill="none" stroke="#9ba29a" stroke-width="2" opacity="0.48"/>
     <circle cx="710" cy="172" r="11" fill="url(#metal)" stroke="#2c302e" stroke-width="3"/>
     <path d="M677 136 C698 122 729 126 746 148" fill="none" stroke="#777e78" stroke-width="10" stroke-linecap="round" opacity=".76"/>
     <path d="M663 180 C682 210 724 224 756 197" fill="none" stroke="#676e69" stroke-width="10" stroke-linecap="round" opacity=".58"/>
     <circle cx="648" cy="125" r="7" fill="#262b28"/>
     <circle cx="772" cy="134" r="7" fill="#262b28"/>
     <circle cx="650" cy="220" r="7" fill="#262b28"/>
+    <circle cx="648" cy="125" r="3" fill="#a4aaa4" opacity="0.65"/>
+    <circle cx="772" cy="134" r="3" fill="#a4aaa4" opacity="0.65"/>
+    <circle cx="650" cy="220" r="3" fill="#a4aaa4" opacity="0.65"/>
   </g>
 
   <!-- counterweight -->
   <g filter="url(#smallShadow)">
     <rect x="696" y="55" width="64" height="34" rx="9" fill="url(#metal)" stroke="#404541" stroke-width="4"/>
     <path d="M700 63 H756 M700 73 H756 M700 83 H756" stroke="#616862" stroke-width="2" opacity=".55"/>
+    <path d="M702 58 H752" stroke="#fff" stroke-width="2" opacity=".42"/>
     <rect x="716" y="87" width="29" height="34" rx="6" fill="url(#metal)" stroke="#4e5450" stroke-width="3"/>
   </g>
 
   <!-- S-shaped tonearm, always connected to the pivot -->
-  <g>
+  <g filter="url(#armShadow)">
     <animateTransform attributeName="transform" type="rotate" values="0 710 172;0 710 172;18 710 172;18 710 172;2 710 172;2 710 172" keyTimes="0;0.12;0.28;0.55;0.78;1" dur="7s" repeatCount="indefinite"/>
-    <path d="M710 172 C664 224 665 311 638 407 C622 465 585 523 512 587" fill="none" stroke="#777e79" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M710 172 C664 224 665 311 638 407 C622 465 585 523 512 587" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M701 183 C666 232 660 314 634 405 C618 459 579 516 506 580" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
-    <circle cx="710" cy="172" r="14" fill="url(#metal)" stroke="#313632" stroke-width="4"/>
+    <path d="M710 172 C664 224 665 311 638 407 C622 465 585 523 512 587" fill="none" stroke="#565e58" stroke-width="19" stroke-linecap="round" stroke-linejoin="round" opacity="0.58"/>
+    <path d="M710 172 C664 224 665 311 638 407 C622 465 585 523 512 587" fill="none" stroke="url(#armTube)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M701 183 C666 232 660 314 634 405 C618 459 579 516 506 580" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.63"/>
+    <path d="M717 180 C672 230 671 314 644 410 C630 462 593 520 522 580" fill="none" stroke="#2e3531" stroke-width="2" stroke-linecap="round" opacity="0.36"/>
+    <circle cx="710" cy="172" r="16" fill="url(#metal)" stroke="#313632" stroke-width="4"/>
+    <circle cx="710" cy="172" r="7" fill="#6e766f" stroke="#f2f3ee" stroke-width="1" opacity="0.88"/>
 
     <!-- headshell and cartridge -->
     <g transform="translate(492 571) rotate(-25)">
+      <rect x="-2" y="-2" width="82" height="54" rx="9" fill="#070908" opacity="0.34"/>
       <rect x="0" y="0" width="78" height="50" rx="8" fill="#1c211f" stroke="#060807" stroke-width="3"/>
-      <rect x="9" y="8" width="54" height="11" rx="5" fill="#3f4641"/>
+      <path d="M6 7 H67 L74 22 H8 Z" fill="#303833" stroke="#090b0a" stroke-width="2"/>
+      <rect x="9" y="8" width="54" height="11" rx="5" fill="#424a45"/>
+      <path d="M8 41 H68" stroke="#4d5650" stroke-width="2" opacity="0.75"/>
       <circle cx="18" cy="30" r="5" fill="#d6d8d2"/>
       <circle cx="38" cy="30" r="5" fill="#d6d8d2"/>
       <circle cx="58" cy="30" r="5" fill="#d6d8d2"/>
-      <path d="M70 40 L92 47" stroke="#111" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="18" cy="30" r="2" fill="#252a27" opacity="0.7"/>
+      <circle cx="38" cy="30" r="2" fill="#252a27" opacity="0.7"/>
+      <circle cx="58" cy="30" r="2" fill="#252a27" opacity="0.7"/>
+      <path d="M69 42 L91 48" stroke="#111" stroke-width="6" stroke-linecap="round"/>
       <path d="M71 47 L95 55" stroke="#1DB954" stroke-width="4" stroke-linecap="round" filter="url(#needleGlow)">
         <animate attributeName="opacity" values="0.25;0.25;0.25;0.25;1;1" keyTimes="0;0.16;0.30;0.76;0.88;1" dur="7s" repeatCount="indefinite"/>
       </path>
@@ -143,12 +218,15 @@
   <g filter="url(#smallShadow)">
     <rect x="790" y="171" width="19" height="86" rx="9" fill="#202523" stroke="#111" stroke-width="3" transform="rotate(-18 790 171)"/>
     <path d="M761 227 L796 276" stroke="#171b19" stroke-width="7" stroke-linecap="round"/>
+    <path d="M763 225 L793 268" stroke="#7a827b" stroke-width="2" stroke-linecap="round" opacity="0.48"/>
   </g>
 
   <!-- pitch slider -->
   <g transform="translate(765 315)" filter="url(#smallShadow)">
     <rect x="0" y="0" width="70" height="268" fill="#f3f4ee" stroke="#565c57" stroke-width="3"/>
+    <rect x="7" y="9" width="56" height="250" fill="none" stroke="#aeb4ad" stroke-width="1" opacity="0.55"/>
     <line x1="36" y1="32" x2="36" y2="235" stroke="#1b201e" stroke-width="4"/>
+    <line x1="38" y1="32" x2="38" y2="235" stroke="#ffffff" stroke-width="1" opacity="0.25"/>
     <g class="ticks">
       <line x1="13" y1="32" x2="29" y2="32"/><line x1="13" y1="55" x2="25" y2="55"/><line x1="13" y1="78" x2="29" y2="78"/>
       <line x1="13" y1="101" x2="25" y2="101"/><line x1="13" y1="124" x2="29" y2="124"/><line x1="13" y1="147" x2="25" y2="147"/>
@@ -160,6 +238,9 @@
     <rect x="16" y="116" width="40" height="29" rx="4" fill="url(#metal)" stroke="#3e4440" stroke-width="3">
       <animate attributeName="y" values="116;116;103;103;128;116" keyTimes="0;0.30;0.50;0.65;0.82;1" dur="7s" repeatCount="indefinite"/>
     </rect>
+    <path d="M20 120 H52" stroke="#fff" stroke-width="2" opacity="0.45"/>
     <text x="9" y="255" class="tiny">pitch</text>
+    <text x="12" y="25" class="micro">+8</text>
+    <text x="12" y="243" class="micro">-8</text>
   </g>
 </svg>
