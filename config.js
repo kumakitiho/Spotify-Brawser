@@ -27,10 +27,21 @@ function loadShelfModeTurntableSkin() {
         {
             href: 'turntable-cover-boost.css?v=20260705-cover-boost',
             key: 'record-cover-boost'
+        },
+        {
+            href: 'turntable-physics.css?v=20260705-physics-v1',
+            key: 'turntable-physics'
         }
     ];
 
-    const appendStylesheets = () => {
+    const scripts = [
+        {
+            src: 'turntable-physics.js?v=20260705-physics-v1',
+            key: 'turntable-physics'
+        }
+    ];
+
+    const appendAssets = () => {
         stylesheets.forEach(({ href, key }) => {
             if (document.querySelector(`link[data-shelf-mode-skin="${key}"]`)) return;
 
@@ -40,14 +51,24 @@ function loadShelfModeTurntableSkin() {
             link.dataset.shelfModeSkin = key;
             document.head.appendChild(link);
         });
+
+        scripts.forEach(({ src, key }) => {
+            if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
+
+            const script = document.createElement('script');
+            script.src = src;
+            script.defer = true;
+            script.dataset.shelfModeScript = key;
+            document.head.appendChild(script);
+        });
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', appendStylesheets, { once: true });
+        document.addEventListener('DOMContentLoaded', appendAssets, { once: true });
         return;
     }
 
-    appendStylesheets();
+    appendAssets();
 }
 
 const config = {
