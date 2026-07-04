@@ -40,7 +40,7 @@ function loadShelfModeTurntableSkin() {
             key: 'turntable-physics'
         },
         {
-            src: 'turntable-arm-detail.js?v=20260705-arm-detail-v3',
+            src: 'turntable-arm-detail.js?v=20260705-arm-detail-v4',
             key: 'turntable-arm-detail'
         }
     ];
