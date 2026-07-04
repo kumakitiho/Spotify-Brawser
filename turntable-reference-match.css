@@ -3,7 +3,7 @@
 
 #record-shelf-section.record-shelf-stage {
     background:
-        radial-gradient(circle at 18% 8%, rgba(29, 185, 84, 0.10), transparent 24%),
+        radial-gradient(circle at 18% 8%, rgba(29, 185, 84, 0.08), transparent 24%),
         linear-gradient(160deg, rgba(12, 14, 14, 0.98), rgba(3, 4, 4, 0.98));
 }
 
@@ -11,17 +11,17 @@
     border-radius: 18px;
     border-color: rgba(38, 44, 39, 0.72);
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent 10%, transparent 88%, rgba(62, 67, 62, 0.24)),
-        repeating-linear-gradient(13deg, rgba(255, 255, 255, 0.15) 0 1px, rgba(92, 98, 91, 0.08) 1px 4px, transparent 4px 11px),
-        linear-gradient(135deg, #f2f3ed 0%, #dbddd6 43%, #c0c5bd 72%, #9ca39b 100%);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 10%, transparent 88%, rgba(62, 67, 62, 0.22)),
+        repeating-linear-gradient(13deg, rgba(255, 255, 255, 0.13) 0 1px, rgba(92, 98, 91, 0.06) 1px 4px, transparent 4px 11px),
+        linear-gradient(135deg, #f5f6f0 0%, #dfe1da 43%, #c4cac2 72%, #a4aca4 100%);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.82),
-        inset 0 -10px 24px rgba(56, 63, 57, 0.32),
+        inset 0 -10px 24px rgba(56, 63, 57, 0.28),
         0 26px 62px rgba(0, 0, 0, 0.50);
 }
 
 #record-shelf-section .shelf-drop-zone::before {
-    opacity: 0.58;
+    opacity: 0.54;
 }
 
 #record-shelf-section .record-progress-ring,
@@ -54,7 +54,7 @@
 }
 
 #record-shelf-section .record-disc::before {
-    opacity: 0.56;
+    opacity: 0.48;
 }
 
 #record-shelf-section .record-label {
@@ -70,7 +70,7 @@
     top: 34.8%;
     width: 30.4%;
     height: 30.4%;
-    opacity: 0.88;
+    opacity: 0.86;
 }
 
 #record-shelf-section .turntable-strobe-svg {
@@ -84,11 +84,11 @@
 }
 
 #record-shelf-section .turntable-svg-arm-detail-static {
-    opacity: 0.86;
+    opacity: 0.72;
 }
 
 #record-shelf-section .turntable-svg-arm-detail-moving {
-    opacity: 0.92;
+    opacity: 0.90;
 }
 
 #record-shelf-section .turntable-control.stop {
@@ -107,7 +107,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 9;
+    z-index: 2;
     pointer-events: none;
     overflow: visible;
 }
