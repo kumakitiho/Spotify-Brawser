@@ -1,5 +1,5 @@
 /* Turntable playback physics
-   Tonearm is no longer draggable. Playback buttons drive an SVG tonearm based on the original mock. */
+   Tonearm is no longer draggable. Playback starts only after the SVG tonearm reaches the groove. */
 
 (function () {
     const ARM_REST_ANGLE = 0;
@@ -10,8 +10,11 @@
     const ARM_PIVOT_Y = 172;
 
     let allowPlaybackButtonClick = false;
+    let allowShelfActivation = false;
+    let suppressOriginalShelfClickUntil = 0;
     let cueSequenceId = 0;
     let currentArmAngle = ARM_REST_ANGLE;
+    let activeCuePromise = null;
 
     function getElements() {
         return {
@@ -19,7 +22,9 @@
             dropZone: document.querySelector('#record-shelf-section .shelf-drop-zone'),
             armGroup: document.querySelector('#record-shelf-section .turntable-svg-moving-arm'),
             label: document.getElementById('shelf-state-label'),
-            playPauseButton: document.getElementById('play-pause-btn')
+            playPauseButton: document.getElementById('play-pause-btn'),
+            recordShelfList: document.getElementById('record-shelf-list'),
+            shelfNextCueButton: document.getElementById('shelf-next-cue')
         };
     }
 
@@ -114,10 +119,6 @@
         dropZone.insertAdjacentHTML('beforeend', svgMarkup);
     }
 
-    function wait(ms) {
-        return new Promise((resolve) => window.setTimeout(resolve, ms));
-    }
-
     function easeOutCubic(t) {
         return 1 - Math.pow(1 - t, 3);
     }
@@ -161,26 +162,48 @@
         section?.classList.remove('is-cueing-in', 'is-cueing-out', 'is-needle-lifted', 'is-needle-on-label', 'is-needle-off-record', 'is-needle-on-groove');
     }
 
-    async function cueInThenRunOriginal(button) {
+    function setNeedleOffRecord() {
         const { section } = getElements();
-        const sequenceId = ++cueSequenceId;
-
         clearCueClasses(section);
-        section?.classList.add('is-needle-lifted', 'is-cueing-in');
+        section?.classList.add('is-needle-off-record');
         setSvgArmAngle(ARM_REST_ANGLE);
-        setLabel('CUEING THE NEEDLE');
-        await wait(60);
+        setLabel('NEEDLE OFF THE RECORD');
+    }
 
-        if (sequenceId !== cueSequenceId) return;
-        await animateSvgArmTo(ARM_PLAY_ANGLE);
+    async function cueNeedleToGroove() {
+        if (activeCuePromise) return activeCuePromise;
 
-        if (sequenceId !== cueSequenceId) return;
-        section?.classList.remove('is-cueing-in', 'is-needle-lifted');
-        section?.classList.add('is-needle-on-groove');
-        setLabel('NEEDLE ON THE GROOVE');
-        await wait(NEEDLE_SETTLE_MS);
+        activeCuePromise = (async () => {
+            const { section } = getElements();
+            const sequenceId = ++cueSequenceId;
 
-        if (sequenceId !== cueSequenceId) return;
+            clearCueClasses(section);
+            section?.classList.add('is-needle-lifted', 'is-cueing-in');
+            setSvgArmAngle(ARM_REST_ANGLE);
+            setLabel('CUEING THE NEEDLE');
+            await wait(60);
+
+            if (sequenceId !== cueSequenceId) return false;
+            await animateSvgArmTo(ARM_PLAY_ANGLE);
+
+            if (sequenceId !== cueSequenceId) return false;
+            section?.classList.remove('is-cueing-in', 'is-needle-lifted');
+            section?.classList.add('is-needle-on-groove');
+            setLabel('NEEDLE ON THE GROOVE');
+            await wait(NEEDLE_SETTLE_MS);
+
+            return sequenceId === cueSequenceId;
+        })().finally(() => {
+            activeCuePromise = null;
+        });
+
+        return activeCuePromise;
+    }
+
+    async function cueInThenRunOriginal(button) {
+        const didCue = await cueNeedleToGroove();
+        if (!didCue) return;
+
         allowPlaybackButtonClick = true;
         button.click();
         allowPlaybackButtonClick = false;
@@ -226,11 +249,101 @@
         cueInThenRunOriginal(button);
     }
 
+    function replayShelfEvent(event) {
+        const target = event.target;
+        if (!target?.dispatchEvent) return;
+
+        allowShelfActivation = true;
+        try {
+            let replay;
+            if (event instanceof PointerEvent) {
+                replay = new PointerEvent(event.type, {
+                    bubbles: true,
+                    cancelable: true,
+                    pointerId: event.pointerId,
+                    pointerType: event.pointerType,
+                    isPrimary: event.isPrimary,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    screenX: event.screenX,
+                    screenY: event.screenY,
+                    button: event.button,
+                    buttons: event.buttons,
+                    ctrlKey: event.ctrlKey,
+                    shiftKey: event.shiftKey,
+                    altKey: event.altKey,
+                    metaKey: event.metaKey
+                });
+            } else {
+                replay = new MouseEvent(event.type, {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    screenX: event.screenX,
+                    screenY: event.screenY,
+                    button: event.button,
+                    buttons: event.buttons,
+                    ctrlKey: event.ctrlKey,
+                    shiftKey: event.shiftKey,
+                    altKey: event.altKey,
+                    metaKey: event.metaKey
+                });
+            }
+
+            target.dispatchEvent(replay);
+        } finally {
+            window.setTimeout(() => {
+                allowShelfActivation = false;
+            }, 0);
+        }
+    }
+
+    async function gateShelfActivation(event) {
+        if (allowShelfActivation) return;
+
+        const shelfTrack = event.target?.closest?.('.shelf-track');
+        const nextCueButton = event.target?.closest?.('#shelf-next-cue');
+        if (!shelfTrack && !nextCueButton) return;
+
+        if (event.type === 'click' && Date.now() < suppressOriginalShelfClickUntil) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+
+        if (event.type === 'pointerup') {
+            suppressOriginalShelfClickUntil = Date.now() + 1400;
+        }
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const didCue = await cueNeedleToGroove();
+        if (!didCue) return;
+
+        replayShelfEvent(event);
+    }
+
     function bindPlaybackButton() {
         const { playPauseButton } = getElements();
         if (!playPauseButton || playPauseButton.dataset.turntableCueBound === 'true') return;
         playPauseButton.dataset.turntableCueBound = 'true';
         playPauseButton.addEventListener('click', handlePlaybackButtonClick, true);
+    }
+
+    function bindShelfPlaybackGate() {
+        const { recordShelfList, shelfNextCueButton } = getElements();
+        if (recordShelfList && recordShelfList.dataset.turntableCueGateBound !== 'true') {
+            recordShelfList.dataset.turntableCueGateBound = 'true';
+            recordShelfList.addEventListener('pointerup', gateShelfActivation, true);
+            recordShelfList.addEventListener('click', gateShelfActivation, true);
+        }
+
+        if (shelfNextCueButton && shelfNextCueButton.dataset.turntableCueGateBound !== 'true') {
+            shelfNextCueButton.dataset.turntableCueGateBound = 'true';
+            shelfNextCueButton.addEventListener('click', gateShelfActivation, true);
+        }
     }
 
     function bind() {
@@ -240,6 +353,13 @@
         section?.classList.add('is-needle-off-record');
         setSvgArmAngle(ARM_REST_ANGLE);
         bindPlaybackButton();
+        bindShelfPlaybackGate();
+
+        window.turntableCue = {
+            cueIn: cueNeedleToGroove,
+            cueOut: setNeedleOffRecord,
+            setRest: setNeedleOffRecord
+        };
     }
 
     if (document.readyState === 'loading') {
