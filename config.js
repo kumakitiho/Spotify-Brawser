@@ -29,7 +29,7 @@ function loadShelfModeTurntableSkin() {
             key: 'record-cover-boost'
         },
         {
-            href: 'turntable-physics.css?v=20260705-physics-v6',
+            href: 'turntable-physics.css?v=20260705-physics-v7',
             key: 'turntable-physics'
         }
     ];
@@ -40,7 +40,7 @@ function loadShelfModeTurntableSkin() {
             key: 'turntable-physics'
         },
         {
-            src: 'turntable-arm-detail.js?v=20260705-arm-detail-v2',
+            src: 'turntable-arm-detail.js?v=20260705-arm-detail-v3',
             key: 'turntable-arm-detail'
         }
     ];
