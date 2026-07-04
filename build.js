@@ -9,9 +9,7 @@ const SHELF_MODE_ASSETS = [
     'turntable-cover-boost.css',
     'turntable-physics.css',
     'turntable-physics.js',
-    'turntable-arm-detail.js',
-    'turntable-photo-finish.css',
-    'turntable-photo-finish.js'
+    'turntable-arm-detail.js'
 ];
 
 if (!CLIENT_ID) {
@@ -42,13 +40,11 @@ const configContent = [
     '    const stylesheets = [',
     '        { href: "turntable-realism.css?v=20260705-photoreal-turntable", key: "photoreal-turntable" },',
     '        { href: "turntable-cover-boost.css?v=20260705-cover-boost", key: "record-cover-boost" },',
-    '        { href: "turntable-physics.css?v=20260705-physics-v7", key: "turntable-physics" },',
-    '        { href: "turntable-photo-finish.css?v=20260705-photo-finish-v1", key: "turntable-photo-finish" }',
+    '        { href: "turntable-physics.css?v=20260705-physics-v8", key: "turntable-physics" }',
     '    ];',
     '    const scripts = [',
     '        { src: "turntable-physics.js?v=20260705-physics-v5", key: "turntable-physics" },',
-    '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v4", key: "turntable-arm-detail" },',
-    '        { src: "turntable-photo-finish.js?v=20260705-photo-finish-v1", key: "turntable-photo-finish" }',
+    '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v4", key: "turntable-arm-detail" }',
     '    ];',
     '    const appendAssets = () => {',
     '        stylesheets.forEach(({ href, key }) => {',
