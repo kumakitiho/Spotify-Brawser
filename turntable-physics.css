@@ -54,11 +54,37 @@
     z-index: 9;
 }
 
+#record-shelf-section .tonearm {
+    pointer-events: none;
+    cursor: default;
+}
+
+#record-shelf-section .tonearm .tonearm-pipe {
+    transition: transform 0.72s cubic-bezier(0.2, 0.82, 0.22, 1);
+}
+
+#record-shelf-section.is-cueing-in .tonearm .tonearm-pipe,
+#record-shelf-section.is-cueing-out .tonearm .tonearm-pipe {
+    transition-duration: 0.95s;
+}
+
+#record-shelf-section.is-needle-lifted .tonearm .tonearm-pipe::after,
+#record-shelf-section.is-cueing-in .tonearm .tonearm-pipe::after,
+#record-shelf-section.is-cueing-out .tonearm .tonearm-pipe::after,
 #record-shelf-section.is-needle-off-record .tonearm .tonearm-pipe::after,
 #record-shelf-section.is-needle-on-label .tonearm .tonearm-pipe::after {
     border-bottom-color: rgba(255, 255, 255, 0.42);
+    transform: rotate(28deg) translateY(-8px);
 }
 
 #record-shelf-section.is-needle-on-groove .tonearm .tonearm-pipe::after {
     border-bottom-color: #1DB954;
+    transform: rotate(28deg) translateY(0);
+}
+
+#record-shelf-section.is-cueing-in .record-disc,
+#record-shelf-section.is-cueing-out .record-disc {
+    filter:
+        drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35))
+        drop-shadow(0 0 18px rgba(29, 185, 84, 0.10));
 }
