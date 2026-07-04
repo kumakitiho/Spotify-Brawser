@@ -40,7 +40,7 @@ function loadShelfModeTurntableSkin() {
 
     const scripts = [
         {
-            src: 'turntable-physics.js?v=20260705-physics-v6',
+            src: 'turntable-physics.js?v=20260705-physics-v7',
             key: 'turntable-physics'
         },
         {
