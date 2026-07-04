@@ -28,7 +28,7 @@ const configContent = `// 本番用設定ファイル（自動生成）
 const config = {
     CLIENT_ID: ${jsString(CLIENT_ID)},
     REDIRECT_URI: ${jsString(normalizeBaseUrl(PUBLIC_BASE_URL))},
-    SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state playlist-modify-private',
+    SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state',
     TOKEN_ENDPOINT: 'https://accounts.spotify.com/api/token',
     AUTH_URL: 'https://accounts.spotify.com/authorize'
 };

@@ -593,6 +593,53 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.38);
         }
 
+        .tonearm-rest,
+        .turntable-control {
+            position: absolute;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .tonearm-rest {
+            right: 10%;
+            top: 47%;
+            width: 12%;
+            height: 9%;
+            border-radius: 9999px 9999px 0.7rem 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.12), transparent 35%),
+                #151515;
+            box-shadow:
+                inset 0 0 0 5px rgba(0, 0, 0, 0.28),
+                0 10px 20px rgba(0, 0, 0, 0.32);
+        }
+
+        .turntable-control {
+            bottom: 9%;
+            width: 11%;
+            aspect-ratio: 1;
+            border-radius: 9999px;
+            background:
+                radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.22), transparent 18%),
+                linear-gradient(145deg, #343434, #0b0b0b);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow:
+                inset 0 -7px 14px rgba(0, 0, 0, 0.48),
+                0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .turntable-control.start {
+            right: 28%;
+            background:
+                radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.24), transparent 18%),
+                linear-gradient(145deg, #1DB954, #0c5127);
+        }
+
+        .turntable-control.stop {
+            right: 13%;
+        }
+
         .record-disc {
             transform: rotate(var(--record-rotation, 0deg));
         }
@@ -709,7 +756,7 @@
             <h1 class="text-4xl md:text-6xl font-bold mb-4">あなたのSpotify統計</h1>
             <p class="text-spotify-light-gray mb-8">あなたの再生履歴とランキングを、まとめて見てみよう。</p>
             <div class="mx-auto mb-8 max-w-2xl text-left text-sm text-spotify-light-gray space-y-3">
-                <p>トップ楽曲、トップアーティスト、プレイリスト作成のためにSpotifyの閲覧・プレイリスト権限を使います。</p>
+                <p>トップ楽曲、トップアーティスト、ブラウザ内再生のためにSpotifyの閲覧・再生権限を使います。</p>
                 <p>ブラウザ内でのフル再生にはSpotify Premiumが必要です。Premiumでない場合も統計表示と30秒プレビューは利用できます。</p>
             </div>
             <button id="login-button" class="bg-spotify-green text-black font-bold py-3 px-8 rounded-full text-lg hover:scale-105 transition-transform">
@@ -761,6 +808,9 @@
                             <div class="tonearm" aria-hidden="true">
                                 <div class="tonearm-pipe"></div>
                             </div>
+                            <div class="tonearm-rest" aria-hidden="true"></div>
+                            <div class="turntable-control start" aria-hidden="true"></div>
+                            <div class="turntable-control stop" aria-hidden="true"></div>
                         </div>
 
                         <div class="mt-4 text-center">
@@ -777,8 +827,8 @@
                                 <h3 class="text-lg font-bold">次に流す棚</h3>
                                 <p class="text-xs text-spotify-light-gray">上位曲をドラッグして中央のレコードへ</p>
                             </div>
-                            <button id="shelf-mix-btn" class="rounded-full bg-spotify-green px-4 py-2 text-xs font-bold text-black transition hover:scale-105" type="button">
-                                この曲からMix
+                            <button id="shelf-next-cue-btn" class="rounded-full bg-spotify-green px-4 py-2 text-xs font-bold text-black transition hover:scale-105" type="button">
+                                次の盤へ
                             </button>
                         </div>
                         <div id="record-shelf-list" class="mt-4 flex gap-4 overflow-x-auto pb-4"></div>
@@ -814,9 +864,6 @@
                                     <p id="insights-description" class="mt-3 text-sm sm:text-base text-spotify-light-gray leading-relaxed"></p>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
-                                    <button id="create-playlist-btn" class="insight-share-btn rounded-full px-4 py-2 text-sm font-semibold text-white self-start hidden" type="button">
-                                        プレイリスト化
-                                    </button>
                                     <button id="share-summary-btn" class="insight-share-btn rounded-full px-4 py-2 text-sm font-semibold text-white self-start" type="button">
                                         結果をコピー
                                     </button>
@@ -974,7 +1021,6 @@
         const insightsHighlights = document.getElementById('insights-highlights');
         const insightsBreakdown = document.getElementById('insights-breakdown');
         const shareSummaryBtn = document.getElementById('share-summary-btn');
-        const createPlaylistBtn = document.getElementById('create-playlist-btn');
         const comparisonPanel = document.getElementById('comparison-panel');
         const comparisonTitle = document.getElementById('comparison-title');
         const comparisonDescription = document.getElementById('comparison-description');
@@ -992,7 +1038,7 @@
         const shelfTrackName = document.getElementById('shelf-track-name');
         const shelfTrackArtist = document.getElementById('shelf-track-artist');
         const shelfProgressFill = document.getElementById('shelf-progress-fill');
-        const shelfMixBtn = document.getElementById('shelf-mix-btn');
+        const shelfNextCueBtn = document.getElementById('shelf-next-cue-btn');
         const shelfRecentStrip = document.getElementById('shelf-recent-strip');
         
         // 再生コントロール要素
@@ -1029,7 +1075,6 @@
         let currentTrackIndex = -1; // 現在再生中の楽曲のインデックス
         let currentInsightShareText = '';
         let shareButtonResetTimeout = null;
-        let playlistButtonResetTimeout = null;
         let currentRenderedType = 'tracks';
         let currentRenderedItems = [];
         let currentTrackItems = [];
@@ -1049,6 +1094,7 @@
         let suppressNextShelfClick = false;
         const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         const TONEARM_PLAY_ANGLE = -72;
+        const TONEARM_INNER_ANGLE = -56;
         const TONEARM_REST_ANGLE = -88;
 
         const artistGenreCache = new Map();
@@ -1430,6 +1476,13 @@
             return clampedAngle;
         }
 
+        function syncTonearmWithPlaybackProgress(position, duration, paused = !isPlaying) {
+            if (tonearmDragState || paused || !duration) return;
+            const progress = Math.max(0, Math.min(position / duration, 1));
+            const angle = TONEARM_PLAY_ANGLE + (TONEARM_INNER_ANGLE - TONEARM_PLAY_ANGLE) * progress;
+            setTonearmAngle(angle);
+        }
+
         function getTonearmAngleFromPointer(clientX, clientY) {
             const tonearmRect = tonearm.getBoundingClientRect();
             const pivotX = tonearmRect.right - 23;
@@ -1557,6 +1610,17 @@
             await playTrackFromShelf(track, { intent: 'tonearm' });
         }
 
+        async function playNextShelfCue() {
+            if (!shelfTracks.length) {
+                shelfStateLabel.textContent = 'LOAD TRACKS TO THE SHELF';
+                return;
+            }
+
+            const currentIndex = shelfTracks.findIndex((track) => track?.uri === selectedShelfTrackUri);
+            const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % shelfTracks.length : 0;
+            await playTrackFromShelf(shelfTracks[nextIndex], { intent: 'tap' });
+        }
+
         function renderShelfRecentStrip() {
             if (!recentShelfTracks.length) {
                 shelfRecentStrip.textContent = 'さっき聴いた余韻は、今の棚から再生した曲でここに育っていきます。';
@@ -1654,8 +1718,7 @@
                 }
             }
 
-            const spotifyUrl = track.uri.replace('spotify:track:', 'https://open.spotify.com/track/');
-            window.location.href = spotifyUrl;
+            updateShelfHero(track, { paused: true, label: 'NO BROWSER PLAYBACK AVAILABLE' });
         }
 
         function renderYearFilterButtons() {
@@ -1695,10 +1758,6 @@
             shareSummaryBtn.textContent = label;
         }
 
-        function resetPlaylistButtonLabel(label = 'プレイリスト化') {
-            createPlaylistBtn.textContent = label;
-        }
-
         function hideInsights() {
             insightsPanel.classList.add('hidden');
             insightsHighlights.innerHTML = '';
@@ -1708,7 +1767,6 @@
             currentInsightShareText = '';
             clearTimeout(shareButtonResetTimeout);
             resetShareButtonLabel();
-            updatePlaylistButtonVisibility();
         }
 
         function hideComparison() {
@@ -1716,14 +1774,6 @@
             comparisonTitle.textContent = '';
             comparisonDescription.textContent = '';
             comparisonGrid.innerHTML = '';
-        }
-
-        function updatePlaylistButtonVisibility() {
-            const shouldShow = currentRenderedType === 'tracks' && currentTrackItems.length > 0;
-            createPlaylistBtn.classList.toggle('hidden', !shouldShow);
-            createPlaylistBtn.disabled = false;
-            clearTimeout(playlistButtonResetTimeout);
-            resetPlaylistButtonLabel();
         }
 
         function average(values) {
@@ -2151,83 +2201,6 @@
             shareButtonResetTimeout = setTimeout(() => resetShareButtonLabel(), 1800);
         }
 
-        function chunkArray(items, size) {
-            const chunks = [];
-            for (let index = 0; index < items.length; index += size) {
-                chunks.push(items.slice(index, index + size));
-            }
-            return chunks;
-        }
-
-        function buildPlaylistPayload() {
-            if (currentRenderedType !== 'tracks' || !currentTrackItems.length) return null;
-
-            const rangeInfo = getActiveRangeInfo();
-            const now = new Date();
-            const dateLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            const playlistName = `Spotify Stats ${rangeInfo.label} ${dateLabel}`;
-            const description = `${rangeInfo.label} の表示中トップ楽曲から自動生成 (${dateLabel})`;
-
-            return {
-                name: playlistName,
-                description,
-                uris: currentTrackItems.map((track) => track.uri).filter(Boolean)
-            };
-        }
-
-        async function handleCreatePlaylist() {
-            const payload = buildPlaylistPayload();
-            if (!payload || !currentUserProfileData?.id) return;
-
-            createPlaylistBtn.disabled = true;
-            resetPlaylistButtonLabel('作成中...');
-
-            try {
-                const playlist = await apiRequest(`https://api.spotify.com/v1/users/${currentUserProfileData.id}/playlists`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: payload.name,
-                        description: payload.description,
-                        public: false
-                    }),
-                    suppressUiError: true
-                });
-
-                if (!playlist?.id) {
-                    throw new Error('playlist creation failed');
-                }
-
-                const chunks = chunkArray(payload.uris, 100);
-                for (const uris of chunks) {
-                    const addResult = await apiRequest(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uris }),
-                        suppressUiError: true
-                    });
-
-                    if (addResult === null) {
-                        throw new Error('playlist track insertion failed');
-                    }
-                }
-
-                resetPlaylistButtonLabel('作成しました');
-                if (playlist.external_urls?.spotify) {
-                    window.open(playlist.external_urls.spotify, '_blank');
-                }
-            } catch (error) {
-                console.error('プレイリスト作成エラー:', error);
-                resetPlaylistButtonLabel('作成失敗');
-            } finally {
-                clearTimeout(playlistButtonResetTimeout);
-                playlistButtonResetTimeout = setTimeout(() => {
-                    createPlaylistBtn.disabled = false;
-                    resetPlaylistButtonLabel();
-                }, 2200);
-            }
-        }
-
         function setupEventListeners() {
             document.querySelectorAll('.type-filter-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -2277,7 +2250,6 @@
             });
 
             shareSummaryBtn.addEventListener('click', handleShareSummary);
-            createPlaylistBtn.addEventListener('click', handleCreatePlaylist);
             statsModeBtn.addEventListener('click', () => setExperienceMode('stats'));
             shelfModeBtn.addEventListener('click', () => {
                 setExperienceMode('shelf');
@@ -2291,7 +2263,7 @@
                     fetchAndDisplayData();
                 }
             });
-            shelfMixBtn.addEventListener('click', handleCreatePlaylist);
+            shelfNextCueBtn.addEventListener('click', playNextShelfCue);
             setupShelfInteractions();
             setupTonearmInteractions();
             reduceMotionQuery.addEventListener?.('change', () => updateRecordSpinState(isPlaying));
@@ -2304,6 +2276,14 @@
                 updatePlayPauseButton();
                 updateTrackButtonStates();
                 updateShelfHero(getTrackByUri(selectedShelfTrackUri), { paused: true, label: 'PREVIEW FINISHED ON YOUR SHELF' });
+            });
+            audioPlayer.addEventListener('timeupdate', () => {
+                if (!currentTrackUrl || audioPlayer.paused || !audioPlayer.duration) return;
+                const position = audioPlayer.currentTime * 1000;
+                const duration = audioPlayer.duration * 1000;
+                const progress = (position / duration) * 100;
+                shelfProgressFill.style.width = `${Math.min(progress || 0, 100)}%`;
+                syncTonearmWithPlaybackProgress(position, duration, false);
             });
             
             // ビュー切り替えボタンのイベントリスナー
@@ -2449,7 +2429,7 @@
                 tonearm.releasePointerCapture?.(event.pointerId);
 
                 if (dropState === 'groove') {
-                    setTonearmAngle(TONEARM_PLAY_ANGLE);
+                    syncTonearmWithPlaybackProgress(audioPlayer.currentTime * 1000, audioPlayer.duration * 1000, false);
                     shelfStateLabel.textContent = 'NEEDLE ON THE GROOVE';
                     await playSelectedTrackFromTonearm();
                     return;
@@ -3012,7 +2992,6 @@
             currentRenderedType = 'tracks';
             currentRenderedItems = tracks || [];
             currentTrackItems = tracks || [];
-            updatePlaylistButtonVisibility();
             rankingList.innerHTML = '';
             if (!tracks || tracks.length === 0) {
                 renderMessage("データがありません。");
@@ -3049,7 +3028,7 @@
                         <div class="font-semibold truncate text-sm sm:text-base">${track.name}</div>
                         <div class="track-artist text-xs sm:text-sm text-spotify-light-gray truncate">${artistName}</div>
                     </div>
-                    <span class="p-2 sm:p-3 rounded-full play-btn ${canPlay} flex-shrink-0" data-track-uri="${track.uri}" data-preview-url="${track.preview_url || ''}" title="Spotifyで再生" aria-hidden="true">
+                    <span class="p-2 sm:p-3 rounded-full play-btn ${canPlay} flex-shrink-0" data-track-uri="${track.uri}" data-preview-url="${track.preview_url || ''}" title="ブラウザ内で再生" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="sm:w-5 sm:h-5">
                             <path d="M8 5v14l11-7z"></path>
                         </svg>
@@ -3073,7 +3052,6 @@
             if (currentExperienceMode === 'shelf') {
                 updateShelfHero(null);
             }
-            updatePlaylistButtonVisibility();
             if (artists.some((artist) => Array.isArray(artist.genres))) {
                 currentArtistsWithGenres = artists;
             }
@@ -3706,7 +3684,6 @@
             currentRenderedItems = [];
             currentTrackItems = [];
             renderRecordShelf([]);
-            updatePlaylistButtonVisibility();
             rankingList.innerHTML = `<div class="text-center text-spotify-light-gray p-8">${message}</div>`;
         }
 
@@ -3793,13 +3770,7 @@
                         }
                     }
 
-                    if (trackUri) {
-                        const spotifyUrl = trackUri.replace('spotify:track:', 'https://open.spotify.com/track/');
-                        console.log('デバイス未準備、Spotifyで開く:', spotifyUrl);
-                        window.location.href = spotifyUrl;
-                        return;
-                    }
-                    alert('この楽曲の情報が取得できませんでした。');
+                    alert('この楽曲はブラウザ内で再生できませんでした。別ページには移動しません。');
                 } finally {
                     setTrackRowPending(trackRow, false, activationToken);
                 }
@@ -3844,7 +3815,7 @@
                 }
 
                 if (response.status === 404) {
-                    console.warn('デバイスが見つかりません。プレビューまたは外部リンクへフォールバックします。');
+                    console.warn('デバイスが見つかりません。プレビューへフォールバックします。');
                 } else {
                     const error = await response.text();
                     console.error('再生リクエストエラー:', response.status, error);
@@ -4004,6 +3975,7 @@
             const progress = (position / duration) * 100;
             progressBar.style.width = `${progress}%`;
             shelfProgressFill.style.width = `${Math.min(progress || 0, 100)}%`;
+            syncTonearmWithPlaybackProgress(position, duration, paused);
             
             // 楽曲終了検出
             if (position && duration) {
@@ -4072,7 +4044,7 @@
                 } else {
                     // 停止中または他の楽曲: 再生アイコン
                     svgElement.setAttribute('d', 'M8 5v14l11-7z');
-                    button.title = trackUri === currentPlayingTrackUri ? '再生' : 'Spotifyで再生';
+                    button.title = trackUri === currentPlayingTrackUri ? '再生' : 'ブラウザ内で再生';
                     button.classList.remove('playing');
                     console.log(`ボタン${index}: 再生アイコンに変更`);
                 }
