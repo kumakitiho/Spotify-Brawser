@@ -1,6 +1,6 @@
 <svg width="1400" height="860" viewBox="0 0 1400 860" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Realistic Record Player UI Mock</title>
-  <desc id="desc">A realistic top-down DJ turntable style mock based on the provided reference image, with a large platter, strobe dots, S-shaped tonearm, pitch slider, and start/stop controls.</desc>
+  <desc id="desc">A realistic top-down DJ turntable style mock based on the provided reference image, with a large platter, fixed strobe dots, S-shaped tonearm, and pitch slider.</desc>
   <defs>
     <linearGradient id="plinth" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f5f5f0"/>
@@ -54,7 +54,6 @@
       .tiny { fill: #2d312f; font: 700 10px Inter, Arial, sans-serif; letter-spacing: .08em; }
       .ticks { stroke: #3b403d; stroke-width: 1; opacity: .72; }
       .record-spin { transform-origin: 560px 430px; animation: spin 7s linear infinite; }
-      .strobe-spin { transform-origin: 560px 430px; animation: spin 12s linear infinite reverse; }
       .platter-breathe { animation: breathe 2s ease-in-out infinite alternate; }
       .shine { animation: shine 4s ease-in-out infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
@@ -69,7 +68,7 @@
   <path d="M58 80 Q58 58 80 58 H1320 Q1342 58 1342 80" fill="none" stroke="url(#plinthEdge)" stroke-width="9" opacity="0.72"/>
 
   <text x="82" y="94" class="title">Realistic Shelf Mode Turntable</text>
-  <text x="84" y="119" class="caption">TOP-DOWN PLATTER / S-SHAPED TONEARM / PITCH CONTROL / START-STOP PANEL</text>
+  <text x="84" y="119" class="caption">TOP-DOWN PLATTER / FIXED STROBE DOTS / S-SHAPED TONEARM / PITCH CONTROL</text>
 
   <!-- 45 adapter / top-left metal disc -->
   <g filter="url(#smallShadow)">
@@ -83,7 +82,8 @@
   <g filter="url(#deepShadow)">
     <circle cx="560" cy="430" r="369" fill="#232725" stroke="#737873" stroke-width="4"/>
     <circle cx="560" cy="430" r="354" fill="#171a19" stroke="#040505" stroke-width="3"/>
-    <g class="strobe-spin">
+    <!-- strobe dots are printed on the platter, so they stay fixed while only the record rotates -->
+    <g>
       <circle cx="560" cy="430" r="358" fill="none" stroke="#e5e6de" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10" opacity="0.9"/>
       <circle cx="560" cy="430" r="344" fill="none" stroke="#f6f7ef" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.82"/>
       <circle cx="560" cy="430" r="332" fill="none" stroke="#9ca19c" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.62"/>
@@ -101,23 +101,6 @@
       <path d="M343 232 C455 135 662 113 804 224" fill="none" stroke="#fff" stroke-width="18" stroke-opacity="0.05" class="shine"/>
     </g>
     <circle cx="560" cy="430" r="11" fill="none" stroke="#111" stroke-width="2"/>
-  </g>
-
-  <!-- start/stop and lower controls -->
-  <g transform="translate(85 650)" filter="url(#smallShadow)">
-    <rect x="0" y="0" width="112" height="84" rx="3" fill="#f3f4ef" stroke="#2b302d" stroke-width="4"/>
-    <text x="26" y="48" class="tiny">start · stop</text>
-    <rect x="124" y="58" width="140" height="18" rx="2" fill="#f0f1ec" stroke="#383d3a" stroke-width="3"/>
-    <circle cx="172" cy="67" r="5" fill="#323734"/>
-    <circle cx="232" cy="67" r="5" fill="#323734"/>
-    <text x="132" y="53" class="tiny">33</text>
-    <text x="214" y="53" class="tiny">45</text>
-  </g>
-
-  <g transform="translate(91 580)" filter="url(#smallShadow)">
-    <circle cx="34" cy="34" r="34" fill="url(#darkMetal)" stroke="#1d211f" stroke-width="3"/>
-    <circle cx="34" cy="34" r="25" fill="none" stroke="#a5aaa5" stroke-width="2" opacity=".45"/>
-    <path d="M34 34 L53 24" stroke="#f5f6f1" stroke-width="2" opacity=".55"/>
   </g>
 
   <!-- small status buttons near platter bottom -->
