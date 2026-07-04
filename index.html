@@ -1093,6 +1093,7 @@
         let suppressNextShelfClick = false;
         let spotifySdkLoadPromise = null;
         let playbackErrorNoticeUntil = 0;
+        let playbackErrorNoticeLabel = 'BROWSER PLAYBACK ERROR';
         const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         const TONEARM_PLAY_ANGLE = -72;
         const TONEARM_INNER_ANGLE = -56;
@@ -1289,11 +1290,12 @@
             player.addListener('playback_error', ({ message }) => {
                 console.error('再生エラー:', message);
                 playbackErrorNoticeUntil = Date.now() + 3500;
+                playbackErrorNoticeLabel = 'BROWSER PLAYBACK ERROR';
                 isPlaying = false;
                 stopProgressUpdate();
                 updateShelfHero(getTrackByUri(currentPlayingTrackUri) || getTrackByUri(selectedShelfTrackUri), {
                     paused: true,
-                    label: 'BROWSER PLAYBACK ERROR'
+                    label: playbackErrorNoticeLabel
                 });
                 updatePlayPauseButton();
                 updateTrackButtonStates();
@@ -1809,7 +1811,9 @@
                 }
             }
 
-            updateShelfHero(track, { paused: true, label: 'NO BROWSER PLAYBACK AVAILABLE' });
+            playbackErrorNoticeUntil = Date.now() + 3500;
+            playbackErrorNoticeLabel = 'NO BROWSER PLAYBACK AVAILABLE';
+            updateShelfHero(track, { paused: true, label: playbackErrorNoticeLabel });
         }
 
         function renderYearFilterButtons() {
@@ -4050,7 +4054,7 @@
                 }
                 updateProfilePlaybackBadge(track, paused);
                 const shelfLabel = paused && Date.now() < playbackErrorNoticeUntil
-                    ? 'BROWSER PLAYBACK ERROR'
+                    ? playbackErrorNoticeLabel
                     : null;
                 updateShelfHero(track, { paused, label: shelfLabel });
                 
