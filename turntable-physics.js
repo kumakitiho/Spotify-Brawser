@@ -171,10 +171,14 @@
     }
 
     async function cueNeedleToGroove() {
+        const { section } = getElements();
+        if (section?.classList.contains('is-needle-on-groove') && Math.abs(currentArmAngle - ARM_PLAY_ANGLE) < 0.5) {
+            return true;
+        }
+
         if (activeCuePromise) return activeCuePromise;
 
         activeCuePromise = (async () => {
-            const { section } = getElements();
             const sequenceId = ++cueSequenceId;
 
             clearCueClasses(section);
@@ -249,49 +253,16 @@
         cueInThenRunOriginal(button);
     }
 
-    function replayShelfEvent(event) {
-        const target = event.target;
+    function replayShelfClick(target) {
         if (!target?.dispatchEvent) return;
 
         allowShelfActivation = true;
         try {
-            let replay;
-            if (event instanceof PointerEvent) {
-                replay = new PointerEvent(event.type, {
-                    bubbles: true,
-                    cancelable: true,
-                    pointerId: event.pointerId,
-                    pointerType: event.pointerType,
-                    isPrimary: event.isPrimary,
-                    clientX: event.clientX,
-                    clientY: event.clientY,
-                    screenX: event.screenX,
-                    screenY: event.screenY,
-                    button: event.button,
-                    buttons: event.buttons,
-                    ctrlKey: event.ctrlKey,
-                    shiftKey: event.shiftKey,
-                    altKey: event.altKey,
-                    metaKey: event.metaKey
-                });
-            } else {
-                replay = new MouseEvent(event.type, {
-                    bubbles: true,
-                    cancelable: true,
-                    clientX: event.clientX,
-                    clientY: event.clientY,
-                    screenX: event.screenX,
-                    screenY: event.screenY,
-                    button: event.button,
-                    buttons: event.buttons,
-                    ctrlKey: event.ctrlKey,
-                    shiftKey: event.shiftKey,
-                    altKey: event.altKey,
-                    metaKey: event.metaKey
-                });
-            }
-
-            target.dispatchEvent(replay);
+            target.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            }));
         } finally {
             window.setTimeout(() => {
                 allowShelfActivation = false;
@@ -302,9 +273,8 @@
     async function gateShelfActivation(event) {
         if (allowShelfActivation) return;
 
-        const shelfTrack = event.target?.closest?.('.shelf-track');
-        const nextCueButton = event.target?.closest?.('#shelf-next-cue');
-        if (!shelfTrack && !nextCueButton) return;
+        const activationTarget = event.target?.closest?.('#shelf-next-cue, .shelf-track');
+        if (!activationTarget) return;
 
         if (event.type === 'click' && Date.now() < suppressOriginalShelfClickUntil) {
             event.preventDefault();
@@ -322,7 +292,7 @@
         const didCue = await cueNeedleToGroove();
         if (!didCue) return;
 
-        replayShelfEvent(event);
+        replayShelfClick(activationTarget);
     }
 
     function bindPlaybackButton() {
