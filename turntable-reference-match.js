@@ -28,43 +28,43 @@
                         <stop offset="1" stop-color="#050606"/>
                     </linearGradient>
                     <filter id="refSoftShadow" x="-30%" y="-30%" width="160%" height="160%">
-                        <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.25"/>
+                        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.22"/>
                     </filter>
                 </defs>
 
-                <!-- reference-like start/stop area, kept below platter edge -->
-                <g filter="url(#refSoftShadow)" opacity="0.88">
-                    <rect x="57" y="500" width="93" height="62" rx="2" fill="#eef0e9" stroke="#1b211e" stroke-width="3"/>
-                    <rect x="63" y="506" width="81" height="50" rx="1.5" fill="#f8faf2" stroke="#657067" stroke-width="1" opacity="0.92"/>
-                    <text x="83" y="535" fill="#111514" font-size="8" font-family="Inter, Arial" font-weight="800" letter-spacing="1">start · stop</text>
+                <!-- reference-like start/stop area; lowered and kept behind platter layer for real depth -->
+                <g filter="url(#refSoftShadow)" opacity="0.76">
+                    <rect x="58" y="526" width="78" height="48" rx="2" fill="#eef0e9" stroke="#1b211e" stroke-width="2.4"/>
+                    <rect x="64" y="532" width="66" height="36" rx="1.5" fill="#f8faf2" stroke="#657067" stroke-width="1" opacity="0.90"/>
+                    <text x="78" y="554" fill="#111514" font-size="7" font-family="Inter, Arial" font-weight="800" letter-spacing="0.9">start · stop</text>
                 </g>
 
-                <g filter="url(#refSoftShadow)" opacity="0.84">
-                    <rect x="164" y="543" width="49" height="10" rx="1" fill="#eef0e9" stroke="#1b211e" stroke-width="1.5"/>
-                    <rect x="220" y="543" width="49" height="10" rx="1" fill="#eef0e9" stroke="#1b211e" stroke-width="1.5"/>
-                    <text x="178" y="540" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">33</text>
-                    <text x="234" y="540" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">45</text>
-                    <circle cx="155" cy="547" r="2" fill="#1DB954" opacity="0.72"/>
-                    <circle cx="211" cy="547" r="2" fill="#9aa39b" opacity="0.62"/>
+                <g filter="url(#refSoftShadow)" opacity="0.70">
+                    <rect x="152" y="586" width="45" height="8" rx="1" fill="#eef0e9" stroke="#1b211e" stroke-width="1.2"/>
+                    <rect x="206" y="586" width="45" height="8" rx="1" fill="#eef0e9" stroke="#1b211e" stroke-width="1.2"/>
+                    <text x="164" y="582" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">33</text>
+                    <text x="218" y="582" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">45</text>
+                    <circle cx="143" cy="590" r="1.8" fill="#1DB954" opacity="0.65"/>
+                    <circle cx="199" cy="590" r="1.8" fill="#9aa39b" opacity="0.55"/>
                 </g>
 
                 <!-- lower right cue buttons beside platter, as in reference photo -->
-                <g filter="url(#refSoftShadow)" opacity="0.82">
-                    <circle cx="604" cy="512" r="16" fill="url(#refMetalFace)" stroke="#485149" stroke-width="2"/>
-                    <circle cx="623" cy="512" r="14" fill="#3a423c" stroke="#171c19" stroke-width="2"/>
-                    <circle cx="604" cy="512" r="7" fill="#f4f6ef" opacity="0.7"/>
-                    <circle cx="623" cy="512" r="5" fill="#8f9890" opacity="0.75"/>
+                <g filter="url(#refSoftShadow)" opacity="0.72">
+                    <circle cx="604" cy="512" r="15" fill="url(#refMetalFace)" stroke="#485149" stroke-width="2"/>
+                    <circle cx="622" cy="512" r="13" fill="#3a423c" stroke="#171c19" stroke-width="2"/>
+                    <circle cx="604" cy="512" r="6" fill="#f4f6ef" opacity="0.65"/>
+                    <circle cx="622" cy="512" r="4.5" fill="#8f9890" opacity="0.72"/>
                 </g>
 
                 <!-- small labels around start/speed area -->
-                <g opacity="0.42">
-                    <text x="76" y="486" fill="#111514" font-size="7" font-family="Inter, Arial" font-weight="700" letter-spacing="0.8">quartz</text>
-                    <text x="75" y="494" fill="#111514" font-size="6" font-family="Inter, Arial" letter-spacing="0.7">lock</text>
-                    <path d="M133 492 H144 M136 499 H147 M139 506 H150" stroke="#111514" stroke-width="1"/>
+                <g opacity="0.34">
+                    <text x="72" y="512" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="700" letter-spacing="0.8">quartz</text>
+                    <text x="72" y="520" fill="#111514" font-size="5" font-family="Inter, Arial" letter-spacing="0.7">lock</text>
+                    <path d="M121 516 H132 M124 523 H135 M127 530 H138" stroke="#111514" stroke-width="0.8"/>
                 </g>
 
                 <!-- pitch slider numeric scale and subtle top plate engraving -->
-                <g opacity="0.58">
+                <g opacity="0.52">
                     <text x="775" y="329" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">+8</text>
                     <text x="774" y="590" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">-8</text>
                     <text x="778" y="608" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="700" letter-spacing="0.7">pitch adj.</text>
@@ -73,7 +73,7 @@
                 </g>
 
                 <!-- very subtle brand location, similar to photo but low contrast -->
-                <g opacity="0.26">
+                <g opacity="0.22">
                     <text x="596" y="550" fill="#111514" font-size="15" font-family="Georgia, serif" font-weight="700">Technics</text>
                     <text x="597" y="562" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="700" letter-spacing="0.7">quartz direct drive</text>
                 </g>
@@ -87,7 +87,7 @@
                     </filter>
                 </defs>
                 <!-- fixed, low-opacity vinyl scuffs only; avoids fake black bands -->
-                <g opacity="0.16" filter="url(#refDustBlur)">
+                <g opacity="0.11" filter="url(#refDustBlur)">
                     <path d="M174 218 C254 205 353 212 456 201" stroke="#ffffff" stroke-width="0.7" fill="none"/>
                     <path d="M154 395 C256 420 421 405 515 380" stroke="#ffffff" stroke-width="0.6" fill="none"/>
                     <path d="M306 172 C330 260 326 445 306 522" stroke="#ffffff" stroke-width="0.6" fill="none"/>
