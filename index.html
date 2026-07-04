@@ -973,7 +973,6 @@
         </div>
     </div>
     <audio id="audio-player"></audio>
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
 
     <script>
         // --- 設定と定数 ---
@@ -1092,6 +1091,7 @@
         let recordSpinFrameId = null;
         let lastRecordSpinTimestamp = null;
         let suppressNextShelfClick = false;
+        let spotifySdkLoadPromise = null;
         const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         const TONEARM_PLAY_ANGLE = -72;
         const TONEARM_INNER_ANGLE = -56;
@@ -1202,7 +1202,7 @@
             mainView.classList.remove('hidden');
             renderYearFilterButtons();
             await fetchUserProfile();
-            await initializeSpotifyPlayer();
+            initializeSpotifyPlayer();
             setupEventListeners();
             fetchAndDisplayData();
         }
@@ -1210,17 +1210,34 @@
         // --- Spotify Web Playback SDK初期化 ---
         async function initializeSpotifyPlayer() {
             console.log('Spotify Web Playback SDKを初期化中...');
-            
-            // SDKが既に読み込まれている場合は即座に初期化
-            if (window.Spotify) {
+
+            try {
+                await loadSpotifyPlaybackSdk();
                 initializePlayer();
-            } else {
-                // SDKの読み込みを待つ
-                window.onSpotifyWebPlaybackSDKReady = initializePlayer;
+            } catch (error) {
+                console.error('Spotify Web Playback SDK初期化エラー:', error);
             }
+        }
+
+        function loadSpotifyPlaybackSdk() {
+            if (window.Spotify) return Promise.resolve();
+            if (spotifySdkLoadPromise) return spotifySdkLoadPromise;
+
+            spotifySdkLoadPromise = new Promise((resolve, reject) => {
+                window.onSpotifyWebPlaybackSDKReady = () => resolve();
+
+                const script = document.createElement('script');
+                script.src = 'https://sdk.scdn.co/spotify-player.js';
+                script.async = true;
+                script.onerror = () => reject(new Error('Spotify Web Playback SDKの読み込みに失敗しました'));
+                document.body.appendChild(script);
+            });
+
+            return spotifySdkLoadPromise;
         }
         
         function initializePlayer() {
+            if (player) return;
             console.log('プレイヤーを作成中...');
             player = new Spotify.Player({
                 name: 'Music App Player',
@@ -1243,6 +1260,14 @@
 
             player.addListener('playback_error', ({ message }) => {
                 console.error('再生エラー:', message);
+                isPlaying = false;
+                stopProgressUpdate();
+                updateShelfHero(getTrackByUri(currentPlayingTrackUri) || getTrackByUri(selectedShelfTrackUri), {
+                    paused: true,
+                    label: 'BROWSER PLAYBACK ERROR'
+                });
+                updatePlayPauseButton();
+                updateTrackButtonStates();
             });
 
             // プレイヤー準備完了
@@ -1349,7 +1374,10 @@
         }
 
         function getTrackArtistName(track) {
-            return track?.artists?.map((artist) => artist.name).join(', ') || '不明なアーティスト';
+            if (Array.isArray(track?.artists)) {
+                return track.artists.map((artist) => artist.name).join(', ') || '不明なアーティスト';
+            }
+            return track?.artist || '不明なアーティスト';
         }
 
         function getShelfTrackImage(track) {
@@ -1359,7 +1387,41 @@
         function getTrackByUri(trackUri) {
             return (currentTrackItems || []).find((track) => track?.uri === trackUri)
                 || (shelfTracks || []).find((track) => track?.uri === trackUri)
+                || (currentPlaylist || []).find((track) => track?.uri === trackUri)
                 || null;
+        }
+
+        function syncOptimisticPlaybackState(trackUri, trackInfo = null) {
+            const knownTrack = getTrackByUri(trackUri);
+            const optimisticTrack = knownTrack || {
+                uri: trackUri,
+                name: trackInfo?.name || '不明な楽曲',
+                artists: [{ name: trackInfo?.artist || '不明なアーティスト' }],
+                album: { images: trackInfo?.image ? [{ url: trackInfo.image }] : [] }
+            };
+
+            currentPlayingTrackUri = trackUri;
+            isPlaying = true;
+            currentTrackName.textContent = optimisticTrack.name || trackInfo?.name || '不明な楽曲';
+            currentTrackArtist.textContent = getTrackArtistName(optimisticTrack);
+
+            const trackImageUrl = getTrackImageUrl(optimisticTrack) || trackInfo?.image || '';
+            if (trackImageUrl) {
+                currentTrackImage.src = trackImageUrl;
+            }
+
+            currentTime.textContent = '0:00';
+            currentTimeMobile.textContent = '0:00';
+            progressBar.style.width = '0%';
+            progressBarMobile.style.width = '0%';
+            shelfProgressFill.style.width = '0%';
+
+            updateProfilePlaybackBadge(optimisticTrack, false);
+            updateShelfHero(optimisticTrack, { paused: false, label: 'PLAYING ON YOUR SHELF' });
+            showPlaybackControl();
+            updatePlayPauseButton();
+            updateTrackButtonStates();
+            startProgressUpdate();
         }
 
         function setExperienceMode(mode) {
@@ -3809,7 +3871,14 @@
 
                 if (response.ok) {
                     console.log('✅ Web Playback SDKで再生開始');
-                    showPlaybackControl();
+                    syncOptimisticPlaybackState(trackUri, trackInfo);
+                    if (player && deviceId) {
+                        try {
+                            await player.resume();
+                        } catch (error) {
+                            console.warn('SDK resume fallback failed:', error);
+                        }
+                    }
                     console.log('⏱ 楽曲再生開始 - プレイヤーからの情報を待機中');
                     return true;
                 }
