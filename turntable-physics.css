@@ -1,6 +1,42 @@
 /* Turntable physics corrections
    Keeps lighting/reflection fixed to the camera instead of rotating with the vinyl. */
 
+#record-shelf-section .turntable-platter::before,
+#record-shelf-section .turntable-platter::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 4;
+}
+
+#record-shelf-section .turntable-platter::before {
+    background:
+        repeating-conic-gradient(from -2deg, rgba(255, 255, 248, 0.98) 0 0.42deg, transparent 0.46deg 1.95deg),
+        repeating-conic-gradient(from 0.8deg, rgba(194, 201, 191, 0.86) 0 0.34deg, transparent 0.38deg 1.7deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 82.4%, #000 82.8% 87.4%, transparent 87.8% 100%);
+    mask: radial-gradient(circle, transparent 0 82.4%, #000 82.8% 87.4%, transparent 87.8% 100%);
+    opacity: 0.96;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.44));
+}
+
+#record-shelf-section .turntable-platter::after {
+    inset: 2.5%;
+    background:
+        repeating-conic-gradient(from 0.3deg, rgba(255, 255, 248, 0.95) 0 0.52deg, transparent 0.58deg 2.45deg),
+        repeating-conic-gradient(from -1.1deg, rgba(124, 132, 122, 0.78) 0 0.44deg, transparent 0.5deg 2.28deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 82%, #000 82.4% 87.8%, transparent 88.2% 100%);
+    mask: radial-gradient(circle, transparent 0 82%, #000 82.4% 87.8%, transparent 88.2% 100%);
+    opacity: 0.74;
+}
+
+#record-shelf-section .record-progress-ring {
+    opacity: 1 !important;
+    z-index: 5 !important;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.35));
+}
+
 #record-shelf-section .record-disc::before,
 #record-shelf-section .record-disc::after {
     content: '';
