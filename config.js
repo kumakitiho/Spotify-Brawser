@@ -18,6 +18,27 @@ function getRuntimeRedirectUri() {
     return `${window.location.origin}${path}`;
 }
 
+function loadShelfModeTurntableSkin() {
+    const href = 'turntable-realism.css';
+
+    const appendStylesheet = () => {
+        if (document.querySelector(`link[href="${href}"]`)) return;
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.dataset.shelfModeSkin = 'photoreal-turntable';
+        document.head.appendChild(link);
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', appendStylesheet, { once: true });
+        return;
+    }
+
+    appendStylesheet();
+}
+
 const config = {
     // Spotify API設定 - 本番環境では環境変数から取得
     CLIENT_ID: window.SPOTIFY_CLIENT_ID
@@ -30,6 +51,8 @@ const config = {
     TOKEN_ENDPOINT: 'https://accounts.spotify.com/api/token',
     AUTH_URL: 'https://accounts.spotify.com/authorize'
 };
+
+loadShelfModeTurntableSkin();
 
 // 設定検証とデバッグ
 console.log('🔍 CLIENT_ID確認:', config.CLIENT_ID ? `${config.CLIENT_ID.substring(0, 8)}...` : 'NOT SET');
