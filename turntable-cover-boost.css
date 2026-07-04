@@ -1,0 +1,45 @@
+/* Shelf Mode record center artwork boost
+   Loaded after turntable-realism.css to make the current track jacket more visible. */
+
+#record-shelf-section .record-label {
+    inset: 32.5%;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+        inset 0 0 0 10px rgba(255, 255, 255, 0.055),
+        0 0 0 14px rgba(0, 0, 0, 0.54);
+}
+
+#record-shelf-section .record-label::before,
+#record-shelf-section .record-label::after {
+    opacity: 0.28;
+}
+
+#record-shelf-section .record-hero-art {
+    left: 34.6%;
+    top: 34.6%;
+    width: 30.8%;
+    height: 30.8%;
+    opacity: 0.92;
+    filter: saturate(1.08) contrast(1.06) brightness(1.02);
+    mix-blend-mode: normal;
+    border: 2px solid rgba(255, 255, 255, 0.48);
+    box-shadow:
+        0 0 0 8px rgba(238, 240, 232, 0.62),
+        0 0 0 18px rgba(0, 0, 0, 0.42),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.32),
+        0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+#record-shelf-section .record-spindle {
+    inset: 48.2%;
+    z-index: 7;
+}
+
+@media (max-width: 640px) {
+    #record-shelf-section .record-hero-art {
+        left: 33.8%;
+        top: 33.8%;
+        width: 32.4%;
+        height: 32.4%;
+    }
+}
