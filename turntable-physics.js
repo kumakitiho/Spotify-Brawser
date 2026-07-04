@@ -1,5 +1,5 @@
 /* Turntable playback physics
-   Tonearm is no longer draggable. Playback starts only after the SVG tonearm reaches the groove. */
+   The tonearm is decorative and is kept in sync without intercepting shelf cover taps. */
 
 (function () {
     const ARM_REST_ANGLE = 0;
@@ -10,8 +10,6 @@
     const ARM_PIVOT_Y = 172;
 
     let allowPlaybackButtonClick = false;
-    let allowShelfActivation = false;
-    let suppressOriginalShelfClickUntil = 0;
     let cueSequenceId = 0;
     let currentArmAngle = ARM_REST_ANGLE;
     let activeCuePromise = null;
@@ -22,9 +20,7 @@
             dropZone: document.querySelector('#record-shelf-section .shelf-drop-zone'),
             armGroup: document.querySelector('#record-shelf-section .turntable-svg-moving-arm'),
             label: document.getElementById('shelf-state-label'),
-            playPauseButton: document.getElementById('play-pause-btn'),
-            recordShelfList: document.getElementById('record-shelf-list'),
-            shelfNextCueButton: document.getElementById('shelf-next-cue')
+            playPauseButton: document.getElementById('play-pause-btn')
         };
     }
 
@@ -253,67 +249,11 @@
         cueInThenRunOriginal(button);
     }
 
-    function replayShelfClick(target) {
-        if (!target?.dispatchEvent) return;
-
-        allowShelfActivation = true;
-        try {
-            target.dispatchEvent(new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window
-            }));
-        } finally {
-            window.setTimeout(() => {
-                allowShelfActivation = false;
-            }, 0);
-        }
-    }
-
-    async function gateShelfActivation(event) {
-        if (allowShelfActivation) return;
-
-        const activationTarget = event.target?.closest?.('#shelf-next-cue, .shelf-track');
-        if (!activationTarget) return;
-
-        if (event.type === 'click' && Date.now() < suppressOriginalShelfClickUntil) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            return;
-        }
-
-        if (event.type === 'pointerup') {
-            suppressOriginalShelfClickUntil = Date.now() + 1400;
-        }
-
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        const didCue = await cueNeedleToGroove();
-        if (!didCue) return;
-
-        replayShelfClick(activationTarget);
-    }
-
     function bindPlaybackButton() {
         const { playPauseButton } = getElements();
         if (!playPauseButton || playPauseButton.dataset.turntableCueBound === 'true') return;
         playPauseButton.dataset.turntableCueBound = 'true';
         playPauseButton.addEventListener('click', handlePlaybackButtonClick, true);
-    }
-
-    function bindShelfPlaybackGate() {
-        const { recordShelfList, shelfNextCueButton } = getElements();
-        if (recordShelfList && recordShelfList.dataset.turntableCueGateBound !== 'true') {
-            recordShelfList.dataset.turntableCueGateBound = 'true';
-            recordShelfList.addEventListener('pointerup', gateShelfActivation, true);
-            recordShelfList.addEventListener('click', gateShelfActivation, true);
-        }
-
-        if (shelfNextCueButton && shelfNextCueButton.dataset.turntableCueGateBound !== 'true') {
-            shelfNextCueButton.dataset.turntableCueGateBound = 'true';
-            shelfNextCueButton.addEventListener('click', gateShelfActivation, true);
-        }
     }
 
     function bind() {
@@ -323,7 +263,6 @@
         section?.classList.add('is-needle-off-record');
         setSvgArmAngle(ARM_REST_ANGLE);
         bindPlaybackButton();
-        bindShelfPlaybackGate();
 
         window.turntableCue = {
             cueIn: cueNeedleToGroove,
