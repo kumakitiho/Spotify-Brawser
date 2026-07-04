@@ -139,13 +139,28 @@
                 </g>
             </g>`;
 
-        svg.insertAdjacentHTML('beforeend', detailMarkup);
+        const movingArm = svg.querySelector('.turntable-svg-moving-arm');
+        if (movingArm) {
+            movingArm.insertAdjacentHTML('beforebegin', detailMarkup);
+        } else {
+            svg.insertAdjacentHTML('beforeend', detailMarkup);
+        }
+    }
+
+    function hideOriginalHeadshell(armGroup) {
+        const originalHeadshell = Array.from(armGroup.querySelectorAll('g'))
+            .find((group) => (group.getAttribute('transform') || '').includes('translate(492 571)'));
+
+        if (originalHeadshell) {
+            originalHeadshell.setAttribute('opacity', '0');
+        }
     }
 
     function applyMovingDetail(svg) {
         const armGroup = svg?.querySelector('.turntable-svg-moving-arm');
         if (!armGroup || armGroup.dataset[DETAIL_MARKER] === 'true') return;
         armGroup.dataset[DETAIL_MARKER] = 'true';
+        hideOriginalHeadshell(armGroup);
 
         const movingMarkup = `
             <g class="turntable-svg-arm-detail-moving" pointer-events="none">
@@ -159,8 +174,8 @@
                 <path d="M648 401 H672" stroke="#f4f6ef" stroke-width="1.5" opacity="0.5" transform="rotate(12 660 401)"/>
                 <path d="M642 418 C633 453 615 501 588 538" fill="none" stroke="#1b201e" stroke-width="3" stroke-linecap="round" opacity="0.44"/>
 
-                <!-- Technics-style silver headshell overlay: slots, screws, cartridge; no visible lead wires -->
-                <g transform="translate(492 571) rotate(-25)">
+                <!-- Smaller Technics-style silver headshell: slots, screws, cartridge; no visible lead wires -->
+                <g transform="translate(507 586) rotate(-25) scale(0.72)">
                     <path d="M-9 4 L10 -10 H73 Q83 -10 88 0 L80 42 Q78 53 66 54 H2 Q-8 54 -12 44 Z" fill="url(#svgArmMetal)" stroke="#343c36" stroke-width="2.5" opacity="0.98"/>
                     <path d="M3 9 H24 Q29 9 29 14 V35 Q29 40 23 40 H2 Q-4 40 -3 34 L2 14 Q3 9 8 9" fill="#0a0d0c" opacity="0.78"/>
                     <path d="M49 8 H71 Q76 8 76 14 V34 Q76 40 70 40 H49 Q43 40 44 34 L49 14 Q50 8 55 8" fill="#0a0d0c" opacity="0.78"/>
@@ -170,7 +185,7 @@
                     <circle cx="38" cy="36" r="5" fill="#1a201d" stroke="#eef1ea" stroke-width="1.4"/>
                     <circle cx="35" cy="17" r="1.8" fill="#eef1ea" opacity="0.82"/>
                     <circle cx="38" cy="36" r="1.8" fill="#eef1ea" opacity="0.82"/>
-                    <text x="2" y="51" fill="#1b211e" font-size="7" font-family="Inter, Arial" font-weight="800" transform="rotate(0 2 51)">Technics</text>
+                    <text x="2" y="51" fill="#1b211e" font-size="7" font-family="Inter, Arial" font-weight="800">Technics</text>
                     <rect x="-6" y="47" width="44" height="15" rx="3" fill="#c7b08b" stroke="#5d5140" stroke-width="1.4"/>
                     <rect x="3" y="59" width="28" height="9" rx="2" fill="#2d322f" stroke="#111514" stroke-width="1"/>
                     <path class="turntable-svg-needle" d="M17 67 L43 78" stroke="#1DB954" stroke-width="3" stroke-linecap="round" filter="url(#svgNeedleGlow)"/>
