@@ -1,4 +1,4 @@
-/* Disable broken shelf drag-and-drop.
+/* Disable broken shelf drag-and-drop without blocking normal cover taps.
    Shelf Mode now uses tap/click playback only. */
 
 (function () {
@@ -52,20 +52,12 @@
         });
     }
 
-    function stopShelfDragStart(event) {
+    function cleanupPossibleDrag(event) {
         const shelfTrack = event.target?.closest?.('#record-shelf-list .shelf-track');
         if (!shelfTrack) return;
 
-        // Do not prevent default here. Let the browser still synthesize the normal click.
-        event.stopImmediatePropagation();
-        removeDragGhosts();
-    }
-
-    function stopShelfDragMove(event) {
-        const shelfTrack = event.target?.closest?.('#record-shelf-list .shelf-track');
-        if (!shelfTrack) return;
-
-        event.stopImmediatePropagation();
+        // Important: do not stop pointer/click propagation here.
+        // The app uses those events to select and play a cover.
         removeDragGhosts();
     }
 
@@ -84,8 +76,10 @@
 
         if (recordShelfList.dataset[MARKER] !== 'true') {
             recordShelfList.dataset[MARKER] = 'true';
-            recordShelfList.addEventListener('pointerdown', stopShelfDragStart, true);
-            recordShelfList.addEventListener('pointermove', stopShelfDragMove, true);
+            recordShelfList.addEventListener('pointerdown', cleanupPossibleDrag, true);
+            recordShelfList.addEventListener('pointermove', cleanupPossibleDrag, true);
+            recordShelfList.addEventListener('pointerup', cleanupPossibleDrag, true);
+            recordShelfList.addEventListener('click', cleanupPossibleDrag, true);
             recordShelfList.addEventListener('dragstart', preventNativeDrag, true);
         }
 
