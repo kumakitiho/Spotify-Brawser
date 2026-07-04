@@ -1224,13 +1224,40 @@
             if (spotifySdkLoadPromise) return spotifySdkLoadPromise;
 
             spotifySdkLoadPromise = new Promise((resolve, reject) => {
-                window.onSpotifyWebPlaybackSDKReady = () => resolve();
+                let settled = false;
+                let pollTimer = null;
+                let timeoutTimer = null;
+                const finish = () => {
+                    if (settled) return;
+                    if (!window.Spotify) return;
+                    settled = true;
+                    window.clearInterval(pollTimer);
+                    window.clearTimeout(timeoutTimer);
+                    resolve();
+                };
+
+                window.onSpotifyWebPlaybackSDKReady = finish;
 
                 const script = document.createElement('script');
                 script.src = 'https://sdk.scdn.co/spotify-player.js';
                 script.async = true;
-                script.onerror = () => reject(new Error('Spotify Web Playback SDKの読み込みに失敗しました'));
+                script.onload = finish;
+                script.onerror = () => {
+                    if (settled) return;
+                    settled = true;
+                    window.clearInterval(pollTimer);
+                    window.clearTimeout(timeoutTimer);
+                    reject(new Error('Spotify Web Playback SDKの読み込みに失敗しました'));
+                };
                 document.body.appendChild(script);
+
+                pollTimer = window.setInterval(finish, 200);
+                timeoutTimer = window.setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    window.clearInterval(pollTimer);
+                    reject(new Error('Spotify Web Playback SDKの初期化がタイムアウトしました'));
+                }, 8000);
             });
 
             return spotifySdkLoadPromise;
@@ -2438,6 +2465,12 @@
                     }
                     return;
                 }
+
+                suppressNextShelfClick = true;
+                window.setTimeout(() => {
+                    suppressNextShelfClick = false;
+                }, 250);
+                await playTrackFromShelf(state.track, { intent: 'tap' });
             };
 
             recordShelfList.addEventListener('pointerup', finishDrag);
@@ -3856,10 +3889,13 @@
                 return false;
             }
 
+            if (!player || !deviceId) {
+                console.warn('Spotify Web Playback SDK device is not ready. Falling back to preview playback.');
+                return false;
+            }
+
             try {
-                const playUrl = deviceId
-                    ? `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`
-                    : 'https://api.spotify.com/v1/me/player/play';
+                const playUrl = `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`;
                 const response = await fetch(playUrl, {
                     method: 'PUT',
                     body: JSON.stringify({ uris: [trackUri] }),
