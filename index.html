@@ -2547,14 +2547,19 @@
                 shelfStateLabel.textContent = 'MOVE THE NEEDLE TO THE GROOVE';
             };
 
-            tonearm.addEventListener('pointerup', finishTonearmDrag);
-            tonearm.addEventListener('pointercancel', (event) => {
+            const cancelTonearmDrag = (event) => {
                 if (!tonearmDragState || event.pointerId !== tonearmDragState.pointerId) return;
                 tonearmDragState = null;
                 tonearm.classList.remove('is-dragging');
                 tonearm.releasePointerCapture?.(event.pointerId);
                 setTonearmAngle(isPlaying ? TONEARM_PLAY_ANGLE : TONEARM_REST_ANGLE);
-            });
+                shelfStateLabel.textContent = isPlaying ? 'SPINNING ON YOUR DECK' : 'NEEDLE OFF THE RECORD';
+            };
+
+            tonearm.addEventListener('pointerup', finishTonearmDrag);
+            window.addEventListener('pointerup', finishTonearmDrag);
+            tonearm.addEventListener('pointercancel', cancelTonearmDrag);
+            window.addEventListener('pointercancel', cancelTonearmDrag);
         }
 
         function cleanupShelfDrag() {
