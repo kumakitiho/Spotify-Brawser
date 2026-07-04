@@ -91,7 +91,7 @@
 }
 
 #record-shelf-section .turntable-svg-arm-detail-static {
-    opacity: 0.72;
+    opacity: 0.64;
 }
 
 #record-shelf-section .turntable-svg-arm-detail-static > path:nth-child(1),
@@ -99,8 +99,17 @@
     display: none !important;
 }
 
+#record-shelf-section .turntable-svg-arm-detail-static text {
+    opacity: 0.10 !important;
+}
+
+#record-shelf-section .turntable-svg-arm-detail-static path[stroke-dasharray],
+#record-shelf-section .turntable-svg-arm-detail-static > g:last-child {
+    opacity: 0.20 !important;
+}
+
 #record-shelf-section .turntable-svg-arm-detail-moving {
-    opacity: 0.90;
+    opacity: 0.86;
 }
 
 #record-shelf-section .turntable-control.stop {
@@ -108,10 +117,12 @@
     top: 43.5%;
     width: 7.4%;
     height: 39%;
+    opacity: 0.68;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 13%, transparent 86%, rgba(69, 75, 69, 0.18)),
-        #eef0e8;
-    border-color: rgba(76, 86, 78, 0.72);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.58), transparent 13%, transparent 86%, rgba(69, 75, 69, 0.13)),
+        #e6e8e0;
+    border-color: rgba(76, 86, 78, 0.48);
+    filter: saturate(0.72) contrast(0.88);
 }
 
 #record-shelf-section .reference-match-svg {
@@ -122,6 +133,10 @@
     z-index: 2;
     pointer-events: none;
     overflow: visible;
+}
+
+#record-shelf-section .reference-match-svg > g:nth-of-type(2) {
+    opacity: 0.34 !important;
 }
 
 #record-shelf-section .reference-match-on-top-svg {
