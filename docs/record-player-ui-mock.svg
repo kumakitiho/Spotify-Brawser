@@ -32,11 +32,9 @@
       .chip { fill: #1DB954; font: 800 13px Inter, Arial, sans-serif; letter-spacing: 0.14em; }
       .spin { transform-origin: 1020px 430px; animation: spin 6s linear infinite; }
       .pulse { animation: pulse 1.8s ease-in-out infinite alternate; }
-      .arm { transform-origin: 1180px 250px; animation: armMove 5.6s ease-in-out infinite; }
       .shine { animation: shine 3.8s ease-in-out infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
       @keyframes pulse { from { opacity: .35; } to { opacity: .95; } }
-      @keyframes armMove { 0%, 100% { transform: rotate(-11deg); } 45%, 65% { transform: rotate(7deg); } }
       @keyframes shine { 0%, 100% { opacity: .15; } 50% { opacity: .55; } }
     </style>
   </defs>
@@ -94,16 +92,22 @@
     <circle cx="280" cy="350" r="158" fill="none" stroke="url(#accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="650 340" filter="url(#greenGlow)" class="pulse"/>
 
     <g class="arm">
+      <!-- fixed tonearm base: the pivot should not move -->
       <circle cx="440" cy="238" r="28" fill="#252525" stroke="#1DB954" stroke-width="5"/>
-      <line x1="420" y1="255" x2="300" y2="348" stroke="#d8d8d8" stroke-width="10" stroke-linecap="round"/>
-      <line x1="420" y1="255" x2="300" y2="348" stroke="#5f5f5f" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
-      <rect x="275" y="342" width="44" height="26" rx="8" fill="#e5e7eb" stroke="#1DB954" stroke-width="5" transform="rotate(-32 275 342)"/>
-      <circle cx="299" cy="366" r="4" fill="#1DB954"/>
+      <circle cx="440" cy="238" r="13" fill="#3a3a3a" stroke="#0c0c0c" stroke-width="4"/>
+      <!-- only the pipe, cartridge, and needle rotate around the fixed pivot -->
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="-11 440 238; 7 440 238; 7 440 238; -11 440 238" keyTimes="0;0.45;0.65;1" dur="5.6s" repeatCount="indefinite"/>
+        <line x1="420" y1="255" x2="300" y2="348" stroke="#d8d8d8" stroke-width="10" stroke-linecap="round"/>
+        <line x1="420" y1="255" x2="300" y2="348" stroke="#5f5f5f" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+        <rect x="275" y="342" width="44" height="26" rx="8" fill="#e5e7eb" stroke="#1DB954" stroke-width="5" transform="rotate(-32 275 342)"/>
+        <circle cx="299" cy="366" r="4" fill="#1DB954"/>
+      </g>
     </g>
 
     <rect x="108" y="568" width="132" height="12" rx="6" fill="#1DB954"/>
     <rect x="250" y="568" width="200" height="12" rx="6" fill="#ffffff" opacity="0.12"/>
     <text x="112" y="610" class="small">NEEDLE ON THE GROOVE</text>
-    <text x="112" y="636" class="note">盤が回る / 針が内側へ進む / ドロップ時に光る</text>
+    <text x="112" y="636" class="note">盤が回る / 台座は固定 / 針だけが内側へ進む</text>
   </g>
 </svg>
