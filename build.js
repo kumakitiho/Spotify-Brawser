@@ -4,8 +4,18 @@ const path = require('path');
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || 'https://kumakitiho.github.io/Spotify-Brawser/';
 const DIST_DIR = path.join(__dirname, 'dist');
-const SHELF_TURNTABLE_CSS = 'turntable-realism.css';
-const SHELF_TURNTABLE_CSS_VERSION = '20260705-photoreal-turntable';
+const SHELF_MODE_STYLESHEETS = [
+    {
+        file: 'turntable-realism.css',
+        version: '20260705-photoreal-turntable',
+        key: 'photoreal-turntable'
+    },
+    {
+        file: 'turntable-cover-boost.css',
+        version: '20260705-cover-boost',
+        key: 'record-cover-boost'
+    }
+];
 
 if (!CLIENT_ID) {
     console.error('❌ SPOTIFY_CLIENT_ID 環境変数が設定されていません');
@@ -24,29 +34,38 @@ fs.rmSync(DIST_DIR, { recursive: true, force: true });
 fs.mkdirSync(DIST_DIR, { recursive: true });
 
 fs.copyFileSync(path.join(__dirname, 'index.html'), path.join(DIST_DIR, 'index.html'));
-fs.copyFileSync(path.join(__dirname, SHELF_TURNTABLE_CSS), path.join(DIST_DIR, SHELF_TURNTABLE_CSS));
+SHELF_MODE_STYLESHEETS.forEach(({ file }) => {
+    fs.copyFileSync(path.join(__dirname, file), path.join(DIST_DIR, file));
+});
 fs.writeFileSync(path.join(DIST_DIR, '.nojekyll'), '');
+
+const stylesheetConfig = JSON.stringify(SHELF_MODE_STYLESHEETS.map(({ file, version, key }) => ({
+    href: `${file}?v=${version}`,
+    key
+})), null, 8);
 
 const configContent = `// 本番用設定ファイル（自動生成）
 function loadShelfModeTurntableSkin() {
-    const href = '${SHELF_TURNTABLE_CSS}?v=${SHELF_TURNTABLE_CSS_VERSION}';
+    const stylesheets = ${stylesheetConfig};
 
-    const appendStylesheet = () => {
-        if (document.querySelector('link[data-shelf-mode-skin="photoreal-turntable"]')) return;
+    const appendStylesheets = () => {
+        stylesheets.forEach(({ href, key }) => {
+            if (document.querySelector(\`link[data-shelf-mode-skin="\${key}"]\`)) return;
 
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        link.dataset.shelfModeSkin = 'photoreal-turntable';
-        document.head.appendChild(link);
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href;
+            link.dataset.shelfModeSkin = key;
+            document.head.appendChild(link);
+        });
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', appendStylesheet, { once: true });
+        document.addEventListener('DOMContentLoaded', appendStylesheets, { once: true });
         return;
     }
 
-    appendStylesheet();
+    appendStylesheets();
 }
 
 const config = {
