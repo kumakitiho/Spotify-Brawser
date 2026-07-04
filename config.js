@@ -19,24 +19,35 @@ function getRuntimeRedirectUri() {
 }
 
 function loadShelfModeTurntableSkin() {
-    const href = 'turntable-realism.css?v=20260705-photoreal-turntable';
+    const stylesheets = [
+        {
+            href: 'turntable-realism.css?v=20260705-photoreal-turntable',
+            key: 'photoreal-turntable'
+        },
+        {
+            href: 'turntable-cover-boost.css?v=20260705-cover-boost',
+            key: 'record-cover-boost'
+        }
+    ];
 
-    const appendStylesheet = () => {
-        if (document.querySelector('link[data-shelf-mode-skin="photoreal-turntable"]')) return;
+    const appendStylesheets = () => {
+        stylesheets.forEach(({ href, key }) => {
+            if (document.querySelector(`link[data-shelf-mode-skin="${key}"]`)) return;
 
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        link.dataset.shelfModeSkin = 'photoreal-turntable';
-        document.head.appendChild(link);
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href;
+            link.dataset.shelfModeSkin = key;
+            document.head.appendChild(link);
+        });
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', appendStylesheet, { once: true });
+        document.addEventListener('DOMContentLoaded', appendStylesheets, { once: true });
         return;
     }
 
-    appendStylesheet();
+    appendStylesheets();
 }
 
 const config = {
