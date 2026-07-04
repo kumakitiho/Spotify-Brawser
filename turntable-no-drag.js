@@ -4,44 +4,51 @@
 (function () {
     const MARKER = 'turntableNoDragApplied';
 
+    function setTextIfChanged(node, text) {
+        if (node && node.textContent !== text) {
+            node.textContent = text;
+        }
+    }
+
     function removeDragGhosts() {
-        document.querySelectorAll('.drag-ghost-record').forEach((ghost) => ghost.remove());
+        const ghosts = document.querySelectorAll('.drag-ghost-record');
+        ghosts.forEach((ghost) => ghost.remove());
         document.querySelector('#shelf-drop-zone')?.classList.remove('is-drag-over');
         document.querySelector('#record-shelf-section')?.classList.remove('is-dropping');
     }
 
     function patchDragCopy() {
         const helper = document.getElementById('shelf-helper-text');
-        if (helper) {
-            helper.textContent = 'ジャケットをタップして曲を切り替え。';
-        }
+        setTextIfChanged(helper, 'ジャケットをタップして曲を切り替え。');
 
         const dropZone = document.getElementById('shelf-drop-zone');
-        if (dropZone) {
+        if (dropZone && dropZone.getAttribute('aria-label') !== '選択中のレコード表示') {
             dropZone.setAttribute('aria-label', '選択中のレコード表示');
         }
 
         const stateLabel = document.getElementById('shelf-state-label');
         if (stateLabel && /DROP|DRAG|RELEASE/.test(stateLabel.textContent || '')) {
-            stateLabel.textContent = 'TAP A COVER TO PLAY';
+            setTextIfChanged(stateLabel, 'TAP A COVER TO PLAY');
         }
 
         const trackArtist = document.getElementById('shelf-track-artist');
         if (trackArtist && /中央のレコード|ドラッグ/.test(trackArtist.textContent || '')) {
-            trackArtist.textContent = 'ジャケットをタップして再生';
+            setTextIfChanged(trackArtist, 'ジャケットをタップして再生');
         }
 
         document.querySelectorAll('#record-shelf-section p').forEach((node) => {
             const text = node.textContent || '';
             if (text.includes('上位曲をドラッグして中央のレコードへ')) {
-                node.textContent = '上位曲をタップして次に再生';
+                setTextIfChanged(node, '上位曲をタップして次に再生');
             }
         });
     }
 
     function disableNativeDrag() {
         document.querySelectorAll('#record-shelf-list .shelf-track, #record-shelf-list .shelf-track *').forEach((node) => {
-            node.setAttribute('draggable', 'false');
+            if (node.getAttribute('draggable') !== 'false') {
+                node.setAttribute('draggable', 'false');
+            }
         });
     }
 
@@ -52,7 +59,6 @@
         // Do not prevent default here. Let the browser still synthesize the normal click.
         event.stopImmediatePropagation();
         removeDragGhosts();
-        patchDragCopy();
     }
 
     function stopShelfDragMove(event) {
@@ -61,7 +67,6 @@
 
         event.stopImmediatePropagation();
         removeDragGhosts();
-        patchDragCopy();
     }
 
     function preventNativeDrag(event) {
@@ -75,12 +80,14 @@
 
     function bindNoDrag() {
         const recordShelfList = document.getElementById('record-shelf-list');
-        if (!recordShelfList || recordShelfList.dataset[MARKER] === 'true') return false;
+        if (!recordShelfList) return false;
 
-        recordShelfList.dataset[MARKER] = 'true';
-        recordShelfList.addEventListener('pointerdown', stopShelfDragStart, true);
-        recordShelfList.addEventListener('pointermove', stopShelfDragMove, true);
-        recordShelfList.addEventListener('dragstart', preventNativeDrag, true);
+        if (recordShelfList.dataset[MARKER] !== 'true') {
+            recordShelfList.dataset[MARKER] = 'true';
+            recordShelfList.addEventListener('pointerdown', stopShelfDragStart, true);
+            recordShelfList.addEventListener('pointermove', stopShelfDragMove, true);
+            recordShelfList.addEventListener('dragstart', preventNativeDrag, true);
+        }
 
         disableNativeDrag();
         removeDragGhosts();
@@ -89,16 +96,20 @@
     }
 
     function installCleanupObserver() {
+        if (document.body?.dataset.turntableNoDragObserver === 'true') return;
+        if (document.body) document.body.dataset.turntableNoDragObserver = 'true';
+
         const observer = new MutationObserver(() => {
-            disableNativeDrag();
-            removeDragGhosts();
-            patchDragCopy();
+            window.requestAnimationFrame(() => {
+                disableNativeDrag();
+                removeDragGhosts();
+                patchDragCopy();
+            });
         });
 
         observer.observe(document.body, {
             childList: true,
-            subtree: true,
-            characterData: true
+            subtree: true
         });
     }
 
@@ -127,11 +138,6 @@
         installStyles();
         bindNoDrag();
         installCleanupObserver();
-        window.setInterval(() => {
-            bindNoDrag();
-            removeDragGhosts();
-            patchDragCopy();
-        }, 1000);
     }
 
     if (document.readyState === 'loading') {
