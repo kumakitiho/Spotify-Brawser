@@ -1,152 +1,123 @@
-/* Turntable playback physics guard
-   Prevents tonearm release from starting playback unless the visible needle is actually on the vinyl groove area. */
+/* Turntable playback physics
+   Tonearm is no longer draggable. Playback buttons drive the cueing animation. */
 
 (function () {
-    const READY_DELAY_MS = 80;
-    const PLAYABLE_OUTER_RATIO = 0.96;
-    const PLAYABLE_INNER_RATIO = 0.43;
+    const ARM_REST_ANGLE = -88;
+    const ARM_PLAY_ANGLE = -72;
+    const ARM_CUE_MS = 980;
+    const NEEDLE_SETTLE_MS = 160;
+
+    let allowPlaybackButtonClick = false;
+    let cueSequenceId = 0;
 
     function getElements() {
         return {
             section: document.getElementById('record-shelf-section'),
             tonearm: document.querySelector('#record-shelf-section .tonearm'),
             pipe: document.querySelector('#record-shelf-section .tonearm .tonearm-pipe'),
-            disc: document.querySelector('#record-shelf-section .record-disc'),
-            label: document.getElementById('shelf-state-label')
+            label: document.getElementById('shelf-state-label'),
+            playPauseButton: document.getElementById('play-pause-btn')
         };
     }
 
-    function getCurrentTonearmAngle(tonearm) {
-        const raw = tonearm?.style?.getPropertyValue('--tonearm-angle') || '';
-        const parsed = Number.parseFloat(raw);
-        return Number.isFinite(parsed) ? parsed : -72;
+    function wait(ms) {
+        return new Promise((resolve) => window.setTimeout(resolve, ms));
     }
 
-    function getVisibleNeedlePoint({ tonearm, pipe }) {
-        if (!tonearm || !pipe) return null;
-
-        const tonearmRect = tonearm.getBoundingClientRect();
-        const pipeRect = pipe.getBoundingClientRect();
-        const angle = getCurrentTonearmAngle(tonearm);
-        const radians = angle * Math.PI / 180;
-
-        // The pivot is the right-center of the pipe. The CSS headshell sits a little beyond
-        // the pipe's left edge, so use the rendered pipe length plus a small visual stylus offset.
-        const pivotX = pipeRect.right;
-        const pivotY = pipeRect.top + pipeRect.height / 2;
-        const armLength = pipeRect.width * 1.22;
-        const stylusDrop = tonearmRect.height * 0.018;
-
-        return {
-            x: pivotX - Math.cos(radians) * armLength,
-            y: pivotY - Math.sin(radians) * armLength + stylusDrop
-        };
-    }
-
-    function getNeedleState() {
-        const elements = getElements();
-        const needle = getVisibleNeedlePoint(elements);
-        const discRect = elements.disc?.getBoundingClientRect();
-
-        if (!needle || !discRect?.width) {
-            return { state: 'off-record', distanceRatio: Infinity };
-        }
-
-        const centerX = discRect.left + discRect.width / 2;
-        const centerY = discRect.top + discRect.height / 2;
-        const radius = discRect.width / 2;
-        const distanceRatio = Math.hypot(needle.x - centerX, needle.y - centerY) / radius;
-
-        let state = 'groove';
-        if (distanceRatio > PLAYABLE_OUTER_RATIO) {
-            state = 'off-record';
-        } else if (distanceRatio < PLAYABLE_INNER_RATIO) {
-            state = 'label';
-        }
-
-        return { state, distanceRatio, needle };
-    }
-
-    function setNeedleClasses(state) {
-        const { section } = getElements();
-        if (!section) return;
-
-        section.classList.toggle('is-needle-on-groove', state === 'groove');
-        section.classList.toggle('is-needle-on-label', state === 'label');
-        section.classList.toggle('is-needle-off-record', state === 'off-record');
-    }
-
-    function updateNeedleStatusText(state) {
-        const { label } = getElements();
-        if (!label) return;
-
-        if (state === 'groove') {
-            label.textContent = 'NEEDLE ON THE GROOVE';
-        } else if (state === 'label') {
-            label.textContent = 'THE LABEL DOES NOT PLAY';
-        } else {
-            label.textContent = 'NEEDLE OFF THE RECORD';
-        }
-    }
-
-    function pauseIfNeedleIsNotOnGroove() {
-        const { state } = getNeedleState();
-        setNeedleClasses(state);
-
-        if (state === 'groove') return;
-
-        const audio = document.getElementById('audio-player');
-        if (audio && !audio.paused) {
-            audio.pause();
-        }
-
-        if (window.player?.pause) {
-            window.player.pause().catch(() => {});
-        }
-
-        const section = document.getElementById('record-shelf-section');
-        section?.classList.remove('is-playing');
-        updateNeedleStatusText(state);
-    }
-
-    function blockInvalidTonearmRelease(event) {
+    function setTonearmAngle(angle) {
         const { tonearm } = getElements();
-        if (!tonearm) return;
+        tonearm?.style.setProperty('--tonearm-angle', angle + 'deg');
+    }
 
-        const targetIsTonearm = event.target === tonearm || tonearm.contains(event.target);
-        const pointerWasCaptured = typeof tonearm.hasPointerCapture === 'function'
-            && event.pointerId !== undefined
-            && tonearm.hasPointerCapture(event.pointerId);
+    function setLabel(text) {
+        const { label } = getElements();
+        if (label) label.textContent = text;
+    }
 
-        if (!targetIsTonearm && !pointerWasCaptured) return;
+    function clearCueClasses(section) {
+        section?.classList.remove('is-cueing-in', 'is-cueing-out', 'is-needle-lifted', 'is-needle-on-label', 'is-needle-off-record', 'is-needle-on-groove');
+    }
 
-        const { state } = getNeedleState();
-        setNeedleClasses(state);
+    async function cueInThenRunOriginal(button) {
+        const { section } = getElements();
+        const sequenceId = ++cueSequenceId;
 
-        if (state === 'groove') return;
+        clearCueClasses(section);
+        section?.classList.add('is-needle-lifted', 'is-cueing-in');
+        setTonearmAngle(ARM_REST_ANGLE);
+        setLabel('CUEING THE NEEDLE');
+        await wait(60);
+
+        if (sequenceId !== cueSequenceId) return;
+        setTonearmAngle(ARM_PLAY_ANGLE);
+        await wait(ARM_CUE_MS);
+
+        if (sequenceId !== cueSequenceId) return;
+        section?.classList.remove('is-cueing-in', 'is-needle-lifted');
+        section?.classList.add('is-needle-on-groove');
+        setLabel('NEEDLE ON THE GROOVE');
+        await wait(NEEDLE_SETTLE_MS);
+
+        if (sequenceId !== cueSequenceId) return;
+        allowPlaybackButtonClick = true;
+        button.click();
+        allowPlaybackButtonClick = false;
+    }
+
+    async function runOriginalThenCueOut(button) {
+        const { section } = getElements();
+        const sequenceId = ++cueSequenceId;
+
+        allowPlaybackButtonClick = true;
+        button.click();
+        allowPlaybackButtonClick = false;
+
+        clearCueClasses(section);
+        section?.classList.add('is-needle-lifted', 'is-cueing-out');
+        setLabel('LIFTING THE NEEDLE');
+        await wait(NEEDLE_SETTLE_MS);
+
+        if (sequenceId !== cueSequenceId) return;
+        setTonearmAngle(ARM_REST_ANGLE);
+        await wait(ARM_CUE_MS);
+
+        if (sequenceId !== cueSequenceId) return;
+        section?.classList.remove('is-cueing-out', 'is-needle-lifted');
+        section?.classList.add('is-needle-off-record');
+        setLabel('NEEDLE OFF THE RECORD');
+    }
+
+    function handlePlaybackButtonClick(event) {
+        if (allowPlaybackButtonClick) return;
+
+        const { section } = getElements();
+        const button = event.currentTarget;
+        const isCurrentlyPlaying = section?.classList.contains('is-playing');
 
         event.preventDefault();
         event.stopImmediatePropagation();
-        window.setTimeout(pauseIfNeedleIsNotOnGroove, READY_DELAY_MS);
+
+        if (isCurrentlyPlaying) {
+            runOriginalThenCueOut(button);
+            return;
+        }
+
+        cueInThenRunOriginal(button);
     }
 
-    function observePlaybackPhysics() {
-        window.setInterval(() => {
-            const { section } = getElements();
-            if (!section?.classList.contains('is-playing')) return;
-            pauseIfNeedleIsNotOnGroove();
-        }, 350);
+    function bindPlaybackButton() {
+        const { playPauseButton } = getElements();
+        if (!playPauseButton || playPauseButton.dataset.turntableCueBound === 'true') return;
+        playPauseButton.dataset.turntableCueBound = 'true';
+        playPauseButton.addEventListener('click', handlePlaybackButtonClick, true);
     }
 
     function bind() {
-        document.addEventListener('pointermove', () => {
-            const { state } = getNeedleState();
-            setNeedleClasses(state);
-        }, true);
-
-        document.addEventListener('pointerup', blockInvalidTonearmRelease, true);
-        document.addEventListener('pointercancel', blockInvalidTonearmRelease, true);
-        observePlaybackPhysics();
+        const { section } = getElements();
+        clearCueClasses(section);
+        section?.classList.add('is-needle-off-record');
+        setTonearmAngle(ARM_REST_ANGLE);
+        bindPlaybackButton();
     }
 
     if (document.readyState === 'loading') {
