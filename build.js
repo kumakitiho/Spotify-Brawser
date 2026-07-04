@@ -53,7 +53,7 @@ const configContent = [
     '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v4", key: "turntable-arm-detail" },',
     '        { src: "turntable-polish.js?v=20260705-polish-v1", key: "turntable-polish" },',
     '        { src: "turntable-reference-match.js?v=20260705-reference-match-v7", key: "turntable-reference-match" },',
-    '        { src: "turntable-no-drag.js?v=20260705-no-drag-v2", key: "turntable-no-drag" },',
+    '        { src: "turntable-no-drag.js?v=20260705-no-drag-v3", key: "turntable-no-drag" },',
     '        { src: "turntable-state-guard.js?v=20260705-state-guard-v1", key: "turntable-state-guard" }',
     '    ];',
     '    const appendAssets = () => {',
