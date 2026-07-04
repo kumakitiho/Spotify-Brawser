@@ -13,7 +13,8 @@ const SHELF_MODE_ASSETS = [
     'turntable-polish.js',
     'turntable-reference-match.css',
     'turntable-reference-match.js',
-    'turntable-no-drag.js'
+    'turntable-no-drag.js',
+    'turntable-state-guard.js'
 ];
 
 if (!CLIENT_ID) {
@@ -45,14 +46,15 @@ const configContent = [
     '        { href: "turntable-realism.css?v=20260705-photoreal-turntable", key: "photoreal-turntable" },',
     '        { href: "turntable-cover-boost.css?v=20260705-cover-boost", key: "record-cover-boost" },',
     '        { href: "turntable-physics.css?v=20260705-physics-v8", key: "turntable-physics" },',
-    '        { href: "turntable-reference-match.css?v=20260705-reference-match-v6", key: "turntable-reference-match" }',
+    '        { href: "turntable-reference-match.css?v=20260705-reference-match-v7", key: "turntable-reference-match" }',
     '    ];',
     '    const scripts = [',
     '        { src: "turntable-physics.js?v=20260705-physics-v7", key: "turntable-physics" },',
     '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v4", key: "turntable-arm-detail" },',
     '        { src: "turntable-polish.js?v=20260705-polish-v1", key: "turntable-polish" },',
-    '        { src: "turntable-reference-match.js?v=20260705-reference-match-v6", key: "turntable-reference-match" },',
-    '        { src: "turntable-no-drag.js?v=20260705-no-drag-v2", key: "turntable-no-drag" }',
+    '        { src: "turntable-reference-match.js?v=20260705-reference-match-v7", key: "turntable-reference-match" },',
+    '        { src: "turntable-no-drag.js?v=20260705-no-drag-v2", key: "turntable-no-drag" },',
+    '        { src: "turntable-state-guard.js?v=20260705-state-guard-v1", key: "turntable-state-guard" }',
     '    ];',
     '    const appendAssets = () => {',
     '        stylesheets.forEach(({ href, key }) => {',
