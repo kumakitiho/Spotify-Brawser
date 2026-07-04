@@ -29,14 +29,14 @@ function loadShelfModeTurntableSkin() {
             key: 'record-cover-boost'
         },
         {
-            href: 'turntable-physics.css?v=20260705-physics-v2',
+            href: 'turntable-physics.css?v=20260705-physics-v3',
             key: 'turntable-physics'
         }
     ];
 
     const scripts = [
         {
-            src: 'turntable-physics.js?v=20260705-physics-v2',
+            src: 'turntable-physics.js?v=20260705-physics-v3',
             key: 'turntable-physics'
         }
     ];
