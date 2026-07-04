@@ -77,9 +77,13 @@
 }
 
 #record-shelf-section .turntable-strobe-svg {
-    z-index: 10;
-    opacity: 0.94;
-    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.48));
+    display: none !important;
+}
+
+#record-shelf-section .record-progress-ring,
+#record-shelf-section .turntable-platter::before,
+#record-shelf-section .turntable-platter::after {
+    transform-origin: center center;
 }
 
 #record-shelf-section .turntable-svg-arm {
