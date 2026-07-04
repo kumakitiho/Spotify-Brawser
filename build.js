@@ -44,7 +44,7 @@ const configContent = [
     '    ];',
     '    const scripts = [',
     '        { src: "turntable-physics.js?v=20260705-physics-v5", key: "turntable-physics" },',
-    '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v3", key: "turntable-arm-detail" }',
+    '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v4", key: "turntable-arm-detail" }',
     '    ];',
     '    const appendAssets = () => {',
     '        stylesheets.forEach(({ href, key }) => {',
