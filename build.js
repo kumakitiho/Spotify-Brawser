@@ -8,7 +8,8 @@ const SHELF_MODE_ASSETS = [
     'turntable-realism.css',
     'turntable-cover-boost.css',
     'turntable-physics.css',
-    'turntable-physics.js'
+    'turntable-physics.js',
+    'turntable-arm-detail.js'
 ];
 
 if (!CLIENT_ID) {
@@ -42,7 +43,8 @@ const configContent = [
     '        { href: "turntable-physics.css?v=20260705-physics-v5", key: "turntable-physics" }',
     '    ];',
     '    const scripts = [',
-    '        { src: "turntable-physics.js?v=20260705-physics-v5", key: "turntable-physics" }',
+    '        { src: "turntable-physics.js?v=20260705-physics-v5", key: "turntable-physics" },',
+    '        { src: "turntable-arm-detail.js?v=20260705-arm-detail-v1", key: "turntable-arm-detail" }',
     '    ];',
     '    const appendAssets = () => {',
     '        stylesheets.forEach(({ href, key }) => {',
