@@ -1092,6 +1092,7 @@
         let lastRecordSpinTimestamp = null;
         let suppressNextShelfClick = false;
         let spotifySdkLoadPromise = null;
+        let playbackErrorNoticeUntil = 0;
         const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         const TONEARM_PLAY_ANGLE = -72;
         const TONEARM_INNER_ANGLE = -56;
@@ -1287,6 +1288,7 @@
 
             player.addListener('playback_error', ({ message }) => {
                 console.error('再生エラー:', message);
+                playbackErrorNoticeUntil = Date.now() + 3500;
                 isPlaying = false;
                 stopProgressUpdate();
                 updateShelfHero(getTrackByUri(currentPlayingTrackUri) || getTrackByUri(selectedShelfTrackUri), {
@@ -4047,7 +4049,10 @@
                     currentTrackImage.src = trackImageUrl;
                 }
                 updateProfilePlaybackBadge(track, paused);
-                updateShelfHero(track, { paused });
+                const shelfLabel = paused && Date.now() < playbackErrorNoticeUntil
+                    ? 'BROWSER PLAYBACK ERROR'
+                    : null;
+                updateShelfHero(track, { paused, label: shelfLabel });
                 
                 console.log('✅ 楽曲表示を更新:', {
                     oldName: oldName,
