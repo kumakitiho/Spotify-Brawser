@@ -29,12 +29,8 @@ function loadShelfModeTurntableSkin() {
             key: 'record-cover-boost'
         },
         {
-            href: 'turntable-physics.css?v=20260705-physics-v7',
+            href: 'turntable-physics.css?v=20260705-physics-v8',
             key: 'turntable-physics'
-        },
-        {
-            href: 'turntable-photo-finish.css?v=20260705-photo-finish-v1',
-            key: 'turntable-photo-finish'
         }
     ];
 
@@ -46,10 +42,6 @@ function loadShelfModeTurntableSkin() {
         {
             src: 'turntable-arm-detail.js?v=20260705-arm-detail-v4',
             key: 'turntable-arm-detail'
-        },
-        {
-            src: 'turntable-photo-finish.js?v=20260705-photo-finish-v1',
-            key: 'turntable-photo-finish'
         }
     ];
 
