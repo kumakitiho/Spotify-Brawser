@@ -1,0 +1,138 @@
+/* Reference-matched turntable composition layer.
+   This is intentionally loaded last. It aligns the UI toward the supplied Technics-style top-down reference. */
+
+#record-shelf-section.record-shelf-stage {
+    background:
+        radial-gradient(circle at 18% 8%, rgba(29, 185, 84, 0.10), transparent 24%),
+        linear-gradient(160deg, rgba(12, 14, 14, 0.98), rgba(3, 4, 4, 0.98));
+}
+
+#record-shelf-section .shelf-drop-zone {
+    border-radius: 18px;
+    border-color: rgba(38, 44, 39, 0.72);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent 10%, transparent 88%, rgba(62, 67, 62, 0.24)),
+        repeating-linear-gradient(13deg, rgba(255, 255, 255, 0.15) 0 1px, rgba(92, 98, 91, 0.08) 1px 4px, transparent 4px 11px),
+        linear-gradient(135deg, #f2f3ed 0%, #dbddd6 43%, #c0c5bd 72%, #9ca39b 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.82),
+        inset 0 -10px 24px rgba(56, 63, 57, 0.32),
+        0 26px 62px rgba(0, 0, 0, 0.50);
+}
+
+#record-shelf-section .shelf-drop-zone::before {
+    opacity: 0.58;
+}
+
+#record-shelf-section .record-progress-ring,
+#record-shelf-section .turntable-platter {
+    left: 3.7%;
+    top: 4.2%;
+    width: 68.8%;
+}
+
+#record-shelf-section .turntable-platter {
+    background:
+        radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.06), transparent 20%),
+        radial-gradient(circle, #222825 0 76.5%, #101413 77% 93.5%, #ccd2c9 94% 95%, #111413 95.5% 100%);
+    box-shadow:
+        inset 0 0 0 5px rgba(255, 255, 255, 0.045),
+        inset 0 -24px 44px rgba(0, 0, 0, 0.65),
+        0 16px 28px rgba(0, 0, 0, 0.38);
+}
+
+#record-shelf-section .record-disc {
+    left: 9.0%;
+    top: 11.5%;
+    width: 58.2%;
+}
+
+#record-shelf-section .record-vinyl {
+    background:
+        repeating-radial-gradient(circle, rgba(255, 255, 255, 0.070) 0 1px, rgba(0, 0, 0, 0) 1px 7px),
+        radial-gradient(circle at 43% 36%, #202623 0 3%, #111514 15%, #050606 54%, #020303 78%, #141916 100%) !important;
+}
+
+#record-shelf-section .record-disc::before {
+    opacity: 0.56;
+}
+
+#record-shelf-section .record-label {
+    inset: 35.2%;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.64),
+        inset 0 0 0 10px rgba(255, 255, 255, 0.055),
+        0 0 0 14px rgba(0, 0, 0, 0.50);
+}
+
+#record-shelf-section .record-hero-art {
+    left: 34.8%;
+    top: 34.8%;
+    width: 30.4%;
+    height: 30.4%;
+    opacity: 0.88;
+}
+
+#record-shelf-section .turntable-strobe-svg {
+    z-index: 10;
+    opacity: 0.94;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.48));
+}
+
+#record-shelf-section .turntable-svg-arm {
+    z-index: 12;
+}
+
+#record-shelf-section .turntable-svg-arm-detail-static {
+    opacity: 0.86;
+}
+
+#record-shelf-section .turntable-svg-arm-detail-moving {
+    opacity: 0.92;
+}
+
+#record-shelf-section .turntable-control.stop {
+    right: 4.2%;
+    top: 43.5%;
+    width: 7.4%;
+    height: 39%;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 13%, transparent 86%, rgba(69, 75, 69, 0.18)),
+        #eef0e8;
+    border-color: rgba(76, 86, 78, 0.72);
+}
+
+#record-shelf-section .reference-match-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9;
+    pointer-events: none;
+    overflow: visible;
+}
+
+#record-shelf-section .reference-match-on-top-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 13;
+    pointer-events: none;
+    overflow: visible;
+}
+
+@media (max-width: 640px) {
+    #record-shelf-section .record-progress-ring,
+    #record-shelf-section .turntable-platter {
+        left: 3.4%;
+        top: 4.6%;
+        width: 69.2%;
+    }
+
+    #record-shelf-section .record-disc {
+        left: 8.8%;
+        top: 11.9%;
+        width: 58.5%;
+    }
+}
