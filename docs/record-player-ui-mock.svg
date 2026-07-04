@@ -1,6 +1,6 @@
-<svg width="900" height="1200" viewBox="0 0 900 1200" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Realistic Record Player UI Mock - Portrait</title>
-  <desc id="desc">A portrait mobile-oriented realistic top-down DJ turntable mock with a large platter, fixed strobe dots, S-shaped tonearm, and pitch slider.</desc>
+<svg width="900" height="950" viewBox="0 0 900 950" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Realistic Record Player UI Mock - Compact Portrait</title>
+  <desc id="desc">A compact portrait mobile-oriented realistic top-down DJ turntable mock with a large platter, fixed strobe dots, S-shaped tonearm, and pitch slider.</desc>
   <defs>
     <linearGradient id="plinth" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f5f5f0"/>
@@ -49,85 +49,85 @@
       .caption { fill: #3f4441; font: 600 12px Inter, Arial, sans-serif; letter-spacing: .03em; }
       .tiny { fill: #2d312f; font: 700 10px Inter, Arial, sans-serif; letter-spacing: .08em; }
       .ticks { stroke: #3b403d; stroke-width: 1; opacity: .72; }
-      .record-spin { transform-origin: 360px 540px; animation: spin 7s linear infinite; }
+      .record-spin { transform-origin: 360px 520px; animation: spin 7s linear infinite; }
       .shine { animation: shine 4s ease-in-out infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
       @keyframes shine { 0%,100% { opacity: .16; } 50% { opacity: .42; } }
     </style>
   </defs>
 
-  <rect width="900" height="1200" rx="42" fill="#111"/>
-  <rect x="40" y="60" width="820" height="1080" rx="24" fill="url(#plinth)" stroke="#5f6460" stroke-width="3" filter="url(#deepShadow)"/>
-  <rect x="49" y="69" width="802" height="1062" rx="18" fill="url(#brushed)" opacity="0.58"/>
-  <path d="M49 91 Q49 69 71 69 H829 Q851 69 851 91" fill="none" stroke="url(#plinthEdge)" stroke-width="9" opacity="0.72"/>
+  <rect width="900" height="950" rx="42" fill="#111"/>
+  <rect x="40" y="40" width="820" height="870" rx="24" fill="url(#plinth)" stroke="#5f6460" stroke-width="3" filter="url(#deepShadow)"/>
+  <rect x="49" y="49" width="802" height="852" rx="18" fill="url(#brushed)" opacity="0.58"/>
+  <path d="M49 71 Q49 49 71 49 H829 Q851 49 851 71" fill="none" stroke="url(#plinthEdge)" stroke-width="9" opacity="0.72"/>
 
-  <text x="76" y="108" class="title">Realistic Shelf Mode Turntable</text>
-  <text x="78" y="132" class="caption">PORTRAIT MOBILE / FIXED STROBE DOTS / S-SHAPED TONEARM</text>
+  <text x="76" y="88" class="title">Realistic Shelf Mode Turntable</text>
+  <text x="78" y="112" class="caption">COMPACT PORTRAIT / FIXED STROBE DOTS / S-SHAPED TONEARM</text>
 
   <!-- 45 adapter / top-left metal disc -->
   <g filter="url(#smallShadow)">
-    <circle cx="116" cy="178" r="38" fill="url(#metal)" stroke="#222" stroke-width="3"/>
-    <circle cx="116" cy="178" r="5" fill="#7a7d79"/>
-    <path d="M116 178 L92 156" stroke="#fff" stroke-width="2" opacity=".55"/>
-    <path d="M116 178 L150 170" stroke="#2d302e" stroke-width="2" opacity=".28"/>
+    <circle cx="116" cy="158" r="38" fill="url(#metal)" stroke="#222" stroke-width="3"/>
+    <circle cx="116" cy="158" r="5" fill="#7a7d79"/>
+    <path d="M116 158 L92 136" stroke="#fff" stroke-width="2" opacity=".55"/>
+    <path d="M116 158 L150 150" stroke="#2d302e" stroke-width="2" opacity=".28"/>
   </g>
 
   <!-- main platter and record -->
   <g filter="url(#deepShadow)">
-    <circle cx="360" cy="540" r="304" fill="#232725" stroke="#737873" stroke-width="4"/>
-    <circle cx="360" cy="540" r="292" fill="#171a19" stroke="#040505" stroke-width="3"/>
+    <circle cx="360" cy="520" r="304" fill="#232725" stroke="#737873" stroke-width="4"/>
+    <circle cx="360" cy="520" r="292" fill="#171a19" stroke="#040505" stroke-width="3"/>
     <!-- strobe dots are printed on the platter, so they stay fixed while only the record rotates -->
     <g>
-      <circle cx="360" cy="540" r="295" fill="none" stroke="#e5e6de" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9" opacity="0.9"/>
-      <circle cx="360" cy="540" r="283" fill="none" stroke="#f6f7ef" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.82"/>
-      <circle cx="360" cy="540" r="272" fill="none" stroke="#9ca19c" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.62"/>
+      <circle cx="360" cy="520" r="295" fill="none" stroke="#e5e6de" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9" opacity="0.9"/>
+      <circle cx="360" cy="520" r="283" fill="none" stroke="#f6f7ef" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.82"/>
+      <circle cx="360" cy="520" r="272" fill="none" stroke="#9ca19c" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.62"/>
     </g>
     <g class="record-spin">
-      <circle cx="360" cy="540" r="258" fill="url(#record)" stroke="#090a09" stroke-width="6"/>
-      <circle cx="360" cy="540" r="235" fill="none" stroke="#343936" stroke-width="1" opacity="0.7"/>
-      <circle cx="360" cy="540" r="212" fill="none" stroke="#313633" stroke-width="1" opacity="0.62"/>
-      <circle cx="360" cy="540" r="189" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.58"/>
-      <circle cx="360" cy="540" r="166" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.52"/>
-      <circle cx="360" cy="540" r="140" fill="none" stroke="#343936" stroke-width="1" opacity="0.45"/>
-      <circle cx="360" cy="540" r="112" fill="#050606" opacity="0.72"/>
-      <circle cx="360" cy="540" r="72" fill="url(#label)" stroke="#d0d2cc" stroke-width="2"/>
-      <circle cx="360" cy="540" r="9" fill="url(#metal)" stroke="#4e5450" stroke-width="2"/>
-      <path d="M184 381 C278 303 464 283 583 374" fill="none" stroke="#fff" stroke-width="16" stroke-opacity="0.05" class="shine"/>
+      <circle cx="360" cy="520" r="258" fill="url(#record)" stroke="#090a09" stroke-width="6"/>
+      <circle cx="360" cy="520" r="235" fill="none" stroke="#343936" stroke-width="1" opacity="0.7"/>
+      <circle cx="360" cy="520" r="212" fill="none" stroke="#313633" stroke-width="1" opacity="0.62"/>
+      <circle cx="360" cy="520" r="189" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.58"/>
+      <circle cx="360" cy="520" r="166" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.52"/>
+      <circle cx="360" cy="520" r="140" fill="none" stroke="#343936" stroke-width="1" opacity="0.45"/>
+      <circle cx="360" cy="520" r="112" fill="#050606" opacity="0.72"/>
+      <circle cx="360" cy="520" r="72" fill="url(#label)" stroke="#d0d2cc" stroke-width="2"/>
+      <circle cx="360" cy="520" r="9" fill="url(#metal)" stroke="#4e5450" stroke-width="2"/>
+      <path d="M184 361 C278 283 464 263 583 354" fill="none" stroke="#fff" stroke-width="16" stroke-opacity="0.05" class="shine"/>
     </g>
-    <circle cx="360" cy="540" r="10" fill="none" stroke="#111" stroke-width="2"/>
+    <circle cx="360" cy="520" r="10" fill="none" stroke="#111" stroke-width="2"/>
   </g>
 
   <!-- tonearm base assembly -->
   <g filter="url(#deepShadow)">
-    <circle cx="705" cy="326" r="94" fill="#111514" stroke="#303532" stroke-width="6"/>
-    <circle cx="705" cy="326" r="73" fill="#d9dbd4" stroke="#4d534f" stroke-width="4" opacity="0.88"/>
-    <circle cx="705" cy="326" r="52" fill="#b8bbb5" stroke="#4e5550" stroke-width="4"/>
-    <circle cx="705" cy="326" r="33" fill="#eef0ea" stroke="#5c625e" stroke-width="4"/>
-    <circle cx="705" cy="326" r="11" fill="url(#metal)" stroke="#2c302e" stroke-width="3"/>
-    <path d="M671 288 C692 274 724 278 741 300" fill="none" stroke="#777e78" stroke-width="10" stroke-linecap="round" opacity=".76"/>
-    <path d="M657 334 C676 365 719 380 751 351" fill="none" stroke="#676e69" stroke-width="10" stroke-linecap="round" opacity=".58"/>
-    <circle cx="640" cy="276" r="7" fill="#262b28"/>
-    <circle cx="769" cy="286" r="7" fill="#262b28"/>
-    <circle cx="642" cy="377" r="7" fill="#262b28"/>
+    <circle cx="705" cy="306" r="94" fill="#111514" stroke="#303532" stroke-width="6"/>
+    <circle cx="705" cy="306" r="73" fill="#d9dbd4" stroke="#4d534f" stroke-width="4" opacity="0.88"/>
+    <circle cx="705" cy="306" r="52" fill="#b8bbb5" stroke="#4e5550" stroke-width="4"/>
+    <circle cx="705" cy="306" r="33" fill="#eef0ea" stroke="#5c625e" stroke-width="4"/>
+    <circle cx="705" cy="306" r="11" fill="url(#metal)" stroke="#2c302e" stroke-width="3"/>
+    <path d="M671 268 C692 254 724 258 741 280" fill="none" stroke="#777e78" stroke-width="10" stroke-linecap="round" opacity=".76"/>
+    <path d="M657 314 C676 345 719 360 751 331" fill="none" stroke="#676e69" stroke-width="10" stroke-linecap="round" opacity=".58"/>
+    <circle cx="640" cy="256" r="7" fill="#262b28"/>
+    <circle cx="769" cy="266" r="7" fill="#262b28"/>
+    <circle cx="642" cy="357" r="7" fill="#262b28"/>
   </g>
 
   <!-- counterweight -->
   <g filter="url(#smallShadow)">
-    <rect x="690" y="194" width="64" height="34" rx="9" fill="url(#metal)" stroke="#404541" stroke-width="4"/>
-    <path d="M694 202 H750 M694 212 H750 M694 222 H750" stroke="#616862" stroke-width="2" opacity=".55"/>
-    <rect x="709" y="226" width="29" height="36" rx="6" fill="url(#metal)" stroke="#4e5450" stroke-width="3"/>
+    <rect x="690" y="174" width="64" height="34" rx="9" fill="url(#metal)" stroke="#404541" stroke-width="4"/>
+    <path d="M694 182 H750 M694 192 H750 M694 202 H750" stroke="#616862" stroke-width="2" opacity=".55"/>
+    <rect x="709" y="206" width="29" height="36" rx="6" fill="url(#metal)" stroke="#4e5450" stroke-width="3"/>
   </g>
 
   <!-- S-shaped tonearm, always connected to the pivot -->
   <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 705 326;0 705 326;18 705 326;18 705 326;2 705 326;2 705 326" keyTimes="0;0.12;0.28;0.55;0.78;1" dur="7s" repeatCount="indefinite"/>
-    <path d="M705 326 C658 382 654 482 626 590 C610 654 574 728 504 810" fill="none" stroke="#777e79" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M705 326 C658 382 654 482 626 590 C610 654 574 728 504 810" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M696 338 C659 390 649 485 622 588 C606 648 568 720 498 803" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
-    <circle cx="705" cy="326" r="14" fill="url(#metal)" stroke="#313632" stroke-width="4"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 705 306;0 705 306;18 705 306;18 705 306;2 705 306;2 705 306" keyTimes="0;0.12;0.28;0.55;0.78;1" dur="7s" repeatCount="indefinite"/>
+    <path d="M705 306 C658 362 654 462 626 570 C610 634 574 708 504 790" fill="none" stroke="#777e79" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M705 306 C658 362 654 462 626 570 C610 634 574 708 504 790" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M696 318 C659 370 649 465 622 568 C606 628 568 700 498 783" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <circle cx="705" cy="306" r="14" fill="url(#metal)" stroke="#313632" stroke-width="4"/>
 
     <!-- headshell and cartridge -->
-    <g transform="translate(484 792) rotate(-25)">
+    <g transform="translate(484 772) rotate(-25)">
       <rect x="0" y="0" width="78" height="50" rx="8" fill="#1c211f" stroke="#060807" stroke-width="3"/>
       <rect x="9" y="8" width="54" height="11" rx="5" fill="#3f4641"/>
       <circle cx="18" cy="30" r="5" fill="#d6d8d2"/>
@@ -146,12 +146,12 @@
 
   <!-- arm rest and cue lever -->
   <g filter="url(#smallShadow)">
-    <rect x="786" y="326" width="19" height="88" rx="9" fill="#202523" stroke="#111" stroke-width="3" transform="rotate(-18 786 326)"/>
-    <path d="M756 386 L791 436" stroke="#171b19" stroke-width="7" stroke-linecap="round"/>
+    <rect x="786" y="306" width="19" height="88" rx="9" fill="#202523" stroke="#111" stroke-width="3" transform="rotate(-18 786 306)"/>
+    <path d="M756 366 L791 416" stroke="#171b19" stroke-width="7" stroke-linecap="round"/>
   </g>
 
   <!-- pitch slider -->
-  <g transform="translate(738 610)" filter="url(#smallShadow)">
+  <g transform="translate(738 590)" filter="url(#smallShadow)">
     <rect x="0" y="0" width="72" height="282" fill="#f3f4ee" stroke="#565c57" stroke-width="3"/>
     <line x1="37" y1="35" x2="37" y2="247" stroke="#1b201e" stroke-width="4"/>
     <g class="ticks">
@@ -166,21 +166,5 @@
       <animate attributeName="y" values="122;122;108;108;134;122" keyTimes="0;0.30;0.50;0.65;0.82;1" dur="7s" repeatCount="indefinite"/>
     </rect>
     <text x="10" y="269" class="tiny">pitch</text>
-  </g>
-
-  <!-- sequence label -->
-  <g transform="translate(190 1014)">
-    <rect x="0" y="0" width="126" height="13" rx="7" fill="#1DB954">
-      <animate attributeName="opacity" values="1;1;0.28;0.28;0.28;1" keyTimes="0;0.18;0.30;0.58;0.84;1" dur="7s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="145" y="0" width="126" height="13" rx="7" fill="#1DB954">
-      <animate attributeName="opacity" values="0.28;0.28;1;1;0.28;0.28" keyTimes="0;0.30;0.44;0.56;0.70;1" dur="7s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="290" y="0" width="142" height="13" rx="7" fill="#1DB954">
-      <animate attributeName="opacity" values="0.28;0.28;0.28;0.28;1;1" keyTimes="0;0.56;0.70;0.78;0.88;1" dur="7s" repeatCount="indefinite"/>
-    </rect>
-    <text x="0" y="42" class="tiny">1 LIFT NEEDLE</text>
-    <text x="145" y="42" class="tiny">2 SET RECORD</text>
-    <text x="290" y="42" class="tiny">3 DROP NEEDLE</text>
   </g>
 </svg>
