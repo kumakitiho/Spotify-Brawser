@@ -90,6 +90,11 @@
     opacity: 0.72;
 }
 
+#record-shelf-section .turntable-svg-arm-detail-static > path:nth-child(1),
+#record-shelf-section .turntable-svg-arm-detail-static > path:nth-child(2) {
+    display: none !important;
+}
+
 #record-shelf-section .turntable-svg-arm-detail-moving {
     opacity: 0.90;
 }
