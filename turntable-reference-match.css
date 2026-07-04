@@ -22,6 +22,9 @@
 
 #record-shelf-section .shelf-drop-zone::before {
     opacity: 0.54;
+    background:
+        radial-gradient(circle at 48% 58%, rgba(0, 0, 0, 0.10), transparent 54%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 14%, transparent 86%, rgba(0, 0, 0, 0.10));
 }
 
 #record-shelf-section .record-progress-ring,
