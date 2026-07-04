@@ -1,5 +1,5 @@
 /* Reference-matched Technics-style details.
-   Adds only parts visible on the top plate: start/stop, speed buttons, small utility buttons, pitch marks, and subtle engravings. */
+   Adds only functional-looking top plate details that support the turntable composition. */
 
 (function () {
     const MARKER = 'turntableReferenceMatchApplied';
@@ -32,35 +32,12 @@
                     </filter>
                 </defs>
 
-                <!-- reference-like start/stop area; lowered and kept behind platter layer for real depth -->
-                <g filter="url(#refSoftShadow)" opacity="0.76">
-                    <rect x="58" y="526" width="78" height="48" rx="2" fill="#eef0e9" stroke="#1b211e" stroke-width="2.4"/>
-                    <rect x="64" y="532" width="66" height="36" rx="1.5" fill="#f8faf2" stroke="#657067" stroke-width="1" opacity="0.90"/>
-                    <text x="78" y="554" fill="#111514" font-size="7" font-family="Inter, Arial" font-weight="800" letter-spacing="0.9">start · stop</text>
-                </g>
-
-                <g filter="url(#refSoftShadow)" opacity="0.70">
-                    <rect x="152" y="586" width="45" height="8" rx="1" fill="#eef0e9" stroke="#1b211e" stroke-width="1.2"/>
-                    <rect x="206" y="586" width="45" height="8" rx="1" fill="#eef0e9" stroke="#1b211e" stroke-width="1.2"/>
-                    <text x="164" y="582" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">33</text>
-                    <text x="218" y="582" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="800">45</text>
-                    <circle cx="143" cy="590" r="1.8" fill="#1DB954" opacity="0.65"/>
-                    <circle cx="199" cy="590" r="1.8" fill="#9aa39b" opacity="0.55"/>
-                </g>
-
                 <!-- lower right cue buttons beside platter, as in reference photo -->
                 <g filter="url(#refSoftShadow)" opacity="0.72">
                     <circle cx="604" cy="512" r="15" fill="url(#refMetalFace)" stroke="#485149" stroke-width="2"/>
                     <circle cx="622" cy="512" r="13" fill="#3a423c" stroke="#171c19" stroke-width="2"/>
                     <circle cx="604" cy="512" r="6" fill="#f4f6ef" opacity="0.65"/>
                     <circle cx="622" cy="512" r="4.5" fill="#8f9890" opacity="0.72"/>
-                </g>
-
-                <!-- small labels around start/speed area -->
-                <g opacity="0.34">
-                    <text x="72" y="512" fill="#111514" font-size="6" font-family="Inter, Arial" font-weight="700" letter-spacing="0.8">quartz</text>
-                    <text x="72" y="520" fill="#111514" font-size="5" font-family="Inter, Arial" letter-spacing="0.7">lock</text>
-                    <path d="M121 516 H132 M124 523 H135 M127 530 H138" stroke="#111514" stroke-width="0.8"/>
                 </g>
 
                 <!-- pitch slider numeric scale and subtle top plate engraving -->
