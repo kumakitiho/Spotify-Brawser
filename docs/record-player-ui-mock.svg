@@ -47,7 +47,7 @@
     <style>
       .tiny { fill: #2d312f; font: 700 10px Inter, Arial, sans-serif; letter-spacing: .08em; }
       .ticks { stroke: #3b403d; stroke-width: 1; opacity: .72; }
-      .record-spin { transform-origin: 338px 343px; animation: spin 7s linear infinite; }
+      .record-spin { transform-origin: 338px 335px; animation: spin 7s linear infinite; }
       .shine { animation: shine 4s ease-in-out infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
       @keyframes shine { 0%,100% { opacity: .16; } 50% { opacity: .42; } }
@@ -67,29 +67,29 @@
     <path d="M104 91 L136 84" stroke="#2d302e" stroke-width="2" opacity=".28"/>
   </g>
 
-  <!-- main platter and record: large like the reference image -->
+  <!-- main platter and record: large like the reference image, but fully inside the body -->
   <g filter="url(#deepShadow)">
-    <circle cx="338" cy="343" r="305" fill="#232725" stroke="#737873" stroke-width="4"/>
-    <circle cx="338" cy="343" r="293" fill="#171a19" stroke="#040505" stroke-width="3"/>
+    <circle cx="338" cy="335" r="294" fill="#232725" stroke="#737873" stroke-width="4"/>
+    <circle cx="338" cy="335" r="282" fill="#171a19" stroke="#040505" stroke-width="3"/>
     <!-- strobe dots are printed on the platter, so they stay fixed while only the record rotates -->
     <g>
-      <circle cx="338" cy="343" r="296" fill="none" stroke="#e5e6de" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9" opacity="0.9"/>
-      <circle cx="338" cy="343" r="284" fill="none" stroke="#f6f7ef" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.82"/>
-      <circle cx="338" cy="343" r="273" fill="none" stroke="#9ca19c" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.62"/>
+      <circle cx="338" cy="335" r="285" fill="none" stroke="#e5e6de" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9" opacity="0.9"/>
+      <circle cx="338" cy="335" r="273" fill="none" stroke="#f6f7ef" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.82"/>
+      <circle cx="338" cy="335" r="262" fill="none" stroke="#9ca19c" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 7" opacity="0.62"/>
     </g>
     <g class="record-spin">
-      <circle cx="338" cy="343" r="260" fill="url(#record)" stroke="#090a09" stroke-width="6"/>
-      <circle cx="338" cy="343" r="238" fill="none" stroke="#343936" stroke-width="1" opacity="0.7"/>
-      <circle cx="338" cy="343" r="216" fill="none" stroke="#313633" stroke-width="1" opacity="0.62"/>
-      <circle cx="338" cy="343" r="194" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.58"/>
-      <circle cx="338" cy="343" r="172" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.52"/>
-      <circle cx="338" cy="343" r="146" fill="none" stroke="#343936" stroke-width="1" opacity="0.45"/>
-      <circle cx="338" cy="343" r="112" fill="#050606" opacity="0.72"/>
-      <circle cx="338" cy="343" r="72" fill="url(#label)" stroke="#d0d2cc" stroke-width="2"/>
-      <circle cx="338" cy="343" r="9" fill="url(#metal)" stroke="#4e5450" stroke-width="2"/>
-      <path d="M160 190 C257 105 450 91 574 184" fill="none" stroke="#fff" stroke-width="16" stroke-opacity="0.05" class="shine"/>
+      <circle cx="338" cy="335" r="250" fill="url(#record)" stroke="#090a09" stroke-width="6"/>
+      <circle cx="338" cy="335" r="229" fill="none" stroke="#343936" stroke-width="1" opacity="0.7"/>
+      <circle cx="338" cy="335" r="208" fill="none" stroke="#313633" stroke-width="1" opacity="0.62"/>
+      <circle cx="338" cy="335" r="187" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.58"/>
+      <circle cx="338" cy="335" r="166" fill="none" stroke="#2b302d" stroke-width="1" opacity="0.52"/>
+      <circle cx="338" cy="335" r="141" fill="none" stroke="#343936" stroke-width="1" opacity="0.45"/>
+      <circle cx="338" cy="335" r="108" fill="#050606" opacity="0.72"/>
+      <circle cx="338" cy="335" r="70" fill="url(#label)" stroke="#d0d2cc" stroke-width="2"/>
+      <circle cx="338" cy="335" r="9" fill="url(#metal)" stroke="#4e5450" stroke-width="2"/>
+      <path d="M167 189 C261 107 444 94 563 183" fill="none" stroke="#fff" stroke-width="16" stroke-opacity="0.05" class="shine"/>
     </g>
-    <circle cx="338" cy="343" r="10" fill="none" stroke="#111" stroke-width="2"/>
+    <circle cx="338" cy="335" r="10" fill="none" stroke="#111" stroke-width="2"/>
   </g>
 
   <!-- tonearm base assembly -->
@@ -116,13 +116,13 @@
   <!-- S-shaped tonearm, always connected to the pivot -->
   <g>
     <animateTransform attributeName="transform" type="rotate" values="0 710 172;0 710 172;18 710 172;18 710 172;2 710 172;2 710 172" keyTimes="0;0.12;0.28;0.55;0.78;1" dur="7s" repeatCount="indefinite"/>
-    <path d="M710 172 C662 227 662 320 636 418 C620 478 582 540 508 602" fill="none" stroke="#777e79" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M710 172 C662 227 662 320 636 418 C620 478 582 540 508 602" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M701 183 C664 235 657 322 632 416 C616 472 576 532 502 595" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <path d="M710 172 C664 224 665 311 638 407 C622 465 585 523 512 587" fill="none" stroke="#777e79" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M710 172 C664 224 665 311 638 407 C622 465 585 523 512 587" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M701 183 C666 232 660 314 634 405 C618 459 579 516 506 580" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
     <circle cx="710" cy="172" r="14" fill="url(#metal)" stroke="#313632" stroke-width="4"/>
 
     <!-- headshell and cartridge -->
-    <g transform="translate(488 586) rotate(-25)">
+    <g transform="translate(492 571) rotate(-25)">
       <rect x="0" y="0" width="78" height="50" rx="8" fill="#1c211f" stroke="#060807" stroke-width="3"/>
       <rect x="9" y="8" width="54" height="11" rx="5" fill="#3f4641"/>
       <circle cx="18" cy="30" r="5" fill="#d6d8d2"/>
