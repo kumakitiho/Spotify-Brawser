@@ -42,10 +42,16 @@
     z-index: 3;
 }
 
-#record-shelf-section .record-label,
-#record-shelf-section .record-hero-art,
-#record-shelf-section .record-spindle {
+#record-shelf-section .record-label {
     z-index: 7;
+}
+
+#record-shelf-section .record-hero-art {
+    z-index: 8;
+}
+
+#record-shelf-section .record-spindle {
+    z-index: 9;
 }
 
 #record-shelf-section.is-needle-off-record .tonearm .tonearm-pipe::after,
