@@ -43,7 +43,7 @@ fs.writeFileSync(path.join(DIST_DIR, '.nojekyll'), '');
 const configContent = [
     '// 本番用設定ファイル（自動生成）',
     'function loadShelfModeTurntableSkin() {',
-    '    const liveControls = { src: "turntable-live-controls.js?v=20260705-live-controls-flagged-v4", key: "turntable-live-controls" };',
+    '    const liveControls = { src: "turntable-live-controls.js?v=20260705-live-controls-flagged-v5", key: "turntable-live-controls" };',
     '    const stylesheets = [',
     '        { href: "turntable-realism.css?v=20260705-photoreal-turntable", key: "photoreal-turntable" },',
     '        { href: "turntable-cover-boost.css?v=20260705-cover-boost", key: "record-cover-boost" },',
