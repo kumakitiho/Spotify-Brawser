@@ -19,6 +19,11 @@ function getRuntimeRedirectUri() {
 }
 
 function loadShelfModeTurntableSkin() {
+    const liveControls = {
+        src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v4',
+        key: 'turntable-live-controls'
+    };
+
     const stylesheets = [
         {
             href: 'turntable-realism.css?v=20260705-photoreal-turntable',
@@ -63,11 +68,22 @@ function loadShelfModeTurntableSkin() {
             src: 'turntable-state-guard.js?v=20260705-state-guard-v1',
             key: 'turntable-state-guard'
         },
-        {
-            src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v3',
-            key: 'turntable-live-controls'
-        }
+        liveControls
     ];
+
+    const appendScript = ({ src, key }) => {
+        if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        script.dataset.shelfModeScript = key;
+        document.head.appendChild(script);
+    };
+
+    const appendLiveControlsEarly = () => {
+        appendScript(liveControls);
+    };
 
     const appendAssets = () => {
         stylesheets.forEach(({ href, key }) => {
@@ -80,16 +96,10 @@ function loadShelfModeTurntableSkin() {
             document.head.appendChild(link);
         });
 
-        scripts.forEach(({ src, key }) => {
-            if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
-
-            const script = document.createElement('script');
-            script.src = src;
-            script.defer = true;
-            script.dataset.shelfModeScript = key;
-            document.head.appendChild(script);
-        });
+        scripts.forEach(appendScript);
     };
+
+    appendLiveControlsEarly();
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', appendAssets, { once: true });
