@@ -24,6 +24,10 @@
             {
                 href: 'shelf-immersive-picker.css?v=20260705-immersive-picker-v1',
                 key: 'shelf-immersive-picker'
+            },
+            {
+                href: 'shelf-immersive-picker-taste.css?v=20260705-immersive-picker-v2',
+                key: 'shelf-immersive-picker-taste'
             }
         ],
         scripts: [
