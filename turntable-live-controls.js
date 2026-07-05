@@ -39,12 +39,20 @@
         localStorage.setItem(VOLUME_KEY, String(clamp(value)));
     }
 
+    function getSection() {
+        return document.getElementById('record-shelf-section');
+    }
+
     function getVolumeControl() {
         return document.querySelector(CONTROL_SELECTOR);
     }
 
     function getRing() {
         return document.querySelector(RING_SELECTOR);
+    }
+
+    function markFeatureEnabled() {
+        getSection()?.classList.add('shelf-live-controls-enabled');
     }
 
     function patchSpotifyPlayerConstructor() {
@@ -85,7 +93,13 @@
 
             #record-shelf-section .turntable-control.stop.shelf-volume-fader::before,
             #record-shelf-section .turntable-control.stop.shelf-volume-fader::after {
+                content: none !important;
+                display: none !important;
                 opacity: 0 !important;
+            }
+
+            #record-shelf-section.shelf-live-controls-enabled .reference-match-svg > g:nth-of-type(2) {
+                display: none !important;
             }
 
             #record-shelf-section .shelf-volume-ui {
@@ -95,11 +109,25 @@
                 pointer-events: none;
             }
 
+            #record-shelf-section .shelf-volume-label {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 3.5%;
+                text-align: center;
+                font-family: Inter, Arial, sans-serif;
+                font-size: 6px;
+                font-weight: 800;
+                letter-spacing: .9px;
+                color: rgba(17, 21, 20, .46);
+                text-shadow: 0 1px 0 rgba(255,255,255,.28);
+            }
+
             #record-shelf-section .shelf-volume-rail {
                 position: absolute;
                 left: 50%;
                 top: 15%;
-                bottom: 15%;
+                bottom: 18%;
                 width: 3px;
                 transform: translateX(-50%);
                 border-radius: 999px;
@@ -158,7 +186,7 @@
             const ui = document.createElement('span');
             ui.className = 'shelf-volume-ui';
             ui.setAttribute('aria-hidden', 'true');
-            ui.innerHTML = '<span class="shelf-volume-rail"><span class="shelf-volume-fill"></span></span><span class="shelf-volume-thumb"></span>';
+            ui.innerHTML = '<span class="shelf-volume-rail"><span class="shelf-volume-fill"></span></span><span class="shelf-volume-thumb"></span><span class="shelf-volume-label">VOL</span>';
             control.appendChild(ui);
         }
 
@@ -287,6 +315,7 @@
     }
 
     function tick() {
+        markFeatureEnabled();
         patchSpotifyPlayerConstructor();
         ensureStyles();
         ensureVolumeUi();
