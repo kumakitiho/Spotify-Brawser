@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || 'YOUR_SPOTIFY_CLIENT_ID_HERE';
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || 'https://kumakitiho.github.io/Spotify-Brawser/';
 const DIST_DIR = path.join(__dirname, 'dist');
 const STATIC_ASSETS = [
@@ -24,9 +24,8 @@ const STATIC_ASSETS = [
     'turntable-live-controls.js'
 ];
 
-if (!CLIENT_ID) {
-    console.error('SPOTIFY_CLIENT_ID is not set');
-    process.exit(1);
+if (CLIENT_ID === 'YOUR_SPOTIFY_CLIENT_ID_HERE') {
+    console.warn('SPOTIFY_CLIENT_ID is not set. Building with placeholder config.');
 }
 
 function normalizeBaseUrl(url) {
