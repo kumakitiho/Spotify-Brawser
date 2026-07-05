@@ -18,6 +18,20 @@ function getRuntimeRedirectUri() {
     return `${window.location.origin}${path}`;
 }
 
+function getRuntimeSpotifyClientId() {
+    const params = new URLSearchParams(window.location.search);
+    const clientIdFromUrl = params.get('spotifyClientId') || params.get('client_id');
+    if (clientIdFromUrl) {
+        localStorage.setItem('spotifyClientIdOverride', clientIdFromUrl);
+        return clientIdFromUrl;
+    }
+
+    return window.SPOTIFY_CLIENT_ID
+        || localStorage.getItem('spotifyClientIdOverride')
+        || (typeof process !== 'undefined' && process.env ? process.env.SPOTIFY_CLIENT_ID : undefined)
+        || 'YOUR_SPOTIFY_CLIENT_ID_HERE';
+}
+
 function loadShelfModeLoader() {
     const appendLoader = () => {
         const key = 'shelf-mode-loader';
@@ -41,9 +55,7 @@ function loadShelfModeLoader() {
 
 const config = {
     // Spotify API設定 - 本番環境では環境変数から取得
-    CLIENT_ID: window.SPOTIFY_CLIENT_ID
-        || (typeof process !== 'undefined' && process.env ? process.env.SPOTIFY_CLIENT_ID : undefined)
-        || 'YOUR_SPOTIFY_CLIENT_ID_HERE',
+    CLIENT_ID: getRuntimeSpotifyClientId(),
     REDIRECT_URI: getRuntimeRedirectUri(),
     SCOPES: 'user-top-read user-read-private user-read-email streaming user-modify-playback-state user-read-playback-state',
     
