@@ -83,6 +83,11 @@
                 pointer-events: auto;
             }
 
+            #record-shelf-section .turntable-control.stop.shelf-volume-fader::before,
+            #record-shelf-section .turntable-control.stop.shelf-volume-fader::after {
+                opacity: 0 !important;
+            }
+
             #record-shelf-section .shelf-volume-ui {
                 position: absolute;
                 inset: 0;
@@ -98,8 +103,8 @@
                 width: 3px;
                 transform: translateX(-50%);
                 border-radius: 999px;
-                background: rgba(12, 18, 14, 0.88);
-                box-shadow: 1px 0 0 rgba(255,255,255,.24);
+                background: rgba(12, 18, 14, 0.82);
+                box-shadow: 1px 0 0 rgba(255,255,255,.18);
             }
 
             #record-shelf-section .shelf-volume-fill {
@@ -109,19 +114,19 @@
                 bottom: 0;
                 height: 55%;
                 border-radius: inherit;
-                background: rgba(29, 185, 84, .62);
+                background: rgba(29, 185, 84, .44);
             }
 
             #record-shelf-section .shelf-volume-thumb {
                 position: absolute;
-                left: 14%;
+                left: 15%;
                 top: 40%;
-                width: 72%;
-                height: 10%;
+                width: 70%;
+                height: 9.5%;
                 border-radius: 5px;
-                background: linear-gradient(180deg, #f2f4ec, #9ca59d 48%, #3d4540 100%);
-                border: 1px solid rgba(35, 42, 38, .88);
-                box-shadow: 0 6px 10px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.72);
+                background: linear-gradient(180deg, #eef1e8, #9aa49b 48%, #414943 100%);
+                border: 1px solid rgba(35, 42, 38, .78);
+                box-shadow: 0 5px 9px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.62);
             }
 
             #record-shelf-section .shelf-ring-progress {
@@ -129,8 +134,8 @@
                 inset: 0;
                 border-radius: 50%;
                 pointer-events: none;
-                opacity: .72;
-                background: conic-gradient(from -90deg, rgba(29,185,84,.52) 0deg, rgba(29,185,84,.52) var(--shelf-progress-deg, 0deg), transparent var(--shelf-progress-deg, 0deg), transparent 360deg);
+                opacity: .58;
+                background: conic-gradient(from -90deg, rgba(29,185,84,.42) 0deg, rgba(29,185,84,.42) var(--shelf-progress-deg, 0deg), transparent var(--shelf-progress-deg, 0deg), transparent 360deg);
                 -webkit-mask: radial-gradient(circle, transparent 0 88%, #000 88.5% 91%, transparent 91.5% 100%);
                 mask: radial-gradient(circle, transparent 0 88%, #000 88.5% 91%, transparent 91.5% 100%);
             }
@@ -172,7 +177,7 @@
         const fill = control.querySelector('.shelf-volume-fill');
         const thumb = control.querySelector('.shelf-volume-thumb');
         if (fill) fill.style.height = `${percent}%`;
-        if (thumb) thumb.style.top = `calc(${100 - percent}% - 5%)`;
+        if (thumb) thumb.style.top = `calc(${100 - percent}% - 4.75%)`;
     }
 
     async function applyVolume(value, { persist = true } = {}) {
