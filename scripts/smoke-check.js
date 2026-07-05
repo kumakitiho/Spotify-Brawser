@@ -27,14 +27,19 @@ function checkSourceFiles() {
     const config = read('config.js');
     const loader = read('shelf-mode-loader.js');
     const manifest = read('shelf-mode-assets.js');
+    const immersivePicker = read('shelf-immersive-picker.js');
 
-    assertContains(config, 'shelf-mode-loader.js?v=20260705-loader-v1', 'config.js');
+    assertContains(config, 'shelf-mode-loader.js?v=20260705-loader-v2', 'config.js');
     assertNotContains(config, 'turntable-live-controls.js', 'config.js');
-    assertContains(loader, 'shelf-mode-assets.js?v=20260705-assets-v1', 'shelf-mode-loader.js');
+    assertContains(loader, 'shelf-mode-assets.js?v=20260705-assets-v2', 'shelf-mode-loader.js');
     assertContains(loader, 'window.__shelfModeLoaderState', 'shelf-mode-loader.js');
     assertContains(manifest, 'window.ShelfModeAssets', 'shelf-mode-assets.js');
     assertContains(manifest, 'experimentalScripts', 'shelf-mode-assets.js');
+    assertContains(manifest, 'shelf-immersive-picker.css?v=20260705-immersive-picker-v1', 'shelf-mode-assets.js');
+    assertContains(manifest, 'shelf-immersive-picker.js?v=20260705-immersive-picker-v1', 'shelf-mode-assets.js');
     assertContains(manifest, 'turntable-live-controls.js?v=20260705-live-controls-flagged-v6', 'shelf-mode-assets.js');
+    assertContains(immersivePicker, 'immersivePicker', 'shelf-immersive-picker.js');
+    assertContains(immersivePicker, 'track.button.click()', 'shelf-immersive-picker.js');
 }
 
 function runBuild() {
@@ -55,9 +60,11 @@ function checkDistFiles() {
     assert(fs.existsSync(path.join(dist, 'index.html')), 'dist/index.html should exist');
     assert(fs.existsSync(path.join(dist, 'shelf-mode-loader.js')), 'dist/shelf-mode-loader.js should exist');
     assert(fs.existsSync(path.join(dist, 'shelf-mode-assets.js')), 'dist/shelf-mode-assets.js should exist');
+    assert(fs.existsSync(path.join(dist, 'shelf-immersive-picker.css')), 'dist/shelf-immersive-picker.css should exist');
+    assert(fs.existsSync(path.join(dist, 'shelf-immersive-picker.js')), 'dist/shelf-immersive-picker.js should exist');
     assert(fs.existsSync(path.join(dist, 'turntable-live-controls.js')), 'dist/turntable-live-controls.js should be copied for later promotion');
 
-    assertContains(distConfig, 'shelf-mode-loader.js?v=20260705-loader-v1', 'dist/config.js');
+    assertContains(distConfig, 'shelf-mode-loader.js?v=20260705-loader-v2', 'dist/config.js');
     assertNotContains(distConfig, 'turntable-live-controls.js', 'dist/config.js');
     assertContains(distConfig, 'test-client-id', 'dist/config.js');
 }
@@ -66,4 +73,4 @@ checkSourceFiles();
 runBuild();
 checkDistFiles();
 
-console.log('Shelf Mode refactor smoke check passed.');
+console.log('Shelf Mode immersive picker smoke check passed.');
