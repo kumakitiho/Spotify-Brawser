@@ -1,6 +1,6 @@
 /* Shelf Mode asset manifest.
    This file owns the runtime load order for the turntable skin.
-   Keep experimental controls out of this list until they are promoted. */
+   Keep risky playback controls out of the default runtime until they are promoted. */
 
 (function () {
     window.ShelfModeAssets = {
@@ -20,6 +20,10 @@
             {
                 href: 'turntable-reference-match.css?v=20260705-reference-match-v7',
                 key: 'turntable-reference-match'
+            },
+            {
+                href: 'shelf-immersive-picker.css?v=20260705-immersive-picker-v1',
+                key: 'shelf-immersive-picker'
             }
         ],
         scripts: [
@@ -46,6 +50,10 @@
             {
                 src: 'turntable-state-guard.js?v=20260705-state-guard-v1',
                 key: 'turntable-state-guard'
+            },
+            {
+                src: 'shelf-immersive-picker.js?v=20260705-immersive-picker-v1',
+                key: 'shelf-immersive-picker'
             }
         ],
         experimentalScripts: [
