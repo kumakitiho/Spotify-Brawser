@@ -32,7 +32,7 @@
     }
 
     async function run() {
-        await appendScript({ src: 'shelf-mode-assets.js?v=20260705-assets-v5', key: 'shelf-mode-assets-v5' });
+        await appendScript({ src: 'shelf-mode-assets.js?v=20260705-assets-v6', key: 'shelf-mode-assets-v6' });
         const manifest = window.ShelfModeAssets;
         if (!manifest) return;
         (manifest.stylesheets || []).forEach(appendStyle);
