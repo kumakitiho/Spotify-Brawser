@@ -20,7 +20,7 @@ function getRuntimeRedirectUri() {
 
 function loadShelfModeTurntableSkin() {
     const liveControls = {
-        src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v5',
+        src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v6',
         key: 'turntable-live-controls'
     };
 
