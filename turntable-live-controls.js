@@ -1,9 +1,10 @@
-/* Feature-flagged Shelf Mode live controls.
-   Enable with ?shelfControls=1. Disable with ?shelfControls=0.
-   Default is off so normal production behavior remains unchanged. */
+/* Shelf Mode live controls.
+   Enabled by default. Disable temporarily with ?shelfControls=0.
+   Re-enable with ?shelfControls=1. */
 
 (function () {
-    const FLAG_KEY = 'shelfControlsEnabled';
+    const DISABLED_KEY = 'shelfControlsDisabled';
+    const LEGACY_FLAG_KEY = 'shelfControlsEnabled';
     const VOLUME_KEY = 'shelfVolume';
     const CONTROL_SELECTOR = '#record-shelf-section .turntable-control.stop';
     const RING_SELECTOR = '#record-shelf-section .record-progress-ring';
@@ -11,13 +12,15 @@
 
     const params = new URLSearchParams(window.location.search);
     if (params.get('shelfControls') === '1') {
-        localStorage.setItem(FLAG_KEY, 'true');
+        localStorage.removeItem(DISABLED_KEY);
+        localStorage.removeItem(LEGACY_FLAG_KEY);
     }
     if (params.get('shelfControls') === '0') {
-        localStorage.removeItem(FLAG_KEY);
+        localStorage.setItem(DISABLED_KEY, 'true');
+        localStorage.removeItem(LEGACY_FLAG_KEY);
     }
 
-    if (localStorage.getItem(FLAG_KEY) !== 'true') {
+    if (localStorage.getItem(DISABLED_KEY) === 'true') {
         return;
     }
 
