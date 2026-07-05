@@ -7,7 +7,9 @@
     const LEGACY_FLAG_KEY = 'shelfControlsEnabled';
     const VOLUME_KEY = 'shelfVolume';
     const CONTROL_SELECTOR = '#record-shelf-section .turntable-control.stop';
-    const RING_SELECTOR = '#record-shelf-section .record-progress-ring';
+    const DROP_ZONE_SELECTOR = '#record-shelf-section .shelf-drop-zone';
+    const DOT_RING_SELECTOR = '#record-shelf-section .record-progress-ring';
+    const PROGRESS_OVERLAY_SELECTOR = '#record-shelf-section .shelf-progress-overlay';
     const PROGRESS_SELECTORS = ['#shelf-progress-fill', '#progress-bar', '#progress-bar-mobile'];
 
     const params = new URLSearchParams(window.location.search);
@@ -47,12 +49,16 @@
         return document.getElementById('record-shelf-section');
     }
 
+    function getDropZone() {
+        return document.querySelector(DROP_ZONE_SELECTOR);
+    }
+
     function getVolumeControl() {
         return document.querySelector(CONTROL_SELECTOR);
     }
 
-    function getRing() {
-        return document.querySelector(RING_SELECTOR);
+    function getProgressOverlay() {
+        return document.querySelector(PROGRESS_OVERLAY_SELECTOR);
     }
 
     function markFeatureEnabled() {
@@ -136,8 +142,31 @@
                 opacity: 0 !important;
             }
 
-            #record-shelf-section.shelf-live-controls-enabled .reference-match-svg > g:nth-of-type(2) {
-                display: none !important;
+            #record-shelf-section .record-progress-ring {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 4 !important;
+                background:
+                    repeating-conic-gradient(from -6deg, rgba(250, 252, 244, 0.96) 0 0.55deg, transparent 0.6deg 2.2deg),
+                    repeating-conic-gradient(from 1deg, rgba(160, 168, 160, 0.86) 0 0.5deg, transparent 0.55deg 2.05deg) !important;
+                -webkit-mask: radial-gradient(circle, transparent 0 88%, #000 88.4% 100%) !important;
+                mask: radial-gradient(circle, transparent 0 88%, #000 88.4% 100%) !important;
+            }
+
+            #record-shelf-section .shelf-progress-overlay {
+                position: absolute;
+                left: 3.7%;
+                top: 4.2%;
+                width: 68.8%;
+                aspect-ratio: 1;
+                z-index: 5;
+                border-radius: 9999px;
+                pointer-events: none;
+                opacity: .82;
+                background: conic-gradient(from -90deg, rgba(29,185,84,.62) 0deg, rgba(29,185,84,.62) var(--shelf-progress-deg, 0deg), transparent var(--shelf-progress-deg, 0deg), transparent 360deg);
+                -webkit-mask: radial-gradient(circle, transparent 0 91.3%, #000 91.8% 94.4%, transparent 94.9% 100%);
+                mask: radial-gradient(circle, transparent 0 91.3%, #000 91.8% 94.4%, transparent 94.9% 100%);
             }
 
             #record-shelf-section .shelf-volume-ui {
@@ -195,15 +224,12 @@
                 box-shadow: 0 5px 9px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.62);
             }
 
-            #record-shelf-section .shelf-ring-progress {
-                position: absolute;
-                inset: 0;
-                border-radius: 50%;
-                pointer-events: none;
-                opacity: .58;
-                background: conic-gradient(from -90deg, rgba(29,185,84,.42) 0deg, rgba(29,185,84,.42) var(--shelf-progress-deg, 0deg), transparent var(--shelf-progress-deg, 0deg), transparent 360deg);
-                -webkit-mask: radial-gradient(circle, transparent 0 88%, #000 88.5% 91%, transparent 91.5% 100%);
-                mask: radial-gradient(circle, transparent 0 88%, #000 88.5% 91%, transparent 91.5% 100%);
+            @media (max-width: 640px) {
+                #record-shelf-section .shelf-progress-overlay {
+                    left: 3.4%;
+                    top: 4.6%;
+                    width: 69.2%;
+                }
             }
         `;
         document.head.appendChild(style);
@@ -322,12 +348,22 @@
     }
 
     function ensureProgressRing() {
-        const ring = getRing();
-        if (!ring) return false;
-        if (!ring.querySelector('.shelf-ring-progress')) {
+        const dropZone = getDropZone();
+        if (!dropZone) return false;
+
+        document.querySelectorAll(`${DOT_RING_SELECTOR} .shelf-ring-progress`).forEach((node) => node.remove());
+
+        if (!dropZone.querySelector('.shelf-progress-overlay')) {
             const progress = document.createElement('span');
-            progress.className = 'shelf-ring-progress';
-            ring.appendChild(progress);
+            progress.className = 'shelf-progress-overlay';
+            progress.setAttribute('aria-hidden', 'true');
+
+            const dotRing = dropZone.querySelector('.record-progress-ring');
+            if (dotRing) {
+                dotRing.insertAdjacentElement('afterend', progress);
+            } else {
+                dropZone.insertAdjacentElement('afterbegin', progress);
+            }
         }
         return true;
     }
@@ -344,12 +380,12 @@
     }
 
     function paintProgressRing() {
-        const ring = getRing();
-        if (!ring) return;
+        const overlay = getProgressOverlay();
+        if (!overlay) return;
         const percent = readProgressPercent();
         if (Math.abs(percent - lastProgressPercent) < 0.1) return;
         lastProgressPercent = percent;
-        ring.style.setProperty('--shelf-progress-deg', `${percent * 3.6}deg`);
+        overlay.style.setProperty('--shelf-progress-deg', `${percent * 3.6}deg`);
     }
 
     function exposeDebugState() {
@@ -358,7 +394,9 @@
             hasSpotifyNamespace: Boolean(window.Spotify || spotifyNamespace),
             playerCaptured: Boolean(spotifyPlayer || window.__shelfSpotifyPlayer),
             volume: currentVolume,
-            progressPercent: lastProgressPercent
+            progressPercent: lastProgressPercent,
+            hasDotRing: Boolean(document.querySelector(DOT_RING_SELECTOR)),
+            hasProgressOverlay: Boolean(getProgressOverlay())
         };
     }
 
