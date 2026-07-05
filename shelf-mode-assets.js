@@ -22,16 +22,8 @@
                 key: 'turntable-reference-match'
             },
             {
-                href: 'shelf-immersive-picker.css?v=20260705-immersive-picker-v1',
-                key: 'shelf-immersive-picker'
-            },
-            {
-                href: 'shelf-immersive-picker-taste.css?v=20260705-immersive-picker-v2',
-                key: 'shelf-immersive-picker-taste'
-            },
-            {
-                href: 'shelf-immersive-picker-fix.css?v=20260705-immersive-picker-fix-v2',
-                key: 'shelf-immersive-picker-fix'
+                href: 'shelf-immersive-picker-safe.css?v=20260705-safe-picker-v1',
+                key: 'shelf-immersive-picker-safe'
             }
         ],
         scripts: [
@@ -60,14 +52,18 @@
                 key: 'turntable-state-guard'
             },
             {
-                src: 'shelf-immersive-picker.js?v=20260705-immersive-picker-v2',
-                key: 'shelf-immersive-picker'
+                src: 'shelf-immersive-picker-safe.js?v=20260705-safe-picker-v1',
+                key: 'shelf-immersive-picker-safe'
             }
         ],
         experimentalScripts: [
             {
                 src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v6',
                 key: 'turntable-live-controls'
+            },
+            {
+                src: 'shelf-immersive-picker.js?v=20260705-immersive-picker-v2',
+                key: 'shelf-immersive-picker-legacy'
             }
         ]
     };
