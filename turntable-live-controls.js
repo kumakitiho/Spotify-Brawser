@@ -22,6 +22,7 @@
     }
 
     let spotifyPlayer = null;
+    let spotifyNamespace = window.Spotify || null;
     let currentVolume = readVolume();
     let isDraggingVolume = false;
     let lastProgressPercent = -1;
@@ -55,19 +56,24 @@
         getSection()?.classList.add('shelf-live-controls-enabled');
     }
 
-    function patchSpotifyPlayerConstructor() {
-        if (!window.Spotify || !window.Spotify.Player || window.Spotify.Player.__shelfControlsPatched) {
-            return Boolean(spotifyPlayer);
+    function capturePlayer(instance) {
+        if (!instance) return instance;
+        spotifyPlayer = instance;
+        window.__shelfSpotifyPlayer = instance;
+        applyVolume(currentVolume, { persist: false });
+        return instance;
+    }
+
+    function wrapSpotifyPlayerConstructor(namespace) {
+        if (!namespace || !namespace.Player || namespace.Player.__shelfControlsPatched) {
+            return Boolean(spotifyPlayer || window.__shelfSpotifyPlayer);
         }
 
-        const OriginalPlayer = window.Spotify.Player;
+        const OriginalPlayer = namespace.Player;
 
         function ShelfControlsPlayer(options) {
             const instance = new OriginalPlayer(options);
-            spotifyPlayer = instance;
-            window.__shelfSpotifyPlayer = instance;
-            applyVolume(currentVolume, { persist: false });
-            return instance;
+            return capturePlayer(instance);
         }
 
         ShelfControlsPlayer.prototype = OriginalPlayer.prototype;
@@ -75,8 +81,37 @@
             Object.setPrototypeOf(ShelfControlsPlayer, OriginalPlayer);
         }
         ShelfControlsPlayer.__shelfControlsPatched = true;
-        window.Spotify.Player = ShelfControlsPlayer;
+        namespace.Player = ShelfControlsPlayer;
         return true;
+    }
+
+    function installSpotifyNamespaceCapture() {
+        if (wrapSpotifyPlayerConstructor(window.Spotify || spotifyNamespace)) {
+            return true;
+        }
+
+        const descriptor = Object.getOwnPropertyDescriptor(window, 'Spotify');
+        if (descriptor && descriptor.configurable === false) {
+            return false;
+        }
+
+        try {
+            Object.defineProperty(window, 'Spotify', {
+                configurable: true,
+                enumerable: true,
+                get() {
+                    return spotifyNamespace;
+                },
+                set(value) {
+                    spotifyNamespace = value;
+                    wrapSpotifyPlayerConstructor(spotifyNamespace);
+                }
+            });
+            return true;
+        } catch (error) {
+            console.warn('Shelf controls could not install Spotify capture:', error);
+            return false;
+        }
     }
 
     function ensureStyles() {
@@ -314,23 +349,37 @@
         ring.style.setProperty('--shelf-progress-deg', `${percent * 3.6}deg`);
     }
 
+    function exposeDebugState() {
+        window.__shelfLiveControls = {
+            enabled: true,
+            hasSpotifyNamespace: Boolean(window.Spotify || spotifyNamespace),
+            playerCaptured: Boolean(spotifyPlayer || window.__shelfSpotifyPlayer),
+            volume: currentVolume,
+            progressPercent: lastProgressPercent
+        };
+    }
+
     function tick() {
         markFeatureEnabled();
-        patchSpotifyPlayerConstructor();
+        installSpotifyNamespaceCapture();
+        wrapSpotifyPlayerConstructor(window.Spotify || spotifyNamespace);
         ensureStyles();
         ensureVolumeUi();
         bindVolumeControl();
         ensureProgressRing();
         paintProgressRing();
+        exposeDebugState();
     }
 
     function boot() {
+        installSpotifyNamespaceCapture();
         tick();
-        window.setInterval(tick, 500);
+        window.setInterval(tick, 250);
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', boot, { once: true });
+        installSpotifyNamespaceCapture();
     } else {
         boot();
     }
