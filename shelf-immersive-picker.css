@@ -1,0 +1,342 @@
+/* Immersive Record Picker MVP. Enable with ?immersivePicker=1 */
+
+#record-shelf-section .immersive-picker-launch {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    margin: .75rem auto 1rem;
+    padding: .72rem 1.05rem;
+    border: 1px solid rgba(29,185,84,.42);
+    border-radius: 999px;
+    color: #ecfff3;
+    background: radial-gradient(circle at 20% 0%, rgba(29,185,84,.34), transparent 44%), linear-gradient(135deg, rgba(16,24,20,.94), rgba(4,7,6,.96));
+    box-shadow: 0 16px 36px rgba(0,0,0,.36), 0 0 26px rgba(29,185,84,.14), inset 0 1px 0 rgba(255,255,255,.12);
+    font-size: .82rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+#record-shelf-section .immersive-picker-launch::before {
+    content: '';
+    width: .6rem;
+    height: .6rem;
+    border-radius: 999px;
+    background: #1DB954;
+    box-shadow: 0 0 16px rgba(29,185,84,.86);
+}
+
+#record-shelf-section .immersive-picker-launch:hover {
+    transform: translateY(-1px) scale(1.015);
+    border-color: rgba(29,185,84,.8);
+}
+
+body.immersive-picker-open { overflow: hidden; }
+
+.immersive-picker {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    color: #f8fff9;
+    background: radial-gradient(circle at 20% 16%, rgba(29,185,84,.24), transparent 28%), radial-gradient(circle at 82% 10%, rgba(108,92,231,.18), transparent 30%), linear-gradient(160deg, rgba(4,6,7,.98), rgba(12,15,13,.96) 48%, rgba(2,4,4,.99));
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.02);
+    transition: opacity .26s ease, transform .34s cubic-bezier(.2,.8,.2,1);
+    overflow: hidden;
+}
+
+.immersive-picker.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.immersive-picker::before,
+.immersive-picker::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+}
+
+.immersive-picker::before {
+    opacity: .34;
+    background: linear-gradient(115deg, transparent 0 24%, rgba(29,185,84,.10) 26%, transparent 31% 55%, rgba(255,255,255,.05) 57%, transparent 62%), repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 88px);
+    transform: rotate(-8deg);
+    animation: immersiveLightSweep 14s linear infinite alternate;
+}
+
+.immersive-picker::after {
+    opacity: .12;
+    background-image: radial-gradient(circle, rgba(255,255,255,.72) 0 1px, transparent 1.8px), radial-gradient(circle, rgba(29,185,84,.62) 0 1px, transparent 1.6px);
+    background-size: 120px 120px, 180px 180px;
+    background-position: 0 0, 46px 72px;
+    animation: immersiveDustDrift 28s linear infinite;
+}
+
+@keyframes immersiveLightSweep { from { transform: rotate(-8deg) translateX(-6%); } to { transform: rotate(-8deg) translateX(6%); } }
+@keyframes immersiveDustDrift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-120px,-80px,0); } }
+
+.immersive-picker__topbar,
+.immersive-picker__footer {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(1rem,2.2vw,1.8rem) clamp(1rem,3vw,2.4rem);
+}
+
+.immersive-picker__kicker {
+    color: #86efac;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+}
+
+.immersive-picker__title {
+    margin: .35rem 0 0;
+    font-size: clamp(1.7rem,3.6vw,4.3rem);
+    line-height: .92;
+    letter-spacing: -.07em;
+    font-weight: 950;
+}
+
+.immersive-picker__subtitle {
+    margin-top: .6rem;
+    max-width: 42rem;
+    color: rgba(230,255,239,.66);
+    font-size: clamp(.82rem,1.25vw,1rem);
+}
+
+.immersive-picker__close,
+.immersive-picker__select,
+.immersive-picker__nav {
+    border: 1px solid rgba(255,255,255,.12);
+    color: #f8fff9;
+    background: rgba(255,255,255,.07);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+    transition: transform .16s ease, background .16s ease, border-color .16s ease;
+}
+
+.immersive-picker__close {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    font-size: 1.45rem;
+}
+
+.immersive-picker__close:hover,
+.immersive-picker__nav:hover,
+.immersive-picker__select:hover {
+    transform: translateY(-1px);
+    border-color: rgba(29,185,84,.55);
+    background: rgba(29,185,84,.14);
+}
+
+.immersive-picker__main {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(18rem,24rem);
+    gap: clamp(1rem,2vw,2rem);
+    min-height: 0;
+    padding: 0 clamp(1rem,3vw,2.4rem) 1rem;
+}
+
+.immersive-picker__stage {
+    position: relative;
+    min-height: min(62vh,620px);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: clamp(1.2rem,2.2vw,2rem);
+    background: radial-gradient(circle at 50% 22%, rgba(255,255,255,.11), transparent 22%), linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.015));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 32px 110px rgba(0,0,0,.52);
+    overflow: hidden;
+    perspective: 1200px;
+    touch-action: none;
+    user-select: none;
+}
+
+.immersive-picker__stage::before {
+    content: '';
+    position: absolute;
+    left: 4%; right: 4%; bottom: 15%; height: 26%;
+    border-radius: 2rem;
+    background: linear-gradient(180deg, rgba(92,63,38,.78), rgba(43,28,18,.95)), repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 1px, transparent 1px 42px);
+    box-shadow: inset 0 8px 18px rgba(255,255,255,.08), inset 0 -20px 28px rgba(0,0,0,.42), 0 -10px 38px rgba(0,0,0,.42);
+}
+
+.immersive-picker__horizon {
+    position: absolute;
+    inset: 12% 6% auto;
+    height: 30%;
+    border-radius: 999px;
+    background: radial-gradient(ellipse at center, rgba(29,185,84,.22), transparent 68%);
+    filter: blur(18px);
+    opacity: .72;
+}
+
+.immersive-picker__carousel {
+    position: absolute;
+    inset: 8% 0 10%;
+    transform-style: preserve-3d;
+}
+
+.immersive-picker__card {
+    --x: 0px; --z: 0px; --ry: 0deg; --s: 1; --o: 1; --blur: 0px; --glow: 0;
+    position: absolute;
+    left: 50%; top: 48%;
+    width: clamp(9rem,18vw,15.6rem);
+    aspect-ratio: 1 / 1.35;
+    padding: 0;
+    border: 0;
+    border-radius: .72rem;
+    color: inherit;
+    background: transparent;
+    transform: translate3d(calc(-50% + var(--x)), -50%, var(--z)) rotateY(var(--ry)) scale(var(--s));
+    transform-style: preserve-3d;
+    opacity: var(--o);
+    filter: blur(var(--blur)) saturate(calc(.78 + var(--glow) * .32));
+    transition: transform .43s cubic-bezier(.2,.85,.2,1), opacity .26s ease, filter .26s ease;
+    cursor: pointer;
+}
+
+.immersive-picker__card[aria-hidden="true"] { pointer-events: none; }
+
+.immersive-picker__sleeve {
+    position: relative;
+    width: 100%; height: 100%;
+    border-radius: inherit;
+    background: #111;
+    box-shadow: 0 24px 44px rgba(0,0,0,.46), 0 0 calc(28px * var(--glow)) rgba(29,185,84,.30), inset 0 1px 0 rgba(255,255,255,.18);
+    overflow: hidden;
+}
+
+.immersive-picker__sleeve::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(110deg, rgba(255,255,255,.28), transparent 28% 68%, rgba(255,255,255,.12));
+    mix-blend-mode: screen;
+    opacity: .42;
+    pointer-events: none;
+}
+
+.immersive-picker__cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.immersive-picker__vinyl-peek {
+    position: absolute;
+    right: -20%; top: 13%;
+    width: 74%; aspect-ratio: 1; border-radius: 999px;
+    background: repeating-radial-gradient(circle, rgba(255,255,255,.07) 0 1px, transparent 1px 7px), radial-gradient(circle, rgba(255,255,255,.9) 0 6%, #111 7% 16%, #050505 17% 100%);
+    box-shadow: 0 12px 32px rgba(0,0,0,.42);
+    opacity: calc(.08 + var(--glow) * .82);
+}
+
+.immersive-picker__rank {
+    position: absolute;
+    left: .7rem; top: .7rem; z-index: 3;
+    padding: .18rem .45rem;
+    border-radius: 999px;
+    color: #06100a;
+    background: rgba(134,239,172,.92);
+    font-size: .62rem;
+    font-weight: 950;
+}
+
+.immersive-picker__card-caption {
+    position: absolute;
+    left: .6rem; right: .6rem; bottom: .62rem; z-index: 3;
+    padding: .6rem;
+    border-radius: .6rem;
+    background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.74));
+    text-align: left;
+}
+
+.immersive-picker__card-title,
+.immersive-picker__card-artist { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.immersive-picker__card-title { font-size: .78rem; font-weight: 900; }
+.immersive-picker__card-artist { margin-top: .1rem; color: rgba(255,255,255,.67); font-size: .68rem; }
+
+.immersive-picker__detail {
+    position: relative;
+    display: grid;
+    align-content: end;
+    min-height: min(62vh,620px);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: clamp(1.2rem,2vw,1.8rem);
+    padding: clamp(1rem,2vw,1.4rem);
+    background: radial-gradient(circle at 50% 20%, rgba(29,185,84,.18), transparent 42%), linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 20px 56px rgba(0,0,0,.32);
+}
+
+.immersive-picker__detail-art-wrap {
+    width: min(100%,18rem);
+    margin: 0 auto 1.1rem;
+    aspect-ratio: 1;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 26px 60px rgba(0,0,0,.54), 0 0 48px rgba(29,185,84,.16);
+}
+
+.immersive-picker__detail-art { width: 100%; height: 100%; object-fit: cover; }
+.immersive-picker__detail-rank { color: #86efac; font-size: .72rem; font-weight: 950; letter-spacing: .2em; text-transform: uppercase; }
+.immersive-picker__detail-title { margin: .4rem 0 0; font-size: clamp(1.35rem,2.3vw,2rem); line-height: 1; letter-spacing: -.05em; font-weight: 950; }
+.immersive-picker__detail-artist { margin: .55rem 0 1.1rem; color: rgba(255,255,255,.68); }
+
+.immersive-picker__select {
+    width: 100%;
+    border-radius: 1rem;
+    padding: .95rem 1rem;
+    font-weight: 950;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    background: radial-gradient(circle at 20% 0%, rgba(134,239,172,.34), transparent 44%), linear-gradient(135deg, rgba(29,185,84,.92), rgba(5,118,58,.9));
+    color: #041109;
+}
+
+.immersive-picker__footer { padding-top: 0; }
+.immersive-picker__hint { color: rgba(255,255,255,.56); font-size: .8rem; }
+.immersive-picker__controls { display: flex; gap: .6rem; }
+.immersive-picker__nav { width: 2.8rem; height: 2.8rem; border-radius: 999px; font-size: 1.2rem; }
+
+.immersive-picker__empty { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.72); text-align: center; padding: 2rem; }
+
+.immersive-picker__fly-cover {
+    position: fixed;
+    z-index: 120;
+    border-radius: .7rem;
+    pointer-events: none;
+    object-fit: cover;
+    box-shadow: 0 26px 70px rgba(0,0,0,.58), 0 0 52px rgba(29,185,84,.22);
+    transition: transform .76s cubic-bezier(.18,.88,.22,1), opacity .76s ease, border-radius .76s ease;
+}
+
+.immersive-picker.is-deploying .immersive-picker__stage,
+.immersive-picker.is-deploying .immersive-picker__detail { filter: saturate(.6) blur(1px); opacity: .72; }
+
+@media (max-width: 840px) {
+    .immersive-picker__main { grid-template-columns: 1fr; grid-template-rows: minmax(340px,54vh) auto; }
+    .immersive-picker__detail { min-height: 0; grid-template-columns: 5.6rem 1fr; align-items: center; gap: .85rem; }
+    .immersive-picker__detail-art-wrap { width: 5.6rem; margin: 0; border-radius: .72rem; }
+    .immersive-picker__select { grid-column: 1 / -1; }
+}
+
+@media (max-width: 560px) {
+    .immersive-picker__subtitle { display: none; }
+    .immersive-picker__stage { min-height: 48vh; }
+    .immersive-picker__card { width: 44vw; }
+    .immersive-picker__footer { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .immersive-picker, .immersive-picker * { animation: none !important; transition-duration: 1ms !important; }
+}
