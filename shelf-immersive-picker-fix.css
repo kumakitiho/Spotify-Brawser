@@ -1,0 +1,72 @@
+/* Visibility fixes for immersive picker cards. */
+
+.immersive-picker__carousel {
+    z-index: 20 !important;
+    pointer-events: auto !important;
+}
+
+.immersive-picker__card {
+    display: block !important;
+    overflow: visible !important;
+    min-height: 12rem !important;
+    background-color: #111 !important;
+    background-image: var(--cover-bg, none) !important;
+    background-size: cover !important;
+    background-position: center !important;
+    box-shadow: 0 34px 70px rgba(0,0,0,.70), 0 0 calc(28px * var(--glow, 0)) rgba(255,255,255,.18) !important;
+}
+
+.immersive-picker__sleeve {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.immersive-picker__cover {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.immersive-picker__vinyl-peek,
+.immersive-picker__rank,
+.immersive-picker__card-caption {
+    z-index: 3 !important;
+}
+
+.immersive-picker__stage::before,
+.immersive-picker__stage::after,
+.immersive-picker__horizon {
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+
+.immersive-picker__empty[hidden],
+.immersive-picker__empty.is-force-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.immersive-picker__debug-count {
+    position: absolute;
+    left: .8rem;
+    bottom: .8rem;
+    z-index: 40;
+    padding: .25rem .5rem;
+    border-radius: 999px;
+    color: rgba(255,255,255,.66);
+    background: rgba(0,0,0,.42);
+    font-size: .68rem;
+    pointer-events: none;
+}
