@@ -7,6 +7,8 @@ const DIST_DIR = path.join(__dirname, 'dist');
 const STATIC_ASSETS = [
     'shelf-mode-loader.js',
     'shelf-mode-assets.js',
+    'shelf-immersive-picker.css',
+    'shelf-immersive-picker.js',
     'turntable-realism.css',
     'turntable-cover-boost.css',
     'turntable-physics.css',
@@ -56,7 +58,7 @@ const configContent = [
     '        const key = "shelf-mode-loader";',
     '        if (document.querySelector("script[data-shelf-mode-script=\\\"" + key + "\\\"]")) return;',
     '        const script = document.createElement("script");',
-    '        script.src = "shelf-mode-loader.js?v=20260705-loader-v1";',
+    '        script.src = "shelf-mode-loader.js?v=20260705-loader-v2";',
     '        script.defer = true;',
     '        script.dataset.shelfModeScript = key;',
     '        script.onerror = () => console.warn("Shelf Mode loader failed to load.");',
