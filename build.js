@@ -14,7 +14,8 @@ const SHELF_MODE_ASSETS = [
     'turntable-reference-match.css',
     'turntable-reference-match.js',
     'turntable-no-drag.js',
-    'turntable-state-guard.js'
+    'turntable-state-guard.js',
+    'turntable-live-controls.js'
 ];
 
 if (!CLIENT_ID) {
@@ -54,7 +55,8 @@ const configContent = [
     '        { src: "turntable-polish.js?v=20260705-polish-v1", key: "turntable-polish" },',
     '        { src: "turntable-reference-match.js?v=20260705-reference-match-v7", key: "turntable-reference-match" },',
     '        { src: "turntable-no-drag.js?v=20260705-no-drag-v3", key: "turntable-no-drag" },',
-    '        { src: "turntable-state-guard.js?v=20260705-state-guard-v1", key: "turntable-state-guard" }',
+    '        { src: "turntable-state-guard.js?v=20260705-state-guard-v1", key: "turntable-state-guard" },',
+    '        { src: "turntable-live-controls.js?v=20260705-live-controls-flagged-v1", key: "turntable-live-controls" }',
     '    ];',
     '    const appendAssets = () => {',
     '        stylesheets.forEach(({ href, key }) => {',
