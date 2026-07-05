@@ -24,7 +24,7 @@ function loadShelfModeLoader() {
         if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
 
         const script = document.createElement('script');
-        script.src = 'shelf-mode-loader.js?v=20260705-loader-v1';
+        script.src = 'shelf-mode-loader.js?v=20260705-loader-v2';
         script.defer = true;
         script.dataset.shelfModeScript = key;
         script.onerror = () => console.warn('Shelf Mode loader failed to load.');
