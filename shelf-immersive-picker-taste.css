@@ -83,6 +83,7 @@
         0 -6px 24px rgba(255,170,88,.08),
         inset 0 1px 0 rgba(255,255,255,.18),
         inset 0 -3px 7px rgba(0,0,0,.52);
+    z-index: 0;
 }
 
 .immersive-picker__stage::after {
@@ -95,17 +96,28 @@
     pointer-events: none;
     background: radial-gradient(ellipse at center, rgba(255,255,255,.10), transparent 66%);
     filter: blur(16px);
-    opacity: .26;
+    opacity: .18;
+    z-index: 0;
 }
 
 .immersive-picker__horizon {
     inset: 18% 12% auto;
     opacity: .38;
     background: radial-gradient(ellipse at center, rgba(255,255,255,.14), transparent 68%);
+    z-index: 0;
 }
 
 .immersive-picker__carousel {
     inset: 2% 0 11%;
+    z-index: 3;
+}
+
+.immersive-picker__empty[hidden] {
+    display: none !important;
+}
+
+.immersive-picker__empty {
+    z-index: 4;
 }
 
 .immersive-picker__card {
