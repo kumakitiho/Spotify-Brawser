@@ -18,81 +18,25 @@ function getRuntimeRedirectUri() {
     return `${window.location.origin}${path}`;
 }
 
-function loadShelfModeTurntableSkin() {
-    const stylesheets = [
-        {
-            href: 'turntable-realism.css?v=20260705-photoreal-turntable',
-            key: 'photoreal-turntable'
-        },
-        {
-            href: 'turntable-cover-boost.css?v=20260705-cover-boost',
-            key: 'record-cover-boost'
-        },
-        {
-            href: 'turntable-physics.css?v=20260705-physics-v8',
-            key: 'turntable-physics'
-        },
-        {
-            href: 'turntable-reference-match.css?v=20260705-reference-match-v7',
-            key: 'turntable-reference-match'
-        }
-    ];
+function loadShelfModeLoader() {
+    const appendLoader = () => {
+        const key = 'shelf-mode-loader';
+        if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
 
-    const scripts = [
-        {
-            src: 'turntable-physics.js?v=20260705-physics-v8',
-            key: 'turntable-physics'
-        },
-        {
-            src: 'turntable-arm-detail.js?v=20260705-arm-detail-v4',
-            key: 'turntable-arm-detail'
-        },
-        {
-            src: 'turntable-polish.js?v=20260705-polish-v1',
-            key: 'turntable-polish'
-        },
-        {
-            src: 'turntable-reference-match.js?v=20260705-reference-match-v7',
-            key: 'turntable-reference-match'
-        },
-        {
-            src: 'turntable-no-drag.js?v=20260705-no-drag-v3',
-            key: 'turntable-no-drag'
-        },
-        {
-            src: 'turntable-state-guard.js?v=20260705-state-guard-v1',
-            key: 'turntable-state-guard'
-        }
-    ];
-
-    const appendAssets = () => {
-        stylesheets.forEach(({ href, key }) => {
-            if (document.querySelector(`link[data-shelf-mode-skin="${key}"]`)) return;
-
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = href;
-            link.dataset.shelfModeSkin = key;
-            document.head.appendChild(link);
-        });
-
-        scripts.forEach(({ src, key }) => {
-            if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
-
-            const script = document.createElement('script');
-            script.src = src;
-            script.defer = true;
-            script.dataset.shelfModeScript = key;
-            document.head.appendChild(script);
-        });
+        const script = document.createElement('script');
+        script.src = 'shelf-mode-loader.js?v=20260705-loader-v1';
+        script.defer = true;
+        script.dataset.shelfModeScript = key;
+        script.onerror = () => console.warn('Shelf Mode loader failed to load.');
+        document.head.appendChild(script);
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', appendAssets, { once: true });
+        document.addEventListener('DOMContentLoaded', appendLoader, { once: true });
         return;
     }
 
-    appendAssets();
+    appendLoader();
 }
 
 const config = {
@@ -108,7 +52,7 @@ const config = {
     AUTH_URL: 'https://accounts.spotify.com/authorize'
 };
 
-loadShelfModeTurntableSkin();
+loadShelfModeLoader();
 
 // 設定検証とデバッグ
 console.log('🔍 CLIENT_ID確認:', config.CLIENT_ID ? `${config.CLIENT_ID.substring(0, 8)}...` : 'NOT SET');
