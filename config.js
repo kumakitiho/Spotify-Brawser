@@ -64,7 +64,7 @@ function loadShelfModeTurntableSkin() {
             key: 'turntable-state-guard'
         },
         {
-            src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v1',
+            src: 'turntable-live-controls.js?v=20260705-live-controls-flagged-v2',
             key: 'turntable-live-controls'
         }
     ];
