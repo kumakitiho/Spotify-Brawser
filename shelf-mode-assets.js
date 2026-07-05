@@ -28,6 +28,10 @@
             {
                 href: 'shelf-immersive-picker-taste.css?v=20260705-immersive-picker-v2',
                 key: 'shelf-immersive-picker-taste'
+            },
+            {
+                href: 'shelf-immersive-picker-fix.css?v=20260705-immersive-picker-fix-v1',
+                key: 'shelf-immersive-picker-fix'
             }
         ],
         scripts: [
@@ -58,6 +62,10 @@
             {
                 src: 'shelf-immersive-picker.js?v=20260705-immersive-picker-v1',
                 key: 'shelf-immersive-picker'
+            },
+            {
+                src: 'shelf-immersive-picker-fix.js?v=20260705-immersive-picker-fix-v1',
+                key: 'shelf-immersive-picker-fix'
             }
         ],
         experimentalScripts: [
