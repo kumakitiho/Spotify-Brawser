@@ -56,7 +56,7 @@ const configContent = [
     '        { src: "turntable-reference-match.js?v=20260705-reference-match-v7", key: "turntable-reference-match" },',
     '        { src: "turntable-no-drag.js?v=20260705-no-drag-v3", key: "turntable-no-drag" },',
     '        { src: "turntable-state-guard.js?v=20260705-state-guard-v1", key: "turntable-state-guard" },',
-    '        { src: "turntable-live-controls.js?v=20260705-live-controls-flagged-v2", key: "turntable-live-controls" }',
+    '        { src: "turntable-live-controls.js?v=20260705-live-controls-flagged-v3", key: "turntable-live-controls" }',
     '    ];',
     '    const appendAssets = () => {',
     '        stylesheets.forEach(({ href, key }) => {',
