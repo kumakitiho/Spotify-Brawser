@@ -34,11 +34,11 @@ function getRuntimeSpotifyClientId() {
 
 function loadShelfModeLoader() {
     const appendLoader = () => {
-        const key = 'shelf-mode-loader-v4';
+        const key = 'shelf-mode-loader-v5';
         if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return;
 
         const script = document.createElement('script');
-        script.src = 'shelf-mode-loader-v4.js?v=20260705-loader-v4';
+        script.src = 'shelf-mode-loader-v5.js?v=20260705-loader-v5';
         script.defer = true;
         script.dataset.shelfModeScript = key;
         script.onerror = () => console.warn('Shelf Mode loader failed to load.');
