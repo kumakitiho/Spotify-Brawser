@@ -10,19 +10,27 @@
         document.querySelector(selector)?.click();
     }
 
+    function stopEvent(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+    }
+
     function handleKey(event) {
         if (!isOpen()) return;
         const target = event.target;
         if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return;
-        if ((event.key === 'Enter' || event.key === ' ') && target instanceof HTMLButtonElement) return;
 
         const key = event.key.toLowerCase();
+        if ((key === 'enter' || key === ' ') && target instanceof HTMLButtonElement) {
+            stopEvent(event);
+            target.click();
+            return;
+        }
+
         const handled = ['arrowleft', 'arrowright', ' ', 'enter', 'escape', 'f', 'r'].includes(key);
         if (!handled) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+        stopEvent(event);
 
         if (key === 'arrowleft') click('.cinematic-deck__prev');
         if (key === 'arrowright') click('.cinematic-deck__next');
