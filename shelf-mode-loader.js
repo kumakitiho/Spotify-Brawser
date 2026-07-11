@@ -2,7 +2,7 @@
    Loads turntable skin assets after the base app has parsed so config.js stays low-risk. */
 
 (function () {
-    const MANIFEST_SRC = 'shelf-mode-assets.js?v=20260705-assets-v1';
+    const MANIFEST_SRC = 'shelf-mode-assets.js?v=20260712-assets-cinematic-v1';
     const MANIFEST_KEY = 'shelf-mode-assets';
     const LOADER_STATE_KEY = '__shelfModeLoaderState';
 

@@ -1,6 +1,6 @@
 /* Shelf Mode asset manifest.
    This file owns the runtime load order for the turntable skin.
-   Keep experimental controls out of this list until they are promoted. */
+   Feature modules must be safe when disabled by their own runtime flags. */
 
 (function () {
     window.ShelfModeAssets = {
@@ -20,6 +20,18 @@
             {
                 href: 'turntable-reference-match.css?v=20260705-reference-match-v7',
                 key: 'turntable-reference-match'
+            },
+            {
+                href: 'cinematic-deck.css?v=20260712-cinematic-v1',
+                key: 'cinematic-deck'
+            },
+            {
+                href: 'cinematic-deck-themes.css?v=20260712-cinematic-v1',
+                key: 'cinematic-deck-themes'
+            },
+            {
+                href: 'cinematic-deck-fixes.css?v=20260712-cinematic-v1',
+                key: 'cinematic-deck-fixes'
             }
         ],
         scripts: [
@@ -46,6 +58,14 @@
             {
                 src: 'turntable-state-guard.js?v=20260705-state-guard-v1',
                 key: 'turntable-state-guard'
+            },
+            {
+                src: 'cinematic-deck.js?v=20260712-cinematic-v1',
+                key: 'cinematic-deck'
+            },
+            {
+                src: 'cinematic-deck-guard.js?v=20260712-cinematic-v1',
+                key: 'cinematic-deck-guard'
             }
         ],
         experimentalScripts: [

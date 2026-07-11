@@ -1,0 +1,44 @@
+/* Cinematic Deck interaction fixes */
+
+.cinematic-deck {
+    --deck-tonearm-angle: -34deg;
+}
+
+.cinematic-deck__tonearm {
+    transform: translateZ(20px) rotate(var(--deck-tonearm-angle));
+}
+
+.cinematic-deck:not(.is-playing) .cinematic-deck__tonearm {
+    --deck-tonearm-angle: -34deg;
+}
+
+.cinematic-deck.is-playing .cinematic-deck__tonearm {
+    filter: drop-shadow(0 8px 10px rgba(0,0,0,.45));
+}
+
+.cinematic-deck__empty-state {
+    display: grid;
+    place-items: center;
+    min-height: 12rem;
+    padding: 2rem;
+    border: 1px dashed rgba(255,255,255,.14);
+    border-radius: 1rem;
+    color: rgba(255,255,255,.52);
+    text-align: center;
+}
+
+.cinematic-deck__status-dot {
+    display: inline-block;
+    width: .52rem;
+    height: .52rem;
+    margin-right: .4rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,.3);
+    box-shadow: 0 0 0 0 rgba(var(--deck-accent-rgb),0);
+    vertical-align: middle;
+}
+
+.cinematic-deck.is-playing .cinematic-deck__status-dot {
+    background: var(--deck-accent);
+    box-shadow: 0 0 14px rgba(var(--deck-accent-rgb),.65);
+}

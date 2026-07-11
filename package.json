@@ -1,15 +1,17 @@
 {
   "name": "spotify-stats-viewer",
   "version": "1.0.0",
-  "description": "Spotify統計ビューアー - ユーザーのお気に入り楽曲とアーティストを表示",
+  "description": "Spotify statistics and cinematic record player experience",
   "homepage": "https://kumakitiho.github.io/Spotify-Brawser/",
   "main": "index.html",
   "scripts": {
     "start": "serve -s . -l 3000",
     "build": "node build.js",
-    "dev": "serve -s . -l 3000"
+    "dev": "serve -s . -l 3000",
+    "test": "node scripts/smoke-check.js",
+    "check": "npm test"
   },
-  "keywords": ["spotify", "music", "stats", "analytics"],
+  "keywords": ["spotify", "music", "stats", "record-player", "cinematic"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
