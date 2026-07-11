@@ -32,6 +32,10 @@
             {
                 href: 'cinematic-deck-fixes.css?v=20260712-cinematic-v1',
                 key: 'cinematic-deck-fixes'
+            },
+            {
+                href: 'cinematic-deck-mobile.css?v=20260712-mobile-v1',
+                key: 'cinematic-deck-mobile'
             }
         ],
         scripts: [
@@ -66,6 +70,10 @@
             {
                 src: 'cinematic-deck-guard.js?v=20260712-cinematic-v1',
                 key: 'cinematic-deck-guard'
+            },
+            {
+                src: 'cinematic-deck-mobile.js?v=20260712-mobile-v1',
+                key: 'cinematic-deck-mobile'
             }
         ],
         experimentalScripts: [
