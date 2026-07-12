@@ -1,133 +1,90 @@
-# Spotify統計ビューアー
+# Record Room
 
-ユーザーのSpotify再生履歴とお気に入りの楽曲・アーティストを視覚的に表示するWebアプリケーション
+Spotifyのトップトラックから「今夜の12枚」を作り、レコードを選び、針を落として聴くためのモバイルファーストなリスニングルームです。
 
-## 🎵 主要機能
+## 体験
 
-### 📊 統計・ランキング機能
-- **楽曲ランキング**: 期間別のトップ楽曲を表示
-- **アーティストランキング**: 期間別のトップアーティスト表示
-- **Wrapped風インサイト**: 今の傾向をひとことで表す診断カードを表示
-- **共有用サマリー**: 現在の表示内容をコピーしてSNSやDMに貼れる
-- **期間比較**: 最近4週間/過去6ヶ月/全期間の差分から上昇・新規・離脱を表示
-- **イメージクラウド**: アーティスト写真を使った視覚的な統計表示
-- **ジャンルクラウド**: 音楽ジャンル分析とパーセンテージ表示
-- **期間フィルター**: 6ヶ月、4週間、全期間に加えて年別推定表示
+- 最近4週間の「最近の沼」4曲
+- 過去6か月の「今の定番」4曲
+- 長期トップの「ずっと残る」4曲
+- レコード盤タップで再生・停止
+- ターンテーブル上を左右スワイプして選曲
+- `おまかせで選ぶ` によるランダム再生
+- 最近の曲と長期定番を並べる `Then vs now`
+- セッション中に再生した盤を残す `Session tape`
+- Midnight / Amber / Neon のシーン切り替え
 
-### 🎧 再生機能
-- **Web Playback SDK**: ブラウザ内での楽曲再生
-- **再生コントロール**: 再生/一時停止、シーク、音量調整
-- **リアルタイム表示**: 現在再生中の楽曲情報表示
-- **プレビュー再生**: 楽曲の30秒プレビュー対応
+## 技術構成
 
-### 🔐 セキュリティ
-- **OAuth 2.0 PKCE**: 安全な認証フロー
-- **トークン管理**: アクセストークン期限切れ時は再ログインを案内
+依存を増やさず、ネイティブES Modulesで構成しています。
 
-## 🚀 GitHub Pagesでのデプロイ手順
-
-### 1. 前提条件
-- Spotifyアプリの作成（[Spotify Developer Dashboard](https://developer.spotify.com/dashboard)）
-- GitHub Pagesを有効化できるGitHubリポジトリ
-
-### 2. Spotifyアプリ設定
-1. Spotify Developer Dashboardでアプリを作成
-2. `CLIENT_ID`をメモ
-3. Redirect URIsにGitHub PagesのURLを追加
-   ```
-   https://kumakitiho.github.io/Spotify-Brawser/
-   ```
-
-### 3. GitHub Pagesの設定
-1. GitHubリポジトリの **Settings > Pages** を開く
-2. **Build and deployment > Source** を `GitHub Actions` に変更
-3. **Settings > Secrets and variables > Actions** で `SPOTIFY_CLIENT_ID` をRepository SecretまたはVariableとして登録
-   ```
-   SPOTIFY_CLIENT_ID=your_spotify_client_id_here
-   ```
-4. `main`ブランチにpushすると `.github/workflows/pages.yml` が自動でビルドと公開を実行
-5. 公開URLを確認
-   ```
-   https://kumakitiho.github.io/Spotify-Brawser/
-   ```
-
-### 4. ビルドについて
-
-`npm run build` は `dist/` にGitHub Pages用の静的ファイルを生成します。追跡中の `config.js` は上書きしません。
-
-```bash
-SPOTIFY_CLIENT_ID=your_spotify_client_id_here PUBLIC_BASE_URL=https://kumakitiho.github.io/Spotify-Brawser/ npm run build
+```text
+index.html
+config.js
+src/
+  auth.js       Spotify OAuth 2.0 PKCE / state / token refresh
+  spotify.js    Spotify API / 12枚の棚 / 期間比較
+  player.js     Web Playback SDK / preview fallback
+  main.js       UI状態と操作
+  styles.css    モバイルファーストUI
+build.js
+scripts/smoke-check.js
 ```
 
-### 5. セキュリティについて
-**❌ CLIENT_IDをconfig.jsに直接書かないでください**
+旧Cinematic Deckと旧Shelf Modeのファイルはリポジトリ内に残っていますが、新しいPagesビルドには含まれません。
 
-- 開発環境: プレースホルダー値をそのまま使用
-- 本番環境: GitHub Actionsのビルド時に環境変数から `dist/config.js` へ自動注入
-- GitHubには実際のCLIENT_IDはコミットされません
-- CLIENT_IDはシークレットではありません。公開後はGitHub Pages上の `config.js` から閲覧できます
-- GitHub Pagesの通常公開URLでは `REDIRECT_URI` は `https://kumakitiho.github.io/Spotify-Brawser/` になります
+## Spotifyアプリ設定
 
-## 🛠️ ローカル開発
+Spotify Developer Dashboardでアプリを作成し、Redirect URIへ次を登録します。
+
+```text
+https://kumakitiho.github.io/Spotify-Brawser/
+```
+
+GitHubのRepository SecretまたはVariableへ設定します。
+
+```text
+SPOTIFY_CLIENT_ID=your_client_id
+```
+
+Client Secretは使用しません。
+
+## 開発
 
 ```bash
-# 依存関係のインストール
-npm install
-
-# 開発サーバー起動
+npm ci
 npm run dev
-# または
-npm start
 ```
 
-## 📁 ファイル構成
+ローカルやブランチ直配信でClient IDを一時指定する場合は、次のクエリを使用できます。
 
-- `index.html` - メインアプリケーション（全機能統合）
-- `config.js` - 設定ファイル（CLIENT_ID等）
-- `.github/workflows/pages.yml` - GitHub Pages公開用のワークフロー
-- `package.json` - プロジェクト設定
-- `dist/` - ビルド成果物（Git管理対象外）
-- `.gitignore` - Git除外設定
+```text
+?spotifyClientId=YOUR_CLIENT_ID
+```
 
-## 🎨 UI/UX機能
+削除する場合：
 
-- **レスポンシブ対応**: モバイル・デスクトップ両対応
-- **Spotify風デザイン**: 一貫したデザインシステム
-- **アニメーション効果**: スムーズなCSSアニメーション
-- **ホバーエフェクト**: インタラクティブなUI要素
-- **ローディング状態**: 各機能でのローディング表示
-- **インサイトパネル**: タイプ診断、年代傾向、ジャンル温度感を表示
-- **比較パネル**: 期間ごとの差分をその場で確認
+```text
+?clearSpotifyClientId=1
+```
 
-## 🔐 セキュリティ
+## テストとビルド
 
-- CLIENT_IDは設定ファイルで管理
-- PKCE認証フローを使用
-- XSS対策実装済み
-- CSPヘッダー設定済み
+```bash
+npm test
+npm run build
+```
 
-## 📝 使用方法
+スモークテストでは以下を確認します。
 
-### 基本操作
-1. Spotifyアカウントでログイン
-2. タブから楽曲・アーティスト統計を選択
-3. 期間フィルターで表示データを切り替え
-4. アーティスト表示でイメージクラウド・ジャンルクラウドを切り替え
+- ES Modulesの構文
+- PKCEとOAuth state検証
+- refresh token処理
+- 12枚の棚と期間比較
+- Web Playback SDKとプレビューfallback
+- モバイルセーフエリアとレスポンシブUI
+- Pages成果物に旧Cinematic Deckが混入しないこと
 
-### 表示モード
-- **リスト表示**: 従来のランキング形式
-- **イメージクラウド**: アーティスト写真による視覚的表示
-- **ジャンルクラウド**: 音楽ジャンルの分析チャート
+## 再生について
 
-### 新しい楽しみ方
-1. ランキング上部のインサイトカードで今の傾向を確認
-2. 年別ボタンでその年っぽいトップを推定表示
-3. 比較パネルで最近伸びた曲や離れた曲を確認
-4. 「結果をコピー」でそのまま共有
-
-## 📝 注意事項
-
-- Spotify Premium不要（Web Playback SDKはPremium必須）
-- Spotifyアカウントでのログインが必要
-- ブラウザでの楽曲再生にはSpotify Premiumが必要
-- ジャンル分析はアーティスト情報に基づく
+ブラウザでのフル再生にはSpotify Premiumが必要です。Web Playback SDKが利用できない場合は、Spotifyが`preview_url`を提供している曲に限り30秒プレビューへフォールバックします。

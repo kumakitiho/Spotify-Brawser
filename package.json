@@ -1,7 +1,7 @@
 {
   "name": "spotify-stats-viewer",
   "version": "1.0.0",
-  "description": "Spotify statistics and cinematic record player experience",
+  "description": "Record Room - a mobile-first cinematic Spotify listening room",
   "homepage": "https://kumakitiho.github.io/Spotify-Brawser/",
   "main": "index.html",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "node scripts/smoke-check.js",
     "check": "npm test"
   },
-  "keywords": ["spotify", "music", "stats", "record-player", "cinematic"],
+  "keywords": ["spotify", "music", "record-room", "record-player", "cinematic"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
