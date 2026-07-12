@@ -18,7 +18,8 @@ const state = {
   session: [],
   ticker: null,
   toastTimer: null,
-  pointerStart: null
+  pointerStart: null,
+  suppressVinylClick: false
 };
 
 function selectedTrack() {
@@ -151,7 +152,7 @@ function renderComparison() {
 }
 
 function pushSession(track) {
-  if (!track?.uri) return;
+  if (!track?.uri || state.session[0]?.uri === track.uri) return;
   state.session = [track, ...state.session.filter((item) => item.uri !== track.uri)].slice(0, 8);
   renderSession();
 }
@@ -186,7 +187,8 @@ function renderPlayback(snapshot) {
   refs.seek.value = String(Math.round(fraction * 1000));
   refs.app.style.setProperty('--tonearm-angle', snapshot.playing ? `${-23 + fraction * 14}deg` : '-34deg');
 
-  if (snapshot.playing && snapshot.track) pushSession(snapshot.track);
+  const activeTrack = state.crate.find((track) => track.uri === snapshot.uri) || snapshot.track;
+  if (snapshot.playing && activeTrack) pushSession(activeTrack);
   if (snapshot.uri) {
     const index = state.crate.findIndex((track) => track.uri === snapshot.uri);
     if (index >= 0 && index !== state.selectedIndex) selectTrack(index);
@@ -235,9 +237,12 @@ function bindInteractions() {
   refs.prevButton.addEventListener('click', () => selectTrack(state.selectedIndex - 1));
   refs.nextButton.addEventListener('click', () => selectTrack(state.selectedIndex + 1));
   refs.playButton.addEventListener('click', togglePlayback);
-  refs.vinylButton.addEventListener('click', togglePlayback);
+  refs.vinylButton.addEventListener('click', () => {
+    if (state.suppressVinylClick) return;
+    togglePlayback();
+  });
   refs.surpriseButton.addEventListener('click', surpriseMe);
-  refs.compareButton.addEventListener('click', () => document.querySelector('.insight-grid')?.scrollIntoView({ behavior: 'smooth' }));
+  refs.compareButton.addEventListener('click', () => document.querySelector('.insight-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   refs.seek.addEventListener('change', () => state.player?.seek(Number(refs.seek.value) / 1000));
 
   refs.deckStage.addEventListener('pointerdown', (event) => {
@@ -250,8 +255,13 @@ function bindInteractions() {
     if (!start || start.id !== event.pointerId) return;
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
-    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) selectTrack(state.selectedIndex + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      state.suppressVinylClick = true;
+      setTimeout(() => { state.suppressVinylClick = false; }, 280);
+      selectTrack(state.selectedIndex + (dx < 0 ? 1 : -1));
+    }
   });
+  refs.deckStage.addEventListener('pointercancel', () => { state.pointerStart = null; });
 
   window.addEventListener('keydown', (event) => {
     if (refs.roomView.hidden || /INPUT|SELECT|TEXTAREA/.test(event.target.tagName)) return;
