@@ -21,12 +21,19 @@ function exists(file) {
   assert(fs.existsSync(path.join(root, file)), `${file} should exist`);
 }
 
+function checkModuleSyntax(file) {
+  childProcess.execFileSync(process.execPath, ['--input-type=module', '--check'], {
+    cwd: root,
+    input: read(file),
+    stdio: ['pipe', 'inherit', 'inherit']
+  });
+}
+
 function checkSource() {
-  const required = [
-    'index.html', 'config.js', 'build.js',
-    'src/styles.css', 'src/auth.js', 'src/spotify.js', 'src/player.js', 'src/main.js'
-  ];
+  const modules = ['src/auth.js', 'src/spotify.js', 'src/player.js', 'src/main.js'];
+  const required = ['index.html', 'config.js', 'build.js', 'src/styles.css', ...modules];
   required.forEach(exists);
+  modules.forEach(checkModuleSyntax);
 
   const index = read('index.html');
   const config = read('config.js');
@@ -64,6 +71,7 @@ function checkSource() {
   contains(main, 'surpriseMe', 'src/main.js');
   contains(main, 'renderComparison', 'src/main.js');
   contains(main, 'pushSession', 'src/main.js');
+  contains(main, 'suppressVinylClick', 'src/main.js');
   excludes(main, 'innerHTML', 'src/main.js');
   excludes(main, 'MutationObserver', 'src/main.js');
 
