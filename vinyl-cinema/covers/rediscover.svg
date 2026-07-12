@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#221307"/>
+      <stop offset=".45" stop-color="#8f5b1f"/>
+      <stop offset="1" stop-color="#f4cf82"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="52%" cy="42%" r="48%">
+      <stop offset="0" stop-color="#fff8d8"/>
+      <stop offset=".22" stop-color="#ffd67d" stop-opacity=".95"/>
+      <stop offset=".6" stop-color="#f09c3a" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#7a4217" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".56" numOctaves="4" seed="15" result="n"/>
+      <feColorMatrix in="n" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .2 0"/>
+      <feBlend mode="multiply" in2="SourceGraphic"/>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <circle cx="640" cy="480" r="440" fill="url(#sun)"/>
+  <g transform="translate(600 570)" fill="none" stroke="#fff6d7" stroke-opacity=".7">
+    <circle r="250" stroke-width="3"/>
+    <circle r="314" stroke-width="2" stroke-dasharray="3 18"/>
+    <circle r="382" stroke-width="1" stroke-dasharray="1 13"/>
+    <g stroke-width="3">
+      <path d="M0-430 V-330"/>
+      <path d="M304-304 L234-234"/>
+      <path d="M430 0 H330"/>
+      <path d="M304 304 L234 234"/>
+      <path d="M0 430 V330"/>
+      <path d="M-304 304 L-234 234"/>
+      <path d="M-430 0 H-330"/>
+      <path d="M-304-304 L-234-234"/>
+    </g>
+  </g>
+  <path d="M120 930 C340 690 430 820 620 650 S960 480 1110 270" fill="none" stroke="#fff1c2" stroke-width="72" stroke-linecap="round" opacity=".3" filter="url(#soft)"/>
+  <g opacity=".86">
+    <rect x="318" y="286" width="564" height="564" rx="8" fill="#351d0c" transform="rotate(8 600 568)"/>
+    <rect x="372" y="340" width="456" height="456" rx="228" fill="#efbb58" transform="rotate(8 600 568)"/>
+    <path d="M438 598 C540 480 668 480 774 598 C690 678 528 684 438 598Z" fill="#fff1c9" opacity=".76"/>
+  </g>
+  <rect width="1200" height="1200" filter="url(#grain)" opacity=".42"/>
+  <text x="86" y="108" fill="#fff8df" font-family="Arial,Helvetica,sans-serif" font-size="30" letter-spacing="12">REDISCOVER / 03</text>
+  <text x="86" y="1080" fill="#fff8df" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="700" letter-spacing="-4">FORGOTTEN LIGHT</text>
+  <text x="92" y="1128" fill="#fff8df" fill-opacity=".66" font-family="Arial,Helvetica,sans-serif" font-size="24" letter-spacing="8">RETURNING MEMORY</text>
+</svg>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#030303">
+  <title>VINYL CINEMA — Prototype 01</title>
+  <link rel="stylesheet" href="./styles.css?v=20260712-vinyl-cinema-v1">
+</head>
+<body>
+  <div id="cinema" class="cinema" data-scene="select" data-tone="now">
+    <img id="ambient-cover" class="ambient-cover" src="./covers/now.svg" alt="" aria-hidden="true">
+    <div class="ambient-vignette" aria-hidden="true"></div>
+    <div class="film-grain" aria-hidden="true"></div>
+    <div class="light-leak light-leak--a" aria-hidden="true"></div>
+    <div class="light-leak light-leak--b" aria-hidden="true"></div>
+
+    <header class="cinema-header">
+      <a class="cinema-brand" href="../" aria-label="Record Roomへ戻る">
+        <span class="cinema-brand__mark" aria-hidden="true"></span>
+        <span>
+          <small>PROTOTYPE 01</small>
+          <strong>VINYL CINEMA</strong>
+        </span>
+      </a>
+      <button id="blind-button" class="blind-button" type="button">
+        <span class="blind-button__dot" aria-hidden="true"></span>
+        BLIND DROP
+      </button>
+    </header>
+
+    <main class="cinema-main">
+      <section id="selection-scene" class="selection-scene" aria-label="今夜のレコードを選ぶ">
+        <div class="selection-copy">
+          <p class="selection-copy__eyebrow">TONIGHT'S THREE</p>
+          <h1>今夜、針を落とす一枚。</h1>
+          <p>横に滑らせて選ぶ。上へ引き上げると、盤がスリーブから現れます。</p>
+        </div>
+
+        <div id="carousel" class="sleeve-carousel" role="list" aria-label="3枚の候補">
+          <button class="sleeve-card is-selected" type="button" role="listitem" data-index="0" data-tone="now" aria-label="NOW: Afterimageを選ぶ">
+            <span class="record-preview" aria-hidden="true">
+              <img src="./covers/now.svg" alt="">
+            </span>
+            <span class="sleeve-card__face">
+              <img src="./covers/now.svg" alt="Afterimageのジャケット">
+              <span class="sleeve-card__shine" aria-hidden="true"></span>
+            </span>
+            <span class="sleeve-card__meta">
+              <small>NOW</small>
+              <strong>Afterimage</strong>
+              <span>最近、急に近くなった音</span>
+            </span>
+          </button>
+
+          <button class="sleeve-card" type="button" role="listitem" data-index="1" data-tone="core" aria-label="CORE: Deep Currentを選ぶ">
+            <span class="record-preview" aria-hidden="true">
+              <img src="./covers/core.svg" alt="">
+            </span>
+            <span class="sleeve-card__face">
+              <img src="./covers/core.svg" alt="Deep Currentのジャケット">
+              <span class="sleeve-card__shine" aria-hidden="true"></span>
+            </span>
+            <span class="sleeve-card__meta">
+              <small>CORE</small>
+              <strong>Deep Current</strong>
+              <span>長く残り続けている音</span>
+            </span>
+          </button>
+
+          <button class="sleeve-card" type="button" role="listitem" data-index="2" data-tone="rediscover" aria-label="REDISCOVER: Forgotten Lightを選ぶ">
+            <span class="record-preview" aria-hidden="true">
+              <img src="./covers/rediscover.svg" alt="">
+            </span>
+            <span class="sleeve-card__face">
+              <img src="./covers/rediscover.svg" alt="Forgotten Lightのジャケット">
+              <span class="sleeve-card__shine" aria-hidden="true"></span>
+            </span>
+            <span class="sleeve-card__meta">
+              <small>REDISCOVER</small>
+              <strong>Forgotten Light</strong>
+              <span>忘れていた場所へ戻る音</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="selection-footer">
+          <div class="position-dots" aria-label="選択位置">
+            <button class="position-dot is-active" type="button" data-index="0" aria-label="1枚目"></button>
+            <button class="position-dot" type="button" data-index="1" aria-label="2枚目"></button>
+            <button class="position-dot" type="button" data-index="2" aria-label="3枚目"></button>
+          </div>
+          <button id="extract-button" class="extract-button" type="button">
+            <span class="extract-button__arrow" aria-hidden="true">↑</span>
+            この盤を取り出す
+          </button>
+        </div>
+      </section>
+
+      <section id="deck-scene" class="deck-scene" aria-label="レコードを再生する" aria-hidden="true">
+        <button id="back-button" class="deck-back" type="button" aria-label="棚へ戻る">
+          <span aria-hidden="true">↓</span>
+          SHELF
+        </button>
+
+        <div class="deck-copy deck-copy--top">
+          <small id="deck-category">NOW</small>
+          <strong id="deck-title">Afterimage</strong>
+          <span id="deck-artist">最近、急に近くなった音</span>
+        </div>
+
+        <div id="camera" class="deck-camera">
+          <div class="deck-shadow" aria-hidden="true"></div>
+          <div class="turntable">
+            <div class="turntable__edge" aria-hidden="true"></div>
+            <div class="platter" aria-hidden="true"></div>
+            <button id="vinyl-control" class="vinyl" type="button" aria-label="針を落として再生">
+              <span class="vinyl__grooves" aria-hidden="true"></span>
+              <img id="vinyl-label" class="vinyl__label" src="./covers/now.svg" alt="選択中のジャケット">
+              <span class="vinyl__veil" aria-hidden="true"></span>
+              <span class="vinyl__spindle" aria-hidden="true"></span>
+            </button>
+            <button id="needle-control" class="tonearm" type="button" aria-label="針を落として再生">
+              <span class="tonearm__base" aria-hidden="true"></span>
+              <span class="tonearm__pipe" aria-hidden="true"></span>
+              <span class="tonearm__head" aria-hidden="true"></span>
+              <span class="tonearm__needle" aria-hidden="true"></span>
+            </button>
+            <span class="deck-led" aria-hidden="true"></span>
+            <span class="deck-engraving" aria-hidden="true">VC–01</span>
+          </div>
+        </div>
+
+        <div class="deck-instruction" aria-live="polite">
+          <span class="deck-instruction__line" aria-hidden="true"></span>
+          <p id="deck-instruction-text">針をタップして、音を始める</p>
+        </div>
+
+        <div class="now-playing" aria-live="polite">
+          <small>NOW PLAYING</small>
+          <strong id="playing-title">Afterimage</strong>
+          <span id="playing-description">最近、急に近くなった音</span>
+        </div>
+      </section>
+    </main>
+
+    <div id="flash" class="needle-flash" aria-hidden="true"></div>
+    <div id="toast" class="cinema-toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script type="module" src="./app.js?v=20260712-vinyl-cinema-v1"></script>
+</body>
+</html>

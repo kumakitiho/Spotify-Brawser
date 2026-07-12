@@ -29,7 +29,7 @@ function checkModuleSyntax(file) {
   });
 }
 
-function checkSource() {
+function checkRecordRoom() {
   const modules = ['src/auth.js', 'src/spotify.js', 'src/player.js', 'src/main.js'];
   const required = ['index.html', 'config.js', 'build.js', 'src/styles.css', ...modules];
   required.forEach(exists);
@@ -85,6 +85,46 @@ function checkSource() {
   excludes(build, 'shelf-mode-loader', 'build.js');
 }
 
+function checkVinylCinema() {
+  const required = [
+    'vinyl-cinema/index.html',
+    'vinyl-cinema/styles.css',
+    'vinyl-cinema/app.js',
+    'vinyl-cinema/covers/now.svg',
+    'vinyl-cinema/covers/core.svg',
+    'vinyl-cinema/covers/rediscover.svg'
+  ];
+  required.forEach(exists);
+  checkModuleSyntax('vinyl-cinema/app.js');
+
+  const index = read('vinyl-cinema/index.html');
+  const styles = read('vinyl-cinema/styles.css');
+  const app = read('vinyl-cinema/app.js');
+  const build = read('build.js');
+
+  contains(index, 'VINYL CINEMA', 'vinyl-cinema/index.html');
+  contains(index, 'BLIND DROP', 'vinyl-cinema/index.html');
+  contains(index, 'この盤を取り出す', 'vinyl-cinema/index.html');
+  contains(index, 'tonearm', 'vinyl-cinema/index.html');
+  contains(index, 'app.js?v=20260712-vinyl-cinema-v1', 'vinyl-cinema/index.html');
+
+  contains(styles, '.cinema.is-extracting', 'vinyl-cinema/styles.css');
+  contains(styles, '.cinema.is-playing .vinyl', 'vinyl-cinema/styles.css');
+  contains(styles, '.cinema.is-blind:not(.is-revealed)', 'vinyl-cinema/styles.css');
+  contains(styles, 'env(safe-area-inset-bottom)', 'vinyl-cinema/styles.css');
+  contains(styles, 'prefers-reduced-motion', 'vinyl-cinema/styles.css');
+
+  contains(app, 'beginExtraction', 'vinyl-cinema/app.js');
+  contains(app, 'dropNeedle', 'vinyl-cinema/app.js');
+  contains(app, 'playNeedleCrackle', 'vinyl-cinema/app.js');
+  contains(app, 'revealBlindDrop', 'vinyl-cinema/app.js');
+  contains(app, 'requestAnimationFrame', 'vinyl-cinema/app.js');
+  excludes(app, 'MutationObserver', 'vinyl-cinema/app.js');
+  excludes(app, 'setInterval', 'vinyl-cinema/app.js');
+
+  contains(build, "copyDirectory(path.join(ROOT, 'vinyl-cinema')", 'build.js');
+}
+
 function runBuild() {
   childProcess.execFileSync(process.execPath, ['build.js'], {
     cwd: root,
@@ -100,18 +140,23 @@ function runBuild() {
 function checkDist() {
   [
     'index.html', 'config.js', '.nojekyll',
-    'src/styles.css', 'src/auth.js', 'src/spotify.js', 'src/player.js', 'src/main.js'
+    'src/styles.css', 'src/auth.js', 'src/spotify.js', 'src/player.js', 'src/main.js',
+    'vinyl-cinema/index.html', 'vinyl-cinema/styles.css', 'vinyl-cinema/app.js',
+    'vinyl-cinema/covers/now.svg', 'vinyl-cinema/covers/core.svg', 'vinyl-cinema/covers/rediscover.svg'
   ].forEach((file) => assert(fs.existsSync(path.join(dist, file)), `dist/${file} should exist`));
 
   const distConfig = fs.readFileSync(path.join(dist, 'config.js'), 'utf8');
   const distIndex = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  const cinemaIndex = fs.readFileSync(path.join(dist, 'vinyl-cinema/index.html'), 'utf8');
   contains(distConfig, 'test-client-id', 'dist/config.js');
   contains(distConfig, 'https://kumakitiho.github.io/Spotify-Brawser/', 'dist/config.js');
   excludes(distIndex, 'cdn.tailwindcss.com', 'dist/index.html');
+  contains(cinemaIndex, 'VINYL CINEMA', 'dist/vinyl-cinema/index.html');
   assert(!fs.existsSync(path.join(dist, 'cinematic-deck.js')), 'legacy cinematic assets should not be deployed');
 }
 
-checkSource();
+checkRecordRoom();
+checkVinylCinema();
 runBuild();
 checkDist();
-console.log('Record Room smoke check passed.');
+console.log('Record Room and Vinyl Cinema smoke checks passed.');
