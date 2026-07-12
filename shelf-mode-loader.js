@@ -2,13 +2,11 @@
    Loads turntable skin assets after the base app has parsed so config.js stays low-risk. */
 
 (function () {
-    const MANIFEST_SRC = 'shelf-mode-assets.js?v=20260712-assets-mobile-v1';
+    const MANIFEST_SRC = 'shelf-mode-assets.js?v=20260712-assets-mobile-v3';
     const MANIFEST_KEY = 'shelf-mode-assets';
     const LOADER_STATE_KEY = '__shelfModeLoaderState';
 
-    if (window[LOADER_STATE_KEY]?.started) {
-        return;
-    }
+    if (window[LOADER_STATE_KEY]?.started) return;
 
     window[LOADER_STATE_KEY] = {
         started: true,
@@ -19,10 +17,7 @@
 
     function appendScript({ src, key, defer = true }) {
         if (!src || !key) return Promise.resolve(false);
-        if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) {
-            return Promise.resolve(false);
-        }
-
+        if (document.querySelector(`script[data-shelf-mode-script="${key}"]`)) return Promise.resolve(false);
         return new Promise((resolve) => {
             const script = document.createElement('script');
             script.src = src;
@@ -42,7 +37,6 @@
     function appendStylesheet({ href, key }) {
         if (!href || !key) return false;
         if (document.querySelector(`link[data-shelf-mode-skin="${key}"]`)) return false;
-
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = href;
@@ -56,7 +50,6 @@
             window[LOADER_STATE_KEY].manifestLoaded = true;
             return window.ShelfModeAssets;
         }
-
         await appendScript({ src: MANIFEST_SRC, key: MANIFEST_KEY, defer: true });
         window[LOADER_STATE_KEY].manifestLoaded = Boolean(window.ShelfModeAssets);
         return window.ShelfModeAssets;
@@ -70,23 +63,13 @@
             window[LOADER_STATE_KEY].errors.push(error);
             return false;
         }
-
         (manifest.stylesheets || []).forEach(appendStylesheet);
-        for (const script of manifest.scripts || []) {
-            await appendScript(script);
-        }
-
+        for (const script of manifest.scripts || []) await appendScript(script);
         window[LOADER_STATE_KEY].assetsApplied = true;
         return true;
     }
 
-    function boot() {
-        applyAssets();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', boot, { once: true });
-    } else {
-        boot();
-    }
+    function boot() { applyAssets(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+    else boot();
 })();

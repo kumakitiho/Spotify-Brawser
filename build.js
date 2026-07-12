@@ -11,9 +11,11 @@ const STATIC_ASSETS = [
     'cinematic-deck-themes.css',
     'cinematic-deck-fixes.css',
     'cinematic-deck-mobile.css',
+    'cinematic-deck-mobile-v3.css',
     'cinematic-deck.js',
     'cinematic-deck-guard.js',
     'cinematic-deck-mobile.js',
+    'cinematic-deck-mobile-v3.js',
     'turntable-realism.css',
     'turntable-cover-boost.css',
     'turntable-physics.css',
@@ -51,7 +53,6 @@ function copyIfExists(file) {
 
 fs.rmSync(DIST_DIR, { recursive: true, force: true });
 fs.mkdirSync(DIST_DIR, { recursive: true });
-
 fs.copyFileSync(path.join(__dirname, 'index.html'), path.join(DIST_DIR, 'index.html'));
 STATIC_ASSETS.forEach(copyIfExists);
 fs.writeFileSync(path.join(DIST_DIR, '.nojekyll'), '');
@@ -70,7 +71,7 @@ const configContent = [
     '        const key = "shelf-mode-loader";',
     '        if (document.querySelector("script[data-shelf-mode-script=\\\"" + key + "\\\"]")) return;',
     '        const script = document.createElement("script");',
-    '        script.src = "shelf-mode-loader.js?v=20260712-loader-mobile-v1";',
+    '        script.src = "shelf-mode-loader.js?v=20260712-loader-mobile-v3";',
     '        script.defer = true;',
     '        script.dataset.shelfModeScript = key;',
     '        script.onerror = () => console.warn("Shelf Mode loader failed to load.");',
